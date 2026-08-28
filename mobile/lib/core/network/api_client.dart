@@ -17,17 +17,17 @@ class ApiClient {
   }
 
   static Dio _crearDio() => Dio(
-        BaseOptions(
-          baseUrl: AppConfig.apiBaseUrl,
-          connectTimeout: const Duration(seconds: 8),
-          receiveTimeout: const Duration(seconds: 8),
-          sendTimeout: const Duration(seconds: 8),
-          contentType: Headers.jsonContentType,
-          // No lanzar excepción por 4xx: los manejamos nosotros para
-          // distinguir "credenciales malas" de "no hay red".
-          validateStatus: (status) => status != null && status < 500,
-        ),
-      );
+    BaseOptions(
+      baseUrl: AppConfig.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 8),
+      sendTimeout: const Duration(seconds: 8),
+      contentType: Headers.jsonContentType,
+      // No lanzar excepción por 4xx: los manejamos nosotros para
+      // distinguir "credenciales malas" de "no hay red".
+      validateStatus: (status) => status != null && status < 500,
+    ),
+  );
 
   final Dio dio;
 

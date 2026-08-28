@@ -29,10 +29,9 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
       // Pequeña pausa para que se vea el cuarto punto antes de validar.
       await Future<void>.delayed(const Duration(milliseconds: 120));
       if (!mounted) return;
-      await ref.read(sesionProvider.notifier).entrarConPin(
-            usuarioId: usuario.usuarioId,
-            pin: _pin,
-          );
+      await ref
+          .read(sesionProvider.notifier)
+          .entrarConPin(usuarioId: usuario.usuarioId, pin: _pin);
       // Si falló, se limpia para reintentar.
       if (mounted && ref.read(sesionProvider).hasError) {
         setState(() => _pin = '');
@@ -53,12 +52,13 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: recordadoAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
         error: (e, _) => Center(
-          child: Text(mensajeDeError(e),
-              style: const TextStyle(color: Colors.white)),
+          child: Text(
+            mensajeDeError(e),
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         data: (usuario) {
           if (usuario == null) {
@@ -86,10 +86,7 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
                           cargando: sesion.isLoading,
                         ),
                         const SizedBox(height: 14),
-                        _Puntos(
-                          cantidad: _pin.length,
-                          error: sesion.hasError,
-                        ),
+                        _Puntos(cantidad: _pin.length, error: sesion.hasError),
                         const SizedBox(height: 22),
                         _Teclado(
                           habilitado: !sesion.isLoading,
@@ -104,8 +101,11 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.lock_outline,
-                                  size: 19, color: AppColors.secondary),
+                              Icon(
+                                Icons.lock_outline,
+                                size: 19,
+                                color: AppColors.secondary,
+                              ),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -367,8 +367,11 @@ class _Teclado extends StatelessWidget {
         _Tecla(
           conFondo: false,
           onTap: habilitado ? alBorrar : null,
-          child: const Icon(Icons.backspace_outlined,
-              size: 24, color: AppColors.primary),
+          child: const Icon(
+            Icons.backspace_outlined,
+            size: 24,
+            color: AppColors.primary,
+          ),
         ),
       ],
     );

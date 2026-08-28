@@ -55,8 +55,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   }
 }
 
-final sesionProvider =
-    AsyncNotifierProvider<SesionController, SesionUsuario?>(
+final sesionProvider = AsyncNotifierProvider<SesionController, SesionUsuario?>(
   SesionController.new,
 );
 
@@ -67,9 +66,9 @@ final usuarioRecordadoProvider = FutureProvider<UsuarioRecordado?>(
 
 /// Nombre legible de cada valor del enum `RolUsuario` del backend.
 String nombreDeRol(String rol) => switch (rol) {
-      'ADMIN' => 'Administrador',
-      'JEFE_TERRENO' => 'Jefe de terreno',
-      'BODEGUERO' => 'Bodeguero',
-      'TRABAJADOR' => 'Trabajador',
-      _ => rol,
-    };
+  'ADMIN' => 'Administrador',
+  'JEFE_TERRENO' => 'Jefe de terreno',
+  'BODEGUERO' => 'Bodeguero',
+  'TRABAJADOR' => 'Trabajador',
+  _ => rol,
+};

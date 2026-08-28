@@ -77,22 +77,23 @@ class ChipEstado extends StatelessWidget {
 
   /// Verde — a tiempo, disponible, aprobada.
   factory ChipEstado.exito(String texto, {bool conPunto = true}) => ChipEstado(
-        texto: texto,
-        fondo: AppColors.successTint,
-        textoColor: AppColors.successDark,
-        punto: conPunto ? AppColors.success : null,
-      );
+    texto: texto,
+    fondo: AppColors.successTint,
+    textoColor: AppColors.successDark,
+    punto: conPunto ? AppColors.success : null,
+  );
 
   /// Ámbar — por vencer, pendiente, en mantención.
   factory ChipEstado.aviso(String texto, {bool conPunto = true}) => ChipEstado(
-        texto: texto,
-        fondo: AppColors.warningTint,
-        textoColor: AppColors.warningDark,
-        punto: conPunto ? AppColors.warning : null,
-      );
+    texto: texto,
+    fondo: AppColors.warningTint,
+    textoColor: AppColors.warningDark,
+    punto: conPunto ? AppColors.warning : null,
+  );
 
   /// Rojo — vencido, stock crítico, rechazada.
-  factory ChipEstado.critico(String texto, {bool conPunto = true}) => ChipEstado(
+  factory ChipEstado.critico(String texto, {bool conPunto = true}) =>
+      ChipEstado(
         texto: texto,
         fondo: AppColors.destructiveTint,
         textoColor: AppColors.destructiveDark,
@@ -101,10 +102,10 @@ class ChipEstado extends StatelessWidget {
 
   /// Gris — neutro, entregada, cerrada.
   factory ChipEstado.neutro(String texto) => ChipEstado(
-        texto: texto,
-        fondo: const Color(0xFFF1F5F9),
-        textoColor: AppColors.textMuted,
-      );
+    texto: texto,
+    fondo: const Color(0xFFF1F5F9),
+    textoColor: AppColors.textMuted,
+  );
 
   final String texto;
   final Color fondo;
@@ -151,8 +152,11 @@ class Iniciales extends StatelessWidget {
   final double tamano;
 
   static String de(String nombre) {
-    final partes =
-        nombre.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final partes = nombre
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (partes.isEmpty) return '?';
     if (partes.length == 1) {
       return partes.first.substring(0, 1).toUpperCase();

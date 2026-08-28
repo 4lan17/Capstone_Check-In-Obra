@@ -54,11 +54,9 @@ class PantallaDiagnostico extends ConsumerWidget {
                 onPressed: estado.isLoading
                     ? null
                     : () => ref
-                        .read(diagnosticoConexionProvider.notifier)
-                        .probar(),
-                child: Text(
-                  estado.isLoading ? 'Probando…' : 'Probar conexión',
-                ),
+                          .read(diagnosticoConexionProvider.notifier)
+                          .probar(),
+                child: Text(estado.isLoading ? 'Probando…' : 'Probar conexión'),
               ),
             ],
           ),
@@ -150,8 +148,11 @@ class _EstadoInicial extends StatelessWidget {
     return const _Panel(
       child: Row(
         children: [
-          Icon(Icons.radio_button_unchecked,
-              size: 20, color: AppColors.textFaint),
+          Icon(
+            Icons.radio_button_unchecked,
+            size: 20,
+            color: AppColors.textFaint,
+          ),
           SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -300,10 +301,7 @@ class _Dato extends StatelessWidget {
             width: 84,
             child: Text(
               etiqueta,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
           ),
           Expanded(

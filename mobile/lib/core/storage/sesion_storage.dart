@@ -15,7 +15,7 @@ class SesionStorage {
   /// por defecto en Android (AES-GCM con la clave envuelta en RSA-OAEP,
   /// respaldada por el Keystore), así que no hace falta configurarlo.
   SesionStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
@@ -40,9 +40,7 @@ class SesionStorage {
     final crudo = await _storage.read(key: _claveSesion);
     if (crudo == null) return null;
     try {
-      return SesionUsuario.desdeJson(
-        jsonDecode(crudo) as Map<String, dynamic>,
-      );
+      return SesionUsuario.desdeJson(jsonDecode(crudo) as Map<String, dynamic>);
     } catch (_) {
       // Formato viejo o corrupto: se descarta y se pide login de nuevo.
       await _storage.delete(key: _claveSesion);

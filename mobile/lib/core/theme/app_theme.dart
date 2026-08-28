@@ -48,13 +48,8 @@ abstract final class AppTheme {
           foregroundColor: Colors.white,
           // 52 px: por debajo de 44 no se acierta con guantes puestos.
           minimumSize: const Size.fromHeight(52),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       textTheme: base.textTheme.apply(

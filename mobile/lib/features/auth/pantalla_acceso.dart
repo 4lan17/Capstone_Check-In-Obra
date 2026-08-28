@@ -39,10 +39,9 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
   Future<void> _entrar() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
-    await ref.read(sesionProvider.notifier).entrarConCorreo(
-          email: _email.text,
-          pin: _pin.text,
-        );
+    await ref
+        .read(sesionProvider.notifier)
+        .entrarConCorreo(email: _email.text, pin: _pin.text);
   }
 
   @override
@@ -287,8 +286,11 @@ class _Error extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline,
-              size: 20, color: AppColors.destructiveDark),
+          const Icon(
+            Icons.error_outline,
+            size: 20,
+            color: AppColors.destructiveDark,
+          ),
           const SizedBox(width: 11),
           Expanded(
             child: Text(
@@ -334,9 +336,8 @@ class _AccesoRapido extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const PantallaAccesoPin()),
-      ),
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const PantallaAccesoPin())),
       child: Panel(
         color: AppColors.background,
         child: Row(
@@ -368,8 +369,11 @@ class _AccesoRapido extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                size: 22, color: AppColors.accentFill),
+            const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.accentFill,
+            ),
           ],
         ),
       ),

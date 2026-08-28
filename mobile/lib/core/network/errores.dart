@@ -14,10 +14,8 @@ String mensajeDeError(Object error) {
     return switch (error.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.sendTimeout ||
-      DioExceptionType.receiveTimeout =>
-        'El servidor no respondió a tiempo. Revisa la señal e inténtalo de nuevo.',
-      DioExceptionType.connectionError =>
-        'No hay conexión con el servidor. Verifica que estés en la red de la obra.',
+      DioExceptionType.receiveTimeout => 'El servidor no respondió a tiempo. Revisa la señal e inténtalo de nuevo.',
+      DioExceptionType.connectionError => 'No hay conexión con el servidor. Verifica que estés en la red de la obra.',
       DioExceptionType.badCertificate =>
         'El certificado del servidor no es válido.',
       DioExceptionType.cancel => 'La operación se canceló.',

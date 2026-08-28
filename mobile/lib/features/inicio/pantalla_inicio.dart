@@ -104,11 +104,16 @@ class PantallaInicio extends ConsumerWidget {
                             : null,
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 13),
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
                       child: Row(
                         children: [
-                          const Icon(Icons.check,
-                              size: 18, color: AppColors.successDark),
+                          const Icon(
+                            Icons.check,
+                            size: 18,
+                            color: AppColors.successDark,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -132,8 +137,11 @@ class PantallaInicio extends ConsumerWidget {
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.construction_outlined,
-                      size: 20, color: AppColors.warningDark),
+                  Icon(
+                    Icons.construction_outlined,
+                    size: 20,
+                    color: AppColors.warningDark,
+                  ),
                   SizedBox(width: 11),
                   Expanded(
                     child: Text(
@@ -157,30 +165,30 @@ class PantallaInicio extends ConsumerWidget {
 
   /// Refleja la matriz de permisos del README y los `@PreAuthorize` del backend.
   List<String> _permisosDe(String rol) => switch (rol) {
-        'TRABAJADOR' => const [
-            'Solicitar herramienta o material',
-            'Mostrar credencial QR',
-            'Ver sus préstamos y devoluciones',
-          ],
-        'BODEGUERO' => const [
-            'Aprobar o rechazar solicitudes',
-            'Recepción, despacho y consumo',
-            'Autorizar préstamo y registrar devolución',
-            'Cerrar turno de bodega',
-            'Resolver alertas',
-          ],
-        'JEFE_TERRENO' => const [
-            'Cubicar partidas',
-            'Congelar el presupuesto',
-            'Ver la desviación de la obra',
-            'Resolver alertas',
-          ],
-        'ADMIN' => const [
-            'Crear usuarios y asignar rol',
-            'Definir catálogo, precios y mermas',
-            'Crear y cerrar obras',
-            'Todo lo de bodega y terreno',
-          ],
-        _ => const ['Rol no reconocido'],
-      };
+    'TRABAJADOR' => const [
+      'Solicitar herramienta o material',
+      'Mostrar credencial QR',
+      'Ver sus préstamos y devoluciones',
+    ],
+    'BODEGUERO' => const [
+      'Aprobar o rechazar solicitudes',
+      'Recepción, despacho y consumo',
+      'Autorizar préstamo y registrar devolución',
+      'Cerrar turno de bodega',
+      'Resolver alertas',
+    ],
+    'JEFE_TERRENO' => const [
+      'Cubicar partidas',
+      'Congelar el presupuesto',
+      'Ver la desviación de la obra',
+      'Resolver alertas',
+    ],
+    'ADMIN' => const [
+      'Crear usuarios y asignar rol',
+      'Definir catálogo, precios y mermas',
+      'Crear y cerrar obras',
+      'Todo lo de bodega y terreno',
+    ],
+    _ => const ['Rol no reconocido'],
+  };
 }

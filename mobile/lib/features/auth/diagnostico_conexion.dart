@@ -47,37 +47,43 @@ class DiagnosticoConexion extends AsyncNotifier<ResultadoConexion?> {
     try {
       final sesion = await api.login(email: _emailSemilla, pin: _pinSemilla);
       reloj.stop();
-      state = AsyncValue.data(ResultadoConexion(
-        ok: true,
-        titulo: 'Conexión establecida',
-        detalle: 'El backend respondió y autenticó al usuario semilla.',
-        url: url,
-        sesion: sesion,
-        latenciaMs: reloj.elapsedMilliseconds,
-      ));
+      state = AsyncValue.data(
+        ResultadoConexion(
+          ok: true,
+          titulo: 'Conexión establecida',
+          detalle: 'El backend respondió y autenticó al usuario semilla.',
+          url: url,
+          sesion: sesion,
+          latenciaMs: reloj.elapsedMilliseconds,
+        ),
+      );
     } on DioException catch (e) {
       reloj.stop();
       state = AsyncValue.data(_desdeDioException(e, url));
     } on ApiException catch (e) {
       reloj.stop();
-      state = AsyncValue.data(ResultadoConexion(
-        ok: false,
-        titulo: 'El servidor respondió, pero rechazó la petición',
-        detalle: e.mensaje,
-        url: url,
-        comoArreglarlo: e.statusCode == 400
-            ? 'La red funciona. Revisa que la migración V2 haya corrido:\n'
-                'docker compose logs backend | grep Flyway'
-            : null,
-      ));
+      state = AsyncValue.data(
+        ResultadoConexion(
+          ok: false,
+          titulo: 'El servidor respondió, pero rechazó la petición',
+          detalle: e.mensaje,
+          url: url,
+          comoArreglarlo: e.statusCode == 400
+              ? 'La red funciona. Revisa que la migración V2 haya corrido:\n'
+                    'docker compose logs backend | grep Flyway'
+              : null,
+        ),
+      );
     } catch (e) {
       reloj.stop();
-      state = AsyncValue.data(ResultadoConexion(
-        ok: false,
-        titulo: 'Error inesperado',
-        detalle: e.toString(),
-        url: url,
-      ));
+      state = AsyncValue.data(
+        ResultadoConexion(
+          ok: false,
+          titulo: 'Error inesperado',
+          detalle: e.toString(),
+          url: url,
+        ),
+      );
     }
   }
 
@@ -88,50 +94,51 @@ class DiagnosticoConexion extends AsyncNotifier<ResultadoConexion?> {
     return switch (e.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.sendTimeout ||
-      DioExceptionType.receiveTimeout =>
-        ResultadoConexion(
-          ok: false,
-          titulo: 'El servidor no respondió a tiempo',
-          detalle: 'Se agotaron los 8 segundos de espera.',
-          url: url,
-          comoArreglarlo:
-              'Suele ser el firewall del computador descartando el paquete '
-              'en silencio. En Ubuntu:\n'
-              'sudo ufw allow from 192.168.1.0/24 to any port 8081 proto tcp',
-        ),
+      DioExceptionType.receiveTimeout => ResultadoConexion(
+        ok: false,
+        titulo: 'El servidor no respondió a tiempo',
+        detalle: 'Se agotaron los 8 segundos de espera.',
+        url: url,
+        comoArreglarlo:
+            'Suele ser el firewall del computador descartando el paquete '
+            'en silencio. En Ubuntu:\n'
+            'sudo ufw allow from 192.168.1.0/24 to any port 8081 proto tcp',
+      ),
       DioExceptionType.connectionError => ResultadoConexion(
-          ok: false,
-          titulo: 'No se pudo alcanzar el servidor',
-          detalle: 'No hay ruta hacia $url.',
-          url: url,
-          comoArreglarlo: 'Revisa, en este orden:\n'
-              '1. El backend está arriba — docker compose ps\n'
-              '2. El teléfono y el computador están en la MISMA red WiFi\n'
-              '3. La IP del .env es la actual — cambia al cambiar de red\n'
-              '4. El firewall permite el puerto 8081',
-        ),
+        ok: false,
+        titulo: 'No se pudo alcanzar el servidor',
+        detalle: 'No hay ruta hacia $url.',
+        url: url,
+        comoArreglarlo:
+            'Revisa, en este orden:\n'
+            '1. El backend está arriba — docker compose ps\n'
+            '2. El teléfono y el computador están en la MISMA red WiFi\n'
+            '3. La IP del .env es la actual — cambia al cambiar de red\n'
+            '4. El firewall permite el puerto 8081',
+      ),
       DioExceptionType.badCertificate => ResultadoConexion(
-          ok: false,
-          titulo: 'Certificado rechazado',
-          detalle: 'El certificado TLS no es válido.',
-          url: url,
-          comoArreglarlo: 'En local la API va por HTTP, no HTTPS. '
-              'Revisa que la URL del .env empiece con http://',
-        ),
+        ok: false,
+        titulo: 'Certificado rechazado',
+        detalle: 'El certificado TLS no es válido.',
+        url: url,
+        comoArreglarlo:
+            'En local la API va por HTTP, no HTTPS. '
+            'Revisa que la URL del .env empiece con http://',
+      ),
       _ => ResultadoConexion(
-          ok: false,
-          titulo: 'Fallo de red',
-          detalle: e.message ?? e.type.name,
-          url: url,
-        ),
+        ok: false,
+        titulo: 'Fallo de red',
+        detalle: e.message ?? e.type.name,
+        url: url,
+      ),
     };
   }
 }
 
 final diagnosticoConexionProvider =
     AsyncNotifierProvider<DiagnosticoConexion, ResultadoConexion?>(
-  DiagnosticoConexion.new,
-);
+      DiagnosticoConexion.new,
+    );
 
 /// Expone si se pudo leer el `.env`, para avisarlo en pantalla.
 final envCargadoProvider = Provider<bool>((ref) => AppConfig.envCargado);

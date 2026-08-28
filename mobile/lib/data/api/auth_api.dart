@@ -20,20 +20,20 @@ class SesionUsuario {
   final int empresaId;
 
   factory SesionUsuario.desdeJson(Map<String, dynamic> json) => SesionUsuario(
-        token: json['token'] as String,
-        usuarioId: json['usuarioId'] as int,
-        nombre: json['nombre'] as String,
-        rol: json['rol'] as String,
-        empresaId: json['empresaId'] as int,
-      );
+    token: json['token'] as String,
+    usuarioId: json['usuarioId'] as int,
+    nombre: json['nombre'] as String,
+    rol: json['rol'] as String,
+    empresaId: json['empresaId'] as int,
+  );
 
   Map<String, dynamic> aJson() => {
-        'token': token,
-        'usuarioId': usuarioId,
-        'nombre': nombre,
-        'rol': rol,
-        'empresaId': empresaId,
-      };
+    'token': token,
+    'usuarioId': usuarioId,
+    'nombre': nombre,
+    'rol': rol,
+    'empresaId': empresaId,
+  };
 }
 
 /// Se lanza cuando el servidor respondió pero rechazó la petición
@@ -55,10 +55,7 @@ class AuthApi {
 
   /// Login por correo + PIN. En el backend, el correo ubica al usuario
   /// (`Usuario.autenticarPorEmail`) y el PIN lo autentica (`Usuario.autenticar`).
-  Future<SesionUsuario> login({
-    required String email,
-    required String pin,
-  }) =>
+  Future<SesionUsuario> login({required String email, required String pin}) =>
       _postLogin('/api/auth/login', {'email': email, 'pin': pin});
 
   /// Login solo con PIN, para el usuario que el teléfono ya recuerda.
@@ -66,8 +63,7 @@ class AuthApi {
   Future<SesionUsuario> loginPorPin({
     required int usuarioId,
     required String pin,
-  }) =>
-      _postLogin('/api/auth/login-pin', {'usuarioId': usuarioId, 'pin': pin});
+  }) => _postLogin('/api/auth/login-pin', {'usuarioId': usuarioId, 'pin': pin});
 
   Future<SesionUsuario> _postLogin(
     String ruta,
