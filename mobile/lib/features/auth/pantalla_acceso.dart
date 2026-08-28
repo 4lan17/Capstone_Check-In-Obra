@@ -167,26 +167,17 @@ class _Encabezado extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  color: AppColors.accent,
-                  child: const Icon(Icons.home_outlined,
-                      color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Check-In-Obra',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-              ],
+            // Center se estira al ancho disponible, asi que centra el logo
+            // sin alterar el crossAxisAlignment.start que alinea el resto.
+            Center(
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 96,
+                // El PNG ya trae el nombre bajo el isotipo, asi que no lleva
+                // Text al lado. El semanticLabel cubre a los lectores de
+                // pantalla, que antes leian el texto.
+                semanticLabel: 'Check-In Obra',
+              ),
             ),
             const SizedBox(height: 16),
             const Text(

@@ -11,11 +11,11 @@ import 'features/inicio/pantalla_inicio.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.cargar();
-  runApp(const ProviderScope(child: Check-In-ObraApp()));
+  runApp(const ProviderScope(child: CheckInObraApp()));
 }
 
-class Check-In-ObraApp extends StatelessWidget {
-  const Check-In-ObraApp({super.key});
+class CheckInObraApp extends StatelessWidget {
+  const CheckInObraApp({super.key});
 
   @override
   Widget build(BuildContext context) {

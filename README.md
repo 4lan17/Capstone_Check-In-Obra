@@ -262,8 +262,8 @@ flutter doctor                      # Android toolchain debe quedar en [✓]
 ## Puesta en marcha
 
 ```bash
-git clone https://github.com/1Bryvn/Check-In-Obra.git
-cd Check-In-Obra
+git clone https://github.com/4lan17/Capstone_Check-In-Obra.git
+cd Capstone_Check-In-Obra
 ```
 
 ### 1. Backend + base de datos
