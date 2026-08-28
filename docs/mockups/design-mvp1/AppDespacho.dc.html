@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Movimiento de bodega</span>
+    
+  </div>
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; background: #FFFFFF; border: 1px solid #E2E8F0; height: 48px">
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 4v9.5"/><path d="m8 9.5 4 4 4-4"/></svg>
+        <span style="font-size: 13px; font-weight: 500; color: #475569; white-space: nowrap">Recepción</span>
+      </div>
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; background: #334155; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 13.5V4"/><path d="m8 8 4-4 4 4"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Despacho</span>
+      </div>
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; border-left: 1px solid #E2E8F0; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m14.6 6.2 2.6-2.6 3.2 3.2-2.6 2.6"/><path d="m14.6 6.2-9 9L4 20.5l5.3-1.6 9-9"/></svg>
+        <span style="font-size: 13px; font-weight: 500; color: #475569; white-space: nowrap">Consumo</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #F1F5F9; flex-shrink: 0">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14.5px; font-weight: 600; color: #334155">Volcanita ST 10 mm</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B">VOL-ST-10-120240 · 50 pl en bodega</span>
+      </div>
+      <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap; flex-shrink: 0">Cambiar</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Partida de destino</span>
+      <div style="background: #FFFFFF; border: 2px solid #EA580C; padding: 13px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer">
+        <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #C2410C; flex-shrink: 0">P-03</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #334155">Cielo pasillo 3</span>
+          <span style="font-size: 11.5px; color: #64748B">Cuadrilla 2 · faltan 8 pl según cubicación</span>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Cantidad a despachar</span>
+      <div style="display: flex; align-items: stretch; background: #FFFFFF; border: 1px solid #E2E8F0; height: 68px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 68px; border-right: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 32px; font-weight: 600; color: #334155">36</span>
+          <span style="font-size: 15px; color: #64748B">pl</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 68px; border-left: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FEF2F2; border: 1px solid #DC2626; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 13.5px; font-weight: 600; color: #B91C1C">Quedarás bajo el stock mínimo</span>
+        <span style="font-size: 12px; line-height: 16px; color: #991B1B">Saldo 14 pl · mínimo 40 pl. Se generará una alerta STOCK_CRITICO.</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <span style="font-size: 13px; color: #475569; flex-grow: 1">Saldo tras el despacho</span>
+      <span style="font-family: 'Fira Code', monospace; font-size: 18px; font-weight: 600; color: #B91C1C; white-space: nowrap">14 pl</span>
+    </div>
+
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 13.5V4"/><path d="m8 8 4-4 4 4"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Registrar despacho</span>
+    </div>
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Bodega · 2026-08-24 09:02 · turno mañana</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

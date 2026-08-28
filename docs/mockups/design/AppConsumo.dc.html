@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Movimiento de bodega</span>
+    
+  </div>
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; background: #FFFFFF; border: 1px solid #E2E8F0; height: 48px">
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 4v9.5"/><path d="m8 9.5 4 4 4-4"/></svg>
+        <span style="font-size: 13px; font-weight: 500; color: #475569; white-space: nowrap">Recepción</span>
+      </div>
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; border-left: 1px solid #E2E8F0; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 13.5V4"/><path d="m8 8 4-4 4 4"/></svg>
+        <span style="font-size: 13px; font-weight: 500; color: #475569; white-space: nowrap">Despacho</span>
+      </div>
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; background: #334155; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m14.6 6.2 2.6-2.6 3.2 3.2-2.6 2.6"/><path d="m14.6 6.2-9 9L4 20.5l5.3-1.6 9-9"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Consumo</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #C2410C; flex-shrink: 0">P-03</span>
+      <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14px; font-weight: 600; color: #334155">Cielo pasillo 3</span>
+        <span style="font-size: 11.5px; color: #64748B">Cuadrilla 2 · Marcelo Sepúlveda</span>
+      </div>
+      <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap; flex-shrink: 0">Cambiar</span>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #F1F5F9; flex-shrink: 0">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14.5px; font-weight: 600; color: #334155">Volcanita ST 10 mm</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B">VOL-ST-10-120240</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Consumido en la partida</span>
+      <div style="display: flex; align-items: stretch; background: #FFFFFF; border: 1px solid #E2E8F0; height: 68px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 68px; border-right: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 32px; font-weight: 600; color: #334155">6</span>
+          <span style="font-size: 15px; color: #64748B">pl</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 68px; border-left: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 16px; display: flex; flex-direction: column; gap: 11px">
+      <div style="display: flex; align-items: baseline; gap: 10px">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #475569; flex-grow: 1">Consumo vs cubicado</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #B91C1C">118 %</span>
+      </div>
+      <div style="height: 12px; background: #F1F5F9; display: flex; position: relative">
+        <div style="width: 100%; background: #DC2626"></div>
+        <div style="position: absolute; top: -3px; left: 85%; width: 2px; height: 18px; background: #334155"></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="width: 2px; height: 11px; background: #334155; flex-shrink: 0"></span>
+        <span style="font-size: 11.5px; color: #64748B; flex-grow: 1">Cubicado con merma: 26 pl</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #B91C1C; white-space: nowrap">31 pl usadas</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFBEB; border: 1px solid #FDE68A; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+      <span style="font-size: 12.5px; line-height: 17px; color: #92400E; flex-grow: 1; text-wrap: pretty">La partida ya superó su cubicación. El exceso entra al reporte de desviación del presupuesto.</span>
+    </div>
+
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m14.6 6.2 2.6-2.6 3.2 3.2-2.6 2.6"/><path d="m14.6 6.2-9 9L4 20.5l5.3-1.6 9-9"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Registrar consumo</span>
+    </div>
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Bodega · 2026-08-24 10:47 · turno mañana</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

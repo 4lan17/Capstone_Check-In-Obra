@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+    <span style="font-size: 20px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Inicio</span>
+    <span style="display: inline-flex; align-items: center; gap: 7px; background: #78350F; padding: 6px 11px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; color: #FDE68A; white-space: nowrap; margin-right: 8px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #FDBA74"></span>SIN CONEXIÓN</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="background: #FFFBEB; border: 1px solid #FDE68A; padding: 15px; display: flex; align-items: flex-start; gap: 12px" role="status" aria-atomic="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M2.5 8.5a15 15 0 0 1 19 0"/><path d="M5.8 12.4a10 10 0 0 1 12.4 0"/><path d="M9.2 16.2a5 5 0 0 1 5.6 0"/><path d="M12 20v.2"/><path d="m3.5 3.5 17 17"/></svg>
+      <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14.5px; font-weight: 600; color: #B45309">Puedes seguir trabajando</span>
+        <span style="font-size: 12.5px; line-height: 17px; color: #92400E; text-wrap: pretty">Todo lo que registres queda guardado en el teléfono y se envía solo cuando vuelva la señal. No repitas los movimientos.</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #475569">Pendientes de enviar</span>
+      <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #334155">5</span>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="display: inline-flex; align-items: center; background: #FFF7ED; padding: 3px 7px; font-size: 9px; font-weight: 600; color: #C2410C; white-space: nowrap; flex-shrink: 0">CONSUMO</span>
+            <span style="font-size: 13px; font-weight: 600; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST 10 mm</span>
+          </div>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">−6 pl · P-03 Cielo pasillo 3</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; flex-shrink: 0">10:47</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="display: inline-flex; align-items: center; background: #ECFDF5; padding: 3px 7px; font-size: 9px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0">DEVOLUCIÓN</span>
+            <span style="font-size: 13px; font-weight: 600; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Huincha 8 m Stanley</span>
+          </div>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0119 · Javier Ortiz</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; flex-shrink: 0">10:31</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 7px; font-size: 9px; font-weight: 600; color: #475569; white-space: nowrap; flex-shrink: 0">DESPACHO</span>
+            <span style="font-size: 13px; font-weight: 600; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tornillo drywall T1 25 mm</span>
+          </div>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">−1,5 kg · P-01 Tabique eje A</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; flex-shrink: 0">10:12</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="display: inline-flex; align-items: center; background: #FFF7ED; padding: 3px 7px; font-size: 9px; font-weight: 600; color: #C2410C; white-space: nowrap; flex-shrink: 0">PRÉSTAMO</span>
+            <span style="font-size: 13px; font-weight: 600; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Nivel láser Stanley Cubix</span>
+          </div>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0031 · Luis Aguirre</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; flex-shrink: 0">09:55</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; ">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="display: inline-flex; align-items: center; background: #FFF7ED; padding: 3px 7px; font-size: 9px; font-weight: 600; color: #C2410C; white-space: nowrap; flex-shrink: 0">CONSUMO</span>
+            <span style="font-size: 13px; font-weight: 600; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Masilla Volcán · saco 22 kg</span>
+          </div>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">−2 un · P-03 Cielo pasillo 3</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; flex-shrink: 0">09:40</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 16.5v-5M12 8v.2"/></svg>
+      <span style="font-size: 12.5px; line-height: 17px; color: #475569; flex-grow: 1; text-wrap: pretty">El stock que ves puede estar desactualizado. Último dato del servidor: hoy 09:38.</span>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5A8 8 0 1 0 18.5 16"/><path d="M20.5 5.5V11h-5.5"/></svg>
+      <span style="font-size: 15px; font-weight: 600; color: #334155">Reintentar envío ahora</span>
+    </div>
+
+  </div>
+  <div style="height: 78px; background: #FFFFFF; border-top: 1px solid #E2E8F0; display: flex; align-items: flex-start; padding: 8px 8px 0; flex-shrink: 0">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>
+      <span style="font-size: 10px; font-weight: 600; color: #C2410C">Inicio</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Bodega</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; justify-content: center; padding-top: 2px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; background: #334155; cursor: pointer">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+      </div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Herram.</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Alertas</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

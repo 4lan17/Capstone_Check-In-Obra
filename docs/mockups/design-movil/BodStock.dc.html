@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 16px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+    <span style="font-size: 19px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Bodega</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; white-space: nowrap; flex-shrink: 0">34 materiales</span>
+  </div>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 10px; height: 44px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0 13px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg>
+      <span style="font-size: 13.5px; color: #94A3B8; flex-grow: 1">Buscar material o SKU</span>
+    </div>
+    <div style="display: flex; gap: 8px; overflow: hidden">
+      <span style="display: inline-flex; align-items: center; background: #334155; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #FFFFFF; white-space: nowrap; cursor: pointer">Críticos 3</span>
+      <span style="display: inline-flex; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Metalcom</span>
+      <span style="display: inline-flex; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Volcanita</span>
+      <span style="display: inline-flex; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">OSB</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+
+    <div style="background: #FFFFFF; border-left: 3px solid #DC2626; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+      <div style="display: flex; align-items: flex-start; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST 10 mm</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">VOL-ST-10 · mínimo 40 pl</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #B91C1C; white-space: nowrap; flex-shrink: 0">14 pl</span>
+      </div>
+      <div style="height: 8px; background: #F1F5F9; display: flex"><span style="width: 18%; background: #DC2626"></span></div>
+    </div>
+
+    <div style="background: #FFFFFF; border-left: 3px solid #DC2626; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+      <div style="display: flex; align-items: flex-start; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tornillo T1 25 mm</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">FIJ-T1-25 · mínimo 20 kg</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #B91C1C; white-space: nowrap; flex-shrink: 0">6,5 kg</span>
+      </div>
+      <div style="height: 8px; background: #F1F5F9; display: flex"><span style="width: 22%; background: #DC2626"></span></div>
+    </div>
+
+    <div style="background: #FFFFFF; border-left: 3px solid #D97706; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+      <div style="display: flex; align-items: flex-start; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">OSB 11,1 mm 1220×2440</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">OSB-111 · mínimo 25 pl</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0">28 pl</span>
+      </div>
+      <div style="height: 8px; background: #F1F5F9; display: flex"><span style="width: 44%; background: #D97706"></span></div>
+    </div>
+
+    <div style="background: #FFFFFF; border-left: 3px solid #059669; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+      <div style="display: flex; align-items: flex-start; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Montante 90 mm</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">MET-MON-90 · mínimo 80 un</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">316 un</span>
+      </div>
+      <div style="height: 8px; background: #F1F5F9; display: flex"><span style="width: 79%; background: #059669"></span></div>
+    </div>
+
+    <div style="background: #FFFFFF; border-left: 3px solid #059669; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+      <div style="display: flex; align-items: flex-start; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Solera 90 mm</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">MET-SOL-90 · mínimo 60 un</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">184 un</span>
+      </div>
+      <div style="height: 8px; background: #F1F5F9; display: flex"><span style="width: 66%; background: #059669"></span></div>
+    </div>
+
+    <div style="background: #FFFFFF; border-left: 3px solid #059669; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+      <div style="display: flex; align-items: flex-start; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita RF 15 mm</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">VOL-RF-15 · mínimo 30 pl</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">92 pl</span>
+      </div>
+      <div style="height: 8px; background: #F1F5F9; display: flex"><span style="width: 72%; background: #059669"></span></div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+  </div>
+
+  <div style="height: 78px; background: #FFFFFF; border-top: 1px solid #E2E8F0; display: flex; align-items: flex-start; padding: 8px 8px 0; flex-shrink: 0">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Inicio</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+      <span style="font-size: 10px; font-weight: 600; color: #C2410C">Bodega</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; justify-content: center; padding-top: 2px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; background: #334155; cursor: pointer">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+      </div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-3-5.5 3v-17Z"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Solicit.</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Alertas</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

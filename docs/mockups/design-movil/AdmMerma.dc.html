@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Parámetros de merma</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <div style="display: flex; align-items: flex-start; gap: 10px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="M12 11.2v5M12 8.2v.2"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #475569; flex-grow: 1; text-wrap: pretty">Es el porcentaje que el motor de cubicación suma a la cantidad neta. A la derecha, la merma real medida contra el kardex de las obras cerradas.</span>
+    </div>
+
+    <div style="background: #FFFFFF; border-left: 3px solid #DC2626; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 14.5px; font-weight: 600; color: #334155; flex-grow: 1">Volcanita</span>
+        <span style="display: inline-flex; align-items: center; background: #FEF2F2; padding: 4px 9px; font-size: 9.5px; font-weight: 600; color: #B91C1C; white-space: nowrap; flex-shrink: 0">SUBESTIMADA</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 46px; height: 50px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 50px; background: #FFFFFF; border: 2px solid #EA580C">
+          <span style="font-family: 'Fira Code', monospace; font-size: 20px; font-weight: 600; color: #334155">12,0 %</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 46px; height: 50px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12M6 12h12"/></svg>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; border-top: 1px solid #E2E8F0; padding-top: 12px">
+        <span style="font-size: 12px; color: #475569; flex-grow: 1">Real medida en obra</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 14px; font-weight: 600; color: #B91C1C">14,8 %</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155">Metalcom</span>
+          <span style="font-size: 11.5px; color: #64748B">real 7,9 %</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">7,0 %</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155">OSB</span>
+          <span style="font-size: 11.5px; color: #047857">real 8,6 % · sobra holgura</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">10,0 %</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155">Fijación</span>
+          <span style="font-size: 11.5px; color: #64748B">real 5,2 %</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">5,0 %</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #475569">Excepción por material</span>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST 10 mm</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">VOL-ST-10 · pisa el 12 % de la categoría</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 15px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0">15,0 %</span>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Guardar parámetros</span>
+    </div>
+    <span style="font-size: 11.5px; color: #64748B; text-align: center; text-wrap: pretty">Afecta cubicaciones nuevas. Los presupuestos congelados no se recalculan.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

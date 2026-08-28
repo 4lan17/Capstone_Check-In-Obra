@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; background: #F8FAFC; display: flex; overflow: hidden">
+  <div style="width: 248px; background: #334155; display: flex; flex-direction: column; flex-shrink: 0">
+    <div style="padding: 24px 20px 20px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid #475569">
+      <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #EA580C; flex-shrink: 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+      </div>
+      <span style="font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF">Check-In-Obra</span>
+    </div>
+
+    <div style="padding: 16px 16px 10px; display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94A3B8">Obra</span>
+      <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; background: #1E293B; border: 1px solid #475569; cursor: pointer">
+        <span style="font-size: 13.5px; font-weight: 500; color: #FFFFFF; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Los Almendros · Torre B</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8.5 20v-5.5M13 20v-9.5M17.5 20v-3.5"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Panel de obra</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; background: #EA580C; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Cubicación</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17l-2.5-1.6-2.5 1.6-2-1.4-2 1.4L7.5 18.9 5 20.5v-17Z"/><path d="M8.8 8.6h6.4M8.8 12.6h6.4"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Presupuesto</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Inventario</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Herramientas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8" r="3.4"/><path d="M3 19.2a6.2 6.2 0 0 1 12.4 0"/><path d="M16.2 5.2a3.4 3.4 0 0 1 0 5.6M17.6 13.4A6.2 6.2 0 0 1 21 19.2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Cuadrillas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Alertas</span>
+        <span style="min-width: 20px; height: 20px; padding: 0 6px; background: #DC2626; color: #FFFFFF; font-family: 'Fira Code', monospace; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center">4</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Configuración</span>
+      </div>
+    </div>
+
+    <div style="padding: 16px; border-top: 1px solid #475569; display: flex; align-items: center; gap: 11px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #475569; flex-shrink: 0"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF">RC</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 13px; font-weight: 500; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rodrigo Cárcamo</span>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.06em; color: #94A3B8">JEFE DE TERRENO</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+    <div style="height: 64px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; padding: 0 32px; gap: 16px; flex-shrink: 0">
+      <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1">
+        <span style="font-size: 13px; color: #64748B">Los Almendros · Torre B</span>
+        <span style="font-size: 13px; color: #CBD5E1">/</span>
+        <span style="font-size: 13px; font-weight: 600; color: #334155">Cubicación</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 38px; padding: 0 16px; border: 1.5px solid #334155; cursor: pointer">
+        <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap">Recalcular todas</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 38px; padding: 0 16px; background: #C2410C; cursor: pointer">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Nueva partida</span>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 26px 32px 28px; display: flex; flex-direction: column; gap: 18px">
+
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; color: #334155">Partidas de la obra</h1>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B">11 partidas · 486,20 m² cubicados · 7 con consumo iniciado</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #334155; font-size: 12.5px; font-weight: 600; color: #FFFFFF; white-space: nowrap; cursor: pointer">Todas · 11</span>
+          <span style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 12.5px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Tabique · 6</span>
+          <span style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 12.5px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Cielo · 3</span>
+          <span style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 12.5px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Revestimiento · 2</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 18px; flex-grow: 1; min-height: 0">
+
+        <div style="flex-grow: 1; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; gap: 14px; background: #334155; padding: 9px 20px">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 56px; flex-shrink: 0">CÓDIGO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; flex-grow: 1">PARTIDA</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 128px; flex-shrink: 0">TIPO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 132px; text-align: right; flex-shrink: 0">DIMENSIONES</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 90px; text-align: right; flex-shrink: 0">SUPERFICIE</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 112px; text-align: right; flex-shrink: 0">CUBICADO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 132px; flex-shrink: 0">CONSUMO</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-01</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique eje A · piso 3</span>
+              <span style="font-size: 10.5px; color: #64748B">Cuadrilla 1</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">TABIQUE</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">12,40 × 2,60 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">64,48 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$352.043</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 96%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #EA580C; width: 38px; text-align: right; flex-shrink: 0">96 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-02</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique eje B · piso 3</span>
+              <span style="font-size: 10.5px; color: #64748B">Cuadrilla 3</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">TABIQUE</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">14,80 × 2,60 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">76,96 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$410.500</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 78%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #EA580C; width: 38px; text-align: right; flex-shrink: 0">78 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-03</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Cielo pasillo 3</span>
+              <span style="font-size: 10.5px; color: #64748B">Cuadrilla 2</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">CIELO</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">18,20 × 2,10 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">38,22 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$198.300</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 100%; background: #DC2626; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #DC2626; width: 38px; text-align: right; flex-shrink: 0">118 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-04</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Revestimiento hall acceso</span>
+              <span style="font-size: 10.5px; color: #64748B">Cuadrilla 1</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">REVESTIMIENTO</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">9,60 × 3,20 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">30,72 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$287.900</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 54%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #EA580C; width: 38px; text-align: right; flex-shrink: 0">54 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-05</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique baños piso 3</span>
+              <span style="font-size: 10.5px; color: #64748B">Cuadrilla 3</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">TABIQUE</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">6,40 × 2,60 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">33,28 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$164.200</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 31%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #EA580C; width: 38px; text-align: right; flex-shrink: 0">31 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-06</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Cielo depto. 302</span>
+              <span style="font-size: 10.5px; color: #64748B">Cuadrilla 2</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">CIELO</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">11,50 × 2,40 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">27,60 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$142.700</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 12%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #EA580C; width: 38px; text-align: right; flex-shrink: 0">12 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-07</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique eje C · piso 4</span>
+              <span style="font-size: 10.5px; color: #64748B">—</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">TABIQUE</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">12,40 × 2,60 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">64,48 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$348.900</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 0%; background: #94A3B8; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #94A3B8; width: 38px; text-align: right; flex-shrink: 0">0 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-08</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique shaft piso 4</span>
+              <span style="font-size: 10.5px; color: #64748B">—</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">TABIQUE</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">4,20 × 2,60 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">21,84 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$118.400</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 0%; background: #94A3B8; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #94A3B8; width: 38px; text-align: right; flex-shrink: 0">0 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-09</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Cielo pasillo 4</span>
+              <span style="font-size: 10.5px; color: #64748B">—</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">CIELO</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">18,20 × 2,10 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">38,22 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$196.100</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 0%; background: #94A3B8; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #94A3B8; width: 38px; text-align: right; flex-shrink: 0">0 %</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #C2410C; width: 56px; flex-shrink: 0">P-10</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Revestimiento sala de máquinas</span>
+              <span style="font-size: 10.5px; color: #64748B">—</span>
+            </div>
+            <span style="width: 128px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 9px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">REVESTIMIENTO</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B; width: 132px; text-align: right; flex-shrink: 0">7,80 × 2,90 m</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 90px; text-align: right; flex-shrink: 0">22,62 m²</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #334155; width: 112px; text-align: right; flex-shrink: 0">$208.600</span>
+            <div style="width: 132px; flex-shrink: 0; display: flex; align-items: center; gap: 9px">
+              <div style="flex-grow: 1; height: 10px; background: #F1F5F9; display: flex"><div style="width: 0%; background: #94A3B8; border-radius: 0 4px 4px 0"></div></div>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #94A3B8; width: 38px; text-align: right; flex-shrink: 0">0 %</span>
+            </div>
+          </div>
+          <div style="flex-grow: 1"></div>
+          <div style="display: flex; align-items: center; gap: 16px; padding: 13px 20px; background: #F8FAFC; border-top: 1px solid #E2E8F0">
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B; flex-grow: 1">10 de 11 partidas</span>
+            <span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569">Cubicado total</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 20px; font-weight: 600; color: #334155">$2.427.643</span>
+          </div>
+        </div>
+
+        <div style="width: 336px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px">
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 6px">
+            <h3 style="margin: 0; font-size: 14.5px; font-weight: 600; color: #334155">Superficie por tipo</h3>
+            <p style="margin: 0 0 14px; font-size: 11.5px; line-height: 16px; color: #64748B">Metros cuadrados cubicados de las 11 partidas.</p>
+            <div style="display: flex; flex-direction: column; gap: 13px">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Tabique · 6</span><span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #334155">283,04 m²</span></div>
+                <div style="height: 12px; background: #F1F5F9; display: flex"><div style="width: 100%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Cielo · 3</span><span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #334155">104,04 m²</span></div>
+                <div style="height: 12px; background: #F1F5F9; display: flex"><div style="width: 37%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Revestimiento · 2</span><span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #334155">53,34 m²</span></div>
+                <div style="height: 12px; background: #F1F5F9; display: flex"><div style="width: 19%; background: #EA580C; border-radius: 0 4px 4px 0"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 14px; flex-grow: 1; min-height: 0">
+            <h3 style="margin: 0; font-size: 14.5px; font-weight: 600; color: #334155">Pendientes de la cubicación</h3>
+            <div style="display: flex; align-items: flex-start; gap: 11px; padding-bottom: 13px; border-bottom: 1px solid #E2E8F0">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1">
+                <span style="font-size: 12.5px; font-weight: 600; color: #334155">P-03 consumió más de lo cubicado</span>
+                <span style="font-size: 11.5px; line-height: 16px; color: #64748B">118 % del material. Conviene recubicar con las dimensiones reales del pasillo.</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 11px; padding-bottom: 13px; border-bottom: 1px solid #E2E8F0">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1">
+                <span style="font-size: 12.5px; font-weight: 600; color: #334155">4 partidas sin cuadrilla asignada</span>
+                <span style="font-size: 11.5px; line-height: 16px; color: #64748B">P-07 a P-10, todas del piso 4.</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 11px">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1">
+                <span style="font-size: 12.5px; font-weight: 600; color: #334155">P-11 sin dimensiones</span>
+                <span style="font-size: 11.5px; line-height: 16px; color: #64748B">No entra al presupuesto hasta cubicarla.</span>
+              </div>
+            </div>
+            <div style="flex-grow: 1"></div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 42px; border: 1.5px solid #334155; cursor: pointer">
+              <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap">Revisar partidas pendientes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

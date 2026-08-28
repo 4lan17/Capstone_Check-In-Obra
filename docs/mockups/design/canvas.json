@@ -1,0 +1,408 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1240,
+      "h": 2480,
+      "title": "Sistema de diseño",
+      "page": "page-1",
+      "print": "flow"
+    },
+    {
+      "file": "Estados.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1240,
+      "h": 1900,
+      "title": "Estados de pantalla",
+      "page": "page-1",
+      "print": "flow"
+    },
+    {
+      "file": "AppInicio.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppEscaneo.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppKardex.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppHerramientas.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppPrestamo.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppAlertas.dc.html",
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppLogin.dc.html",
+      "x": 0,
+      "y": 1120,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppPrestamoNuevo.dc.html",
+      "x": 470,
+      "y": 1120,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppDevolucionOk.dc.html",
+      "x": 940,
+      "y": 1120,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppDespacho.dc.html",
+      "x": 1410,
+      "y": 1120,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppMaterialDetalle.dc.html",
+      "x": 1880,
+      "y": 1120,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppCierreTurno.dc.html",
+      "x": 2350,
+      "y": 1120,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppBodega.dc.html",
+      "x": 0,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppConsumo.dc.html",
+      "x": 470,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppEscaneoError.dc.html",
+      "x": 940,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppTrabajador.dc.html",
+      "x": 1410,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppSinConexion.dc.html",
+      "x": 1880,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "WebDashboard.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebCubicacion.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebPresupuesto.dc.html",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebInventario.dc.html",
+      "x": 4680,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebEquipos.dc.html",
+      "x": 6240,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebPartidas.dc.html",
+      "x": 0,
+      "y": 1180,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebHerramientas.dc.html",
+      "x": 1560,
+      "y": 1180,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebAlertas.dc.html",
+      "x": 3120,
+      "y": 1180,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebCuadrilla.dc.html",
+      "x": 0,
+      "y": 2360,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebPrestamo.dc.html",
+      "x": 1560,
+      "y": 2360,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebPresupuestoBorrador.dc.html",
+      "x": 3120,
+      "y": 2360,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "WebObraCerrada.dc.html",
+      "x": 4680,
+      "y": 2360,
+      "w": 1440,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "AdminUsuarios.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "AdminMateriales.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "AdminEmpresa.dc.html",
+      "x": 0,
+      "y": 1180,
+      "w": 1440,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "AdminObras.dc.html",
+      "x": 1560,
+      "y": 1180,
+      "w": 1440,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "AdminMerma.dc.html",
+      "x": 0,
+      "y": 2360,
+      "w": 1440,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "AdminUsuarioNuevo.dc.html",
+      "x": 1560,
+      "y": 2360,
+      "w": 1440,
+      "h": 900,
+      "page": "page-4"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "nota-sistema",
+      "x": 1330,
+      "y": 0,
+      "w": 320,
+      "page": "page-1",
+      "text": "Los tokens salen de Check-In-Obra_Design_System.md tal cual, con una sola corrección:\n\n#EA580C sobre blanco mide 3.56:1 y no pasa el 4.5:1 que exige el propio checklist. Por eso el acento queda para íconos, marcas de gráfico y foco, y el relleno de botón primario usa #C2410C (5.1:1).\n\nMisma lógica en los colores semáforo: van como chip tintado con el texto en su paso oscuro, nunca como texto puro sobre blanco.\n\nA la derecha, los estados por los que pasa cada lista y formulario del sistema: vacío, carga, error, sin permiso."
+    },
+    {
+      "id": "nota-movil",
+      "x": 0,
+      "y": -250,
+      "w": 640,
+      "page": "page-2",
+      "text": "FILA 1 — App de bodega en terreno · rol BODEGUERO\n\nInicio → Escaneo QR → Kardex → Herramientas → Préstamo → Alertas.\n\nCubre Herramienta, KardexMovimiento (RECEPCION/DESPACHO/CONSUMO), PrestamoHerramienta (autorizar / registrarDevolucion / estaVencido) y Alerta del diagrama de clases.\n\nSin barra de estado ni teclado falsos: en el teléfono real los dibuja el sistema encima. Todo objetivo táctil ≥ 44 px, pensado para guantes y polvo."
+    },
+    {
+      "id": "nota-movil-2",
+      "x": 0,
+      "y": 900,
+      "w": 640,
+      "page": "page-2",
+      "text": "FILA 2 — Los pasos que la fila de arriba deja abiertos\n\nAcceso con PIN (Usuario.autenticar) · Autorizar préstamo, con el aviso de cuántas herramientas ya tiene ese trabajador · Devolución registrada, donde se decide si vuelve DISPONIBLE o a MANTENCION · Despacho a partida, con el bloqueo por stock mínimo · Ficha de material con su propio kardex · Cierre de turno, que es lo que genera la alerta CIERRE_TURNO."
+    },
+    {
+      "id": "nota-movil-3",
+      "x": 0,
+      "y": 2020,
+      "w": 640,
+      "page": "page-2",
+      "text": "FILA 3 — Lo que faltaba de la navegación y del terreno real\n\nBodega: la pestaña del menú inferior que nunca tuvo pantalla — los 34 materiales ordenados por criticidad · Consumo: la tercera pestaña del kardex, con la comparación contra lo cubicado que explica el 118 % de P-03 · Código no reconocido: el escaneo también falla, y la etiqueta sucia es la causa habitual · Ficha del trabajador, con sus atrasos · Sin conexión: en obra se pierde señal, y los movimientos quedan en cola en el teléfono."
+    },
+    {
+      "id": "nota-web",
+      "x": 0,
+      "y": -250,
+      "w": 700,
+      "page": "page-3",
+      "text": "FILA 1 — Panel web · rol JEFE_TERRENO\n\nPanel de obra → Cubicación → Presupuesto → Inventario → Cuadrillas.\n\nCubicación expone MotorCubicacion.calcular(): cantidad calculada → merma por categoría → cantidad a comprar. Presupuesto muestra ComparadorPresupuesto con el ReporteDesviacion (desviacionPct y mermaRealVsEstimada) y bullets de ejecutado sobre presupuestado, con la marca vertical en el monto del presupuesto.\n\nLa lista de alertas va con role=\"status\" aria-atomic=\"true\" para que el cambio se anuncie completo."
+    },
+    {
+      "id": "nota-web-2",
+      "x": 0,
+      "y": 940,
+      "w": 700,
+      "page": "page-3",
+      "text": "FILA 2 — Los listados que faltaban detrás de cada sección\n\nPartidas de la obra: las 11 partidas antes de entrar a una cubicación, con su consumo sobre lo cubicado · Herramientas y préstamos: la flota completa por EstadoHerramienta, con quién la tiene y desde cuándo · Alertas: la bandeja entera, resueltas incluidas, con tiempo de resolución por tipo.\n\nEn los tres, la marca vertical de las barras es el valor de referencia (presupuesto, mínimo, 100 % cubicado), nunca un segundo eje."
+    },
+    {
+      "id": "nota-web-3",
+      "x": 0,
+      "y": 2120,
+      "w": 700,
+      "page": "page-3",
+      "text": "FILA 3 — Las fichas de detalle y los estados que faltaban del modelo\n\nCuadrilla 2 en detalle: sus 5 trabajadores, sus 8 herramientas y el avance de su partida · Préstamo PR-1284: la misma línea de tiempo del móvil, más el historial completo de esa herramienta · Presupuesto en BORRADOR: el estado anterior a congelar, con los requisitos que faltan y los precios que se movieron · Obra CERRADA: cómo se ve el panel cuando EstadoObra pasa a CERRADA — solo lectura, con el cierre por partida y las condiciones que permitieron cerrarla."
+    },
+    {
+      "id": "nota-admin",
+      "x": 0,
+      "y": -250,
+      "w": 640,
+      "page": "page-4",
+      "text": "FILA 1 — Configuración · rol ADMIN\n\nUsuario y RolUsuario (BODEGUERO / JEFE_TERRENO / ADMIN) con la matriz de permisos, más el catálogo de Material por CategoriaMaterial y los ParametroMerma que consume el motor de cubicación.\n\nLos PIN nunca se muestran: solo si está configurado y cuándo se actualizó."
+    },
+    {
+      "id": "nota-admin-2",
+      "x": 0,
+      "y": 940,
+      "w": 640,
+      "page": "page-4",
+      "text": "FILA 2 — Las dos pestañas que quedaban vacías\n\nEmpresa: los datos de Empresa más las reglas que disparan las alertas — hora de cierre de turno, umbral de desviación, tolerancia de devolución.\n\nObras: EstadoObra ACTIVA/CERRADA y el método cerrar(). El botón de cerrar obra aparece deshabilitado a propósito: mientras queden herramientas fuera o alertas sin resolver, la obra no se puede cerrar."
+    },
+    {
+      "id": "nota-admin-3",
+      "x": 0,
+      "y": 2120,
+      "w": 640,
+      "page": "page-4",
+      "text": "FILA 3 — La merma completa y el alta de usuario\n\nParámetros de merma: la pestaña propia, que contrasta la merma parametrizada con la merma real medida en obra y admite excepciones por material — Volcanita se corta 14,8 % real contra el 12 % configurado.\n\nNuevo usuario: rol, obras asignadas y PIN. El PIN lo elige el propio usuario en su primer ingreso; el administrador solo envía la invitación."
+    }
+  ],
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sistema"
+    },
+    {
+      "id": "page-2",
+      "name": "App móvil · bodega"
+    },
+    {
+      "id": "page-3",
+      "name": "Panel web · jefe de terreno"
+    },
+    {
+      "id": "page-4",
+      "name": "Admin · configuración"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-2"
+  }
+}

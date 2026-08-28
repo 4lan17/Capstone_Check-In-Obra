@@ -1,0 +1,94 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1240, "h": 2700, "title": "Mapa de roles y pantallas", "page": "page-1", "print": "flow" },
+
+    { "file": "Acceso.dc.html", "x": 1400, "y": 0, "w": 390, "h": 844, "page": "page-1" },
+    { "file": "AccesoPin.dc.html", "x": 1870, "y": 0, "w": 390, "h": 844, "page": "page-1" },
+    { "file": "SelectorObra.dc.html", "x": 2340, "y": 0, "w": 390, "h": 844, "page": "page-1" },
+    { "file": "SinPermiso.dc.html", "x": 1400, "y": 964, "w": 390, "h": 844, "page": "page-1" },
+    { "file": "Alertas.dc.html", "x": 1870, "y": 964, "w": 390, "h": 844, "page": "page-1" },
+    { "file": "SinConexion.dc.html", "x": 2340, "y": 964, "w": 390, "h": 844, "page": "page-1" },
+
+    { "file": "TrabInicio.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "TrabCredencial.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "TrabSolicitarHerr.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "TrabSolicitarMat.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "TrabSolicitudes.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+    { "file": "TrabPrestamos.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-2" },
+
+    { "file": "BodInicio.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodEscaneo.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodSolicitudes.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodAprobar.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodRechazo.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodRecepcion.dc.html", "x": 0, "y": 964, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodDespacho.dc.html", "x": 470, "y": 964, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodStock.dc.html", "x": 940, "y": 964, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodDevolucion.dc.html", "x": 1410, "y": 964, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodCierreTurno.dc.html", "x": 1880, "y": 964, "w": 390, "h": 844, "page": "page-3" },
+
+    { "file": "JefeInicio.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "JefePartidas.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "JefeCubicacion.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "JefePresupuesto.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "JefeDesviacion.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "JefeCuadrillas.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+
+    { "file": "AdmInicio.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmUsuarios.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmUsuarioNuevo.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmMateriales.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmMerma.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmObras.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-5" }
+  ],
+  "annotations": [
+    {
+      "id": "nota-mapa",
+      "x": 0,
+      "y": -340,
+      "w": 760,
+      "page": "page-1",
+      "text": "EMPIEZA AQUÍ\n\nLa hoja de la izquierda es el mapa: los cuatro roles, la matriz de permisos, el recorrido que los cruza (solicitud → aprobación → kardex → desviación → parámetro) y en qué pantalla se ve cada clase del diagrama.\n\nA la derecha, lo que es común a todos: entrada por correo o por PIN, elección de obra, la acción bloqueada por rol, la bandeja de alertas y la cola sin conexión.\n\nUsuario es una sola clase para los 4 roles. El correo es para admin y jefe de terreno; en obra se entra con PIN de 4 dígitos porque nadie escribe una contraseña con guantes."
+    },
+    {
+      "id": "nota-trabajador",
+      "x": 0,
+      "y": -340,
+      "w": 760,
+      "page": "page-2",
+      "text": "TRABAJADOR — el rol nuevo respecto del diagrama anterior\n\nInicio → Credencial QR → Solicitar herramienta → Solicitar material → Mis solicitudes → Mis préstamos.\n\nEs la mitad que faltaba de SolicitudHerramienta y SolicitudMaterial: aquí se crean. La pantalla de solicitudes muestra los cuatro estados del enum EstadoSolicitud — PENDIENTE, APROBADA, RECHAZADA (con el motivo que escribió el bodeguero) y ENTREGADA.\n\nTrabajador.credencialQr es la pantalla de credencial: el trabajador la muestra y el bodeguero la escanea; así el préstamo queda a nombre de alguien y no \"de la cuadrilla\".\n\nEn Solicitar material, la barra compara contra lo cubicado de la partida antes de pedir: es el primer punto donde el trabajador ve que pedir de más es lo que después aparece como desviación."
+    },
+    {
+      "id": "nota-bodeguero",
+      "x": 0,
+      "y": -380,
+      "w": 780,
+      "page": "page-3",
+      "text": "BODEGUERO — fila 1: decidir · fila 2: mover stock\n\nFILA 1. Inicio con el contador de solicitudes esperando · Escaneo (sirve para material, herramienta o credencial: la app reconoce cuál es) · Cola de solicitudes con aprobación en un toque · Aprobar, que es donde se genera el PrestamoHerramienta y donde se ve que el solicitante ya tiene 3 herramientas, una vencida · Rechazar, que exige motivo porque el trabajador lo va a leer.\n\nFILA 2. Recepción · Despacho · Bodega · Devolución · Cierre de turno.\n\nDespacho está a propósito en su caso feo: se piden 24 planchas y quedan 14. El kardex no admite stock negativo, así que la acción principal queda apagada y la salida real es despachar las 14. Devolución es donde EstadoHerramienta se decide: vuelve DISPONIBLE, se va a MANTENCION o no vuelve. Cierre de turno es lo que genera la alerta CIERRE_TURNO."
+    },
+    {
+      "id": "nota-jefe",
+      "x": 0,
+      "y": -340,
+      "w": 760,
+      "page": "page-4",
+      "text": "JEFE DE TERRENO — el panel web, ahora en el bolsillo\n\nObra → Partidas → Cubicación → Presupuesto → Desviación → Cuadrillas.\n\nCubicación expone MotorCubicacion.calcular(): medidas de la Partida, cantidad neta, merma por categoría y cantidad a comprar, en las cuatro columnas de la tabla.\n\nPresupuesto muestra el enum completo como línea de tiempo — BORRADOR → APROBADO → CONGELADO — con la fecha de congelado y por qué ya no sigue al catálogo de precios.\n\nDesviación es ReporteDesviacion: desviacionPct arriba y mermaRealVsEstimada en el bloque del medio. Volcanita se corta al 14,8 % real contra el 12 % configurado, y de ahí sale casi la mitad del exceso.\n\nEste rol no escanea: su barra inferior no tiene botón de QR."
+    },
+    {
+      "id": "nota-admin",
+      "x": 0,
+      "y": -340,
+      "w": 760,
+      "page": "page-5",
+      "text": "ADMINISTRADOR — define las reglas, no opera la obra\n\nEmpresa → Usuarios → Nuevo usuario → Materiales → Merma → Obras.\n\nEmpresa reúne los umbrales que disparan cada TipoAlerta: hora de cierre de turno, umbral de desviación, tolerancia de devolución y el porcentaje sobre el mínimo que marca stock crítico.\n\nNuevo usuario es donde se elige RolUsuario. El PIN no lo escribe el administrador: lo define el propio usuario en su primer ingreso, y en la lista solo se ve si está configurado.\n\nEn Obras, el botón de cerrar obra aparece apagado a propósito, con las dos condiciones que faltan: 4 herramientas fuera y 6 alertas sin resolver. Es EstadoObra.cerrar() con sus precondiciones a la vista en lugar de un error después del toque."
+    }
+  ],
+  "pages": [
+    { "id": "page-1", "name": "Mapa y acceso" },
+    { "id": "page-2", "name": "Trabajador" },
+    { "id": "page-3", "name": "Bodeguero" },
+    { "id": "page-4", "name": "Jefe de terreno" },
+    { "id": "page-5", "name": "Admin" }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

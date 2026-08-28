@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Recepción de material</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14.5px; font-weight: 600; color: #334155">Montante 90 mm</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B">MET-MON-90 · METALCOM</span>
+      </div>
+      <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; white-space: nowrap; flex-shrink: 0; cursor: pointer">Cambiar</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Cantidad recibida</span>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 58px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; align-items: baseline; justify-content: center; gap: 7px; height: 58px; background: #FFFFFF; border: 2px solid #EA580C">
+          <span style="font-family: 'Fira Code', monospace; font-size: 24px; font-weight: 600; color: #334155">120</span>
+          <span style="font-size: 13px; font-weight: 500; color: #64748B">unidades</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 58px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12M6 12h12"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Guía</span>
+        <div style="display: flex; align-items: center; height: 48px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 0 13px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 14px; color: #334155">GD-88421</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Precio unit.</span>
+        <div style="display: flex; align-items: center; height: 48px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 0 13px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 14px; color: #334155">$2.480</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Proveedor</span>
+      <div style="display: flex; align-items: center; gap: 11px; height: 50px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 0 13px; cursor: pointer">
+        <span style="font-size: 13.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Aceros del Sur Ltda.</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Stock después de esta recepción</span>
+      <div style="display: flex; align-items: baseline; gap: 9px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 20px; font-weight: 600; color: #334155">316</span>
+        <span style="font-size: 13px; color: #64748B; flex-grow: 1">unidades · antes 196</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #059669"></span>SOBRE MÍNIMO</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="flex-grow: 1; height: 8px; background: #F1F5F9; display: flex"><span style="width: 79%; background: #059669"></span></div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; white-space: nowrap; flex-shrink: 0">mín. 80</span>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 4v9.5"/><path d="m8 9.5 4 4 4-4"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Registrar recepción</span>
+    </div>
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Jorge Reyes · 2026-08-26 11:07 · RECEPCION</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

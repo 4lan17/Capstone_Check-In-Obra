@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Nuevo préstamo</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; padding-right: 12px">Paso 2 de 3</span>
+  </div>
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; align-items: center; gap: 6px">
+      <div style="flex-grow: 1; height: 4px; background: #059669"></div>
+      <div style="flex-grow: 1; height: 4px; background: #EA580C"></div>
+      <div style="flex-grow: 1; height: 4px; background: #E2E8F0"></div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 12px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+      <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14px; font-weight: 600; color: #334155">Atornillador Makita DF</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B">BC-HR-0142 · Eléctricas</span>
+      </div>
+      <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap; flex-shrink: 0">Cambiar</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Trabajador que recibe</span>
+      <div style="background: #FFFFFF; border: 2px solid #EA580C; padding: 14px; display: flex; align-items: center; gap: 13px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; background: #334155; flex-shrink: 0"><span style="font-size: 15px; font-weight: 600; color: #FFFFFF">JO</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">Javier Ortiz</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">17.930.556-4 · Cuadrilla 2</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+          <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.04em; color: #047857">LEÍDA</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 44px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #475569; white-space: nowrap">Buscar por nombre o RUT</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Devolución esperada</span>
+      <div style="display: flex; gap: 8px">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: 62px; background: #334155; cursor: pointer">
+          <span style="font-size: 13px; font-weight: 600; color: #FFFFFF">Fin de turno</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #CBD5E1">hoy 18:00</span>
+        </div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: 62px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer">
+          <span style="font-size: 13px; font-weight: 500; color: #475569">Mañana</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">08-25 18:00</span>
+        </div>
+        <div style="width: 62px; display: flex; align-items: center; justify-content: center; height: 62px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer; flex-shrink: 0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.2" width="17" height="15.3"/><path d="M3.5 9.8h17M8 3.5v3.4M16 3.5v3.4"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FFFBEB; border: 1px solid #FDE68A; padding: 13px 14px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #B45309; flex-grow: 1">Ya tiene 3 herramientas en poder</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="display: flex; align-items: center; gap: 9px"><span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #92400E; width: 84px; flex-shrink: 0">BC-HR-0057</span><span style="font-size: 12px; color: #92400E; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Sierra circular DeWalt</span><span style="font-size: 11px; color: #92400E; white-space: nowrap">vence hoy</span></div>
+        <div style="display: flex; align-items: center; gap: 9px"><span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #92400E; width: 84px; flex-shrink: 0">BC-HR-0119</span><span style="font-size: 12px; color: #92400E; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Huincha 8 m Stanley</span><span style="font-size: 11px; color: #92400E; white-space: nowrap">08-26</span></div>
+        <div style="display: flex; align-items: center; gap: 9px"><span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #92400E; width: 84px; flex-shrink: 0">BC-HR-0184</span><span style="font-size: 12px; color: #92400E; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Escuadra magnética</span><span style="font-size: 11px; color: #92400E; white-space: nowrap">08-26</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Autorizar préstamo</span>
+    </div>
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Autoriza Jorge Reyes · 2026-08-24 08:22</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; background: #F8FAFC; display: flex; overflow: hidden">
+  <div style="width: 248px; background: #334155; display: flex; flex-direction: column; flex-shrink: 0">
+    <div style="padding: 24px 20px 20px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid #475569">
+      <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #EA580C; flex-shrink: 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+      </div>
+      <span style="font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF">Check-In-Obra</span>
+    </div>
+
+    <div style="padding: 16px 16px 10px; display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94A3B8">Obra</span>
+      <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; background: #1E293B; border: 1px solid #475569; cursor: pointer">
+        <span style="font-size: 13.5px; font-weight: 500; color: #FFFFFF; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Los Almendros · Torre B</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8.5 20v-5.5M13 20v-9.5M17.5 20v-3.5"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Panel de obra</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Cubicación</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17l-2.5-1.6-2.5 1.6-2-1.4-2 1.4L7.5 18.9 5 20.5v-17Z"/><path d="M8.8 8.6h6.4M8.8 12.6h6.4"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Presupuesto</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Inventario</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Herramientas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8" r="3.4"/><path d="M3 19.2a6.2 6.2 0 0 1 12.4 0"/><path d="M16.2 5.2a3.4 3.4 0 0 1 0 5.6M17.6 13.4A6.2 6.2 0 0 1 21 19.2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Cuadrillas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Alertas</span>
+        <span style="min-width: 20px; height: 20px; padding: 0 6px; background: #DC2626; color: #FFFFFF; font-family: 'Fira Code', monospace; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center">4</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; background: #EA580C; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+        <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Configuración</span>
+      </div>
+    </div>
+
+    <div style="padding: 16px; border-top: 1px solid #475569; display: flex; align-items: center; gap: 11px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #475569; flex-shrink: 0"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF">VS</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 13px; font-weight: 500; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Valentina Soto</span>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.06em; color: #94A3B8">ADMIN</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+    <div style="height: 64px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; padding: 0 32px; gap: 16px; flex-shrink: 0">
+      <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1">
+        <span style="font-size: 13px; color: #64748B">Constructora Arauco Ltda.</span>
+        <span style="font-size: 13px; color: #CBD5E1">/</span>
+        <span style="font-size: 13px; color: #64748B">Configuración</span>
+        <span style="font-size: 13px; color: #CBD5E1">/</span>
+        <span style="font-size: 13px; font-weight: 600; color: #334155">Usuarios y roles</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 38px; padding: 0 16px; background: #C2410C; cursor: pointer">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Registrar usuario</span>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 24px 32px 28px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; align-items: center; gap: 2px; border-bottom: 1px solid #E2E8F0">
+        <div style="display: flex; align-items: center; height: 42px; padding: 0 16px; border-bottom: 3px solid transparent; cursor: pointer"><span style="font-size: 13.5px; font-weight: 500; color: #64748B; white-space: nowrap">Empresa</span></div>
+        <div style="display: flex; align-items: center; height: 42px; padding: 0 16px; border-bottom: 3px solid #EA580C; cursor: pointer"><span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap">Usuarios y roles</span></div>
+        <div style="display: flex; align-items: center; height: 42px; padding: 0 16px; border-bottom: 3px solid transparent; cursor: pointer"><span style="font-size: 13.5px; font-weight: 500; color: #64748B; white-space: nowrap">Materiales</span></div>
+        <div style="display: flex; align-items: center; height: 42px; padding: 0 16px; border-bottom: 3px solid transparent; cursor: pointer"><span style="font-size: 13.5px; font-weight: 500; color: #64748B; white-space: nowrap">Parámetros de merma</span></div>
+        <div style="display: flex; align-items: center; height: 42px; padding: 0 16px; border-bottom: 3px solid transparent; cursor: pointer"><span style="font-size: 13.5px; font-weight: 500; color: #64748B; white-space: nowrap">Obras</span></div>
+      </div>
+      <div style="display: flex; gap: 18px; flex-grow: 1; min-height: 0">
+
+        <div style="width: 372px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px">
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+            <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Empresa</span>
+            <div style="display: flex; align-items: center; gap: 13px">
+              <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #334155; flex-shrink: 0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <span style="font-size: 15.5px; font-weight: 600; color: #334155">Constructora Arauco Ltda.</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">76.884.120-9</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0; border-top: 1px solid #E2E8F0; padding-top: 14px">
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-family: 'Fira Code', monospace; font-size: 19px; font-weight: 600; color: #334155">3</span>
+                <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #475569">Obras activas</span>
+              </div>
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-family: 'Fira Code', monospace; font-size: 19px; font-weight: 600; color: #334155">8</span>
+                <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #475569">Usuarios</span>
+              </div>
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-family: 'Fira Code', monospace; font-size: 19px; font-weight: 600; color: #334155">34</span>
+                <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #475569">Materiales</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 14px; flex-grow: 1; min-height: 0">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Permisos por rol</span>
+              <span style="font-size: 11.5px; line-height: 16px; color: #64748B">El rol se asigna por usuario y aplica a todas las obras de la empresa.</span>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 10px; padding-bottom: 9px; border-bottom: 1px solid #E2E8F0">
+              <span style="flex-grow: 1"></span>
+              <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; color: #475569; width: 40px; text-align: center; flex-shrink: 0">BOD.</span>
+              <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; color: #475569; width: 40px; text-align: center; flex-shrink: 0">JEFE</span>
+              <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; color: #475569; width: 40px; text-align: center; flex-shrink: 0">ADMIN</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Registrar movimientos de kardex</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Prestar y recibir herramientas</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Resolver alertas de la obra</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Crear y editar partidas</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Ver reporte de desviación</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Congelar presupuesto</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Editar materiales y merma</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0">
+              <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0">Cerrar obra</span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="width: 12px; height: 2px; background: #CBD5E1"></span></span>
+              <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4 4L19 7"/></svg></span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex-grow: 1; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 18px 20px 14px">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #334155; flex-grow: 1">Usuarios registrados</h3>
+            <div style="display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 13px; border: 1px solid #E2E8F0; width: 232px">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg>
+              <span style="font-size: 12.5px; color: #94A3B8">Buscar por nombre o RUT</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; background: #334155; padding: 9px 20px">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; flex-grow: 1">USUARIO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 148px; flex-shrink: 0">ROL</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 168px; flex-shrink: 0">PIN DE ACCESO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 136px; flex-shrink: 0">ÚLTIMO ACCESO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 40px; flex-shrink: 0"></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">VS</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Valentina Soto</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">15.220.884-7</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #334155; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF; white-space: nowrap">ADMIN</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 3 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">hoy 07:12</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">RC</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rodrigo Cárcamo</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">14.109.556-2</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">JEFE DE TERRENO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 12 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">hoy 06:48</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">JR</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Jorge Reyes</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">17.664.031-8</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">BODEGUERO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 12 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">hoy 07:02</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">PM</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Paulina Mella</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">16.881.204-K</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">JEFE DE TERRENO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 3 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">ayer 17:55</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">CV</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Cristián Vergara</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">18.443.977-1</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">BODEGUERO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 12 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">ayer 18:10</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">NB</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Nicolás Bravo</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">19.775.310-4</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">BODEGUERO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 7px; background: #FFFBEB; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #B45309; white-space: nowrap"><span style="width: 5px; height: 5px; border-radius: 50%; background: #D97706"></span>SIN CONFIGURAR</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #B45309; width: 136px; flex-shrink: 0">nunca</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">FL</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Fernanda Lizana</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">13.502.668-9</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">JEFE DE TERRENO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 12 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">hace 4 d</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 11px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #475569">OV</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Óscar Villalobos</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">12.339.845-6</span>
+              </div>
+            </div>
+            <span style="width: 148px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">BODEGUERO</span></span>
+            <span style="width: 168px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="font-family: 'Fira Code', monospace; font-size: 13px; letter-spacing: 0.16em; color: #475569">••••</span><span style="font-size: 11px; color: #64748B; white-space: nowrap">hace 3 d</span></span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 136px; flex-shrink: 0">hace 6 d</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="flex-grow: 1"></div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 13px 20px; background: #F8FAFC; border-top: 1px solid #E2E8F0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+            <span style="font-size: 12px; color: #B45309; flex-grow: 1">Nicolás Bravo no podrá entrar a la app de bodega hasta configurar su PIN.</span>
+            <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Enviar invitación</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

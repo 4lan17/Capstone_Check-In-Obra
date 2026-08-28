@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Cerrar turno</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; padding-right: 12px">17:42</span>
+  </div>
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; flex-direction: column; gap: 5px">
+      <span style="font-size: 19px; font-weight: 600; color: #334155">Turno mañana · 07:00 a 18:00</span>
+      <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">Jorge Reyes · Los Almendros Torre B</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 22px; line-height: 24px; font-weight: 600; color: #334155">4</span>
+        <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569">Recepciones</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 22px; line-height: 24px; font-weight: 600; color: #334155">6</span>
+        <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569">Despachos</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 22px; line-height: 24px; font-weight: 600; color: #334155">2</span>
+        <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569">Consumos</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column; flex-grow: 1; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 11px; padding: 14px; background: #FEF2F2; border-bottom: 1px solid #E2E8F0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #B91C1C">3 herramientas siguen fuera</span>
+          <span style="font-size: 11.5px; color: #991B1B">Al cerrar se generará una alerta CIERRE_TURNO por cada una.</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">MS</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rotomartillo Bosch GBH</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0088 · Cuadrilla 2</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 12px; border: 1px solid #E2E8F0; cursor: pointer; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap">Recibir</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">PM</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Andamio modular 2 m</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0210 · Cuadrilla 1</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 12px; border: 1px solid #E2E8F0; cursor: pointer; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap">Recibir</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">JO</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Atornillador Makita DF</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0142 · Cuadrilla 2</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 12px; border: 1px solid #E2E8F0; cursor: pointer; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap">Recibir</span></div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+        <span style="font-size: 13.5px; font-weight: 600; color: #C2410C">Escanear devoluciones en fila</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+        <span style="font-size: 12.5px; color: #334155; flex-grow: 1">Movimientos del turno sincronizados</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+        <span style="font-size: 12.5px; color: #334155; flex-grow: 1">2 materiales bajo el mínimo</span>
+        <span style="font-size: 12px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Revisar</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 4v9.5"/><path d="m8 9.5 4 4 4-4"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Recibir las 3 pendientes</span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 48px; background: #FFFFFF; border: 1.5px solid #DC2626; cursor: pointer">
+      <span style="font-size: 14.5px; font-weight: 600; color: #B91C1C">Cerrar turno con pendientes</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

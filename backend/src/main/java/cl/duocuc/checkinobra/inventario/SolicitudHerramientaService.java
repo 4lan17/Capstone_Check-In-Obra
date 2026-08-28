@@ -1,0 +1,104 @@
+package cl.duocuc.checkinobra.inventario;
+
+import cl.duocuc.checkinobra.config.Usuario;
+import cl.duocuc.checkinobra.config.UsuarioRepository;
+import cl.duocuc.checkinobra.obra.Trabajador;
+import cl.duocuc.checkinobra.obra.TrabajadorService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+/**
+ * El Trabajador crea la solicitud; el Bodeguero (o Admin) la aprueba desde
+ * la cola — recién ahí se genera el PrestamoHerramienta (SolicitudHerramienta
+ * "1" -- "0..1" PrestamoHerramienta : genera >).
+ */
+@Service
+@Transactional
+public class SolicitudHerramientaService {
+
+    private final SolicitudHerramientaRepository solicitudHerramientaRepository;
+    private final HerramientaRepository herramientaRepository;
+    private final TrabajadorService trabajadorService;
+    private final UsuarioRepository usuarioRepository;
+    private final PrestamoHerramientaService prestamoHerramientaService;
+
+    public SolicitudHerramientaService(
+            SolicitudHerramientaRepository solicitudHerramientaRepository,
+            HerramientaRepository herramientaRepository,
+            TrabajadorService trabajadorService,
+            UsuarioRepository usuarioRepository,
+            PrestamoHerramientaService prestamoHerramientaService) {
+        this.solicitudHerramientaRepository = solicitudHerramientaRepository;
+        this.herramientaRepository = herramientaRepository;
+        this.trabajadorService = trabajadorService;
+        this.usuarioRepository = usuarioRepository;
+        this.prestamoHerramientaService = prestamoHerramientaService;
+    }
+
+    public SolicitudHerramienta crear(Long trabajadorId, Long herramientaId, int cantidad) {
+        Trabajador trabajador = trabajadorService.obtener(trabajadorId);
+        Herramienta herramienta = herramientaRepository.findById(herramientaId)
+                .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
+
+        SolicitudHerramienta solicitud = SolicitudHerramienta.builder()
+                .trabajador(trabajador)
+                .herramienta(herramienta)
+                .cantidad(cantidad)
+                .estado(EstadoSolicitud.PENDIENTE)
+                .fechaSolicitud(LocalDateTime.now())
+                .build();
+        return solicitudHerramientaRepository.save(solicitud);
+    }
+
+    /** SolicitudHerramienta.aprobar(): PrestamoHerramienta del diagrama. */
+    public PrestamoHerramienta aprobar(Long solicitudId, Long aprobadorId, LocalDateTime fechaDevolEsperada) {
+        SolicitudHerramienta solicitud = obtener(solicitudId);
+        Usuario aprobador = usuarioRepository.findById(aprobadorId)
+                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
+
+        solicitud.aprobar(aprobador);
+        solicitudHerramientaRepository.save(solicitud);
+
+        Long obraId = solicitud.getTrabajador().getCuadrilla().getObra().getId();
+        return prestamoHerramientaService.prestarDirecto(
+                solicitud.getHerramienta().getId(),
+                solicitud.getTrabajador().getId(),
+                obraId,
+                aprobadorId,
+                fechaDevolEsperada);
+    }
+
+    /** SolicitudHerramienta.rechazar() del diagrama. */
+    public SolicitudHerramienta rechazar(Long solicitudId, Long rechazadorId, String motivo) {
+        SolicitudHerramienta solicitud = obtener(solicitudId);
+        Usuario rechazador = usuarioRepository.findById(rechazadorId)
+                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + rechazadorId));
+        solicitud.rechazar(rechazador, motivo);
+        return solicitudHerramientaRepository.save(solicitud);
+    }
+
+    @Transactional(readOnly = true)
+    public SolicitudHerramienta obtener(Long id) {
+        return solicitudHerramientaRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SolicitudHerramienta> listarPorTrabajador(Long trabajadorId) {
+        return solicitudHerramientaRepository.findByTrabajadorId(trabajadorId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SolicitudHerramienta> listarPorObra(Long obraId) {
+        return solicitudHerramientaRepository.findByObraId(obraId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SolicitudHerramienta> listarPendientesPorObra(Long obraId) {
+        return solicitudHerramientaRepository.findByObraIdAndEstado(obraId, EstadoSolicitud.PENDIENTE);
+    }
+}

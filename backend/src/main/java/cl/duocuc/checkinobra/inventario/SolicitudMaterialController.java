@@ -1,0 +1,79 @@
+package cl.duocuc.checkinobra.inventario;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/solicitudes-material")
+@Tag(name = "SolicitudMaterial")
+public class SolicitudMaterialController {
+
+    private final SolicitudMaterialService solicitudMaterialService;
+
+    public SolicitudMaterialController(SolicitudMaterialService solicitudMaterialService) {
+        this.solicitudMaterialService = solicitudMaterialService;
+    }
+
+    /** Solicitar material es exclusivo de TRABAJADOR, según la matriz de permisos. */
+    @PostMapping
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SolicitudMaterial crear(@RequestBody CrearSolicitudRequest req) {
+        return solicitudMaterialService.crear(req.trabajadorId(), req.materialId(), req.obraId(), req.cantidad());
+    }
+
+    /** Aprobar/rechazar es de BODEGUERO o ADMIN, según la matriz de permisos. */
+    @PutMapping("/{id}/aprobar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
+    public KardexMovimiento aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
+        return solicitudMaterialService.aprobar(id, req.aprobadorId(), req.cantidadAEntregar());
+    }
+
+    @PutMapping("/{id}/rechazar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
+    public SolicitudMaterial rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
+        return solicitudMaterialService.rechazar(id, req.rechazadorId(), req.motivo());
+    }
+
+    @GetMapping("/{id}")
+    public SolicitudMaterial obtener(@PathVariable Long id) {
+        return solicitudMaterialService.obtener(id);
+    }
+
+    @GetMapping
+    public List<SolicitudMaterial> listar(
+            @RequestParam(required = false) Long trabajadorId,
+            @RequestParam(required = false) Long obraId,
+            @RequestParam(required = false, defaultValue = "false") boolean soloPendientes) {
+        if (trabajadorId != null) {
+            return solicitudMaterialService.listarPorTrabajador(trabajadorId);
+        }
+        if (obraId != null) {
+            return soloPendientes
+                    ? solicitudMaterialService.listarPendientesPorObra(obraId)
+                    : solicitudMaterialService.listarPorObra(obraId);
+        }
+        throw new IllegalArgumentException("Se requiere trabajadorId u obraId");
+    }
+
+    public record CrearSolicitudRequest(Long trabajadorId, Long materialId, Long obraId, double cantidad) {
+    }
+
+    public record AprobarRequest(Long aprobadorId, double cantidadAEntregar) {
+    }
+
+    public record RechazarRequest(Long rechazadorId, String motivo) {
+    }
+}

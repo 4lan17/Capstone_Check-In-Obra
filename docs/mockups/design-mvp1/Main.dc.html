@@ -1,0 +1,350 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 1240px; min-height: 2400px; background: #F8FAFC; padding: 48px 40px 56px; display: flex; flex-direction: column; gap: 44px">
+
+  <!-- ENCABEZADO -->
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; border-bottom: 2px solid #334155; padding-bottom: 24px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C2410C">Sistema de diseño</span>
+      <h1 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; color: #334155">Check-In-Obra</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: #475569; max-width: 560px; text-wrap: pretty">Cubicación, presupuesto, inventario y herramientas para obra de tabiquería. Base visual compartida por la app de bodega en terreno y el panel web de jefatura.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 16px 20px; min-width: 300px">
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Categoría</span><span style="font-family: 'Fira Code', monospace; font-weight: 500; color: #334155">Inventory &amp; Stock</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Estilo</span><span style="font-family: 'Fira Code', monospace; font-weight: 500; color: #334155">Flat Design</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Iconos</span><span style="font-family: 'Fira Code', monospace; font-weight: 500; color: #334155">Phosphor · outline</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Alcance</span><span style="font-family: 'Fira Code', monospace; font-weight: 500; color: #334155">MVP 1</span></div>
+    </div>
+  </div>
+
+  <!-- PALETA -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Paleta</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">acero + naranja seguridad + semáforo</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="height: 88px; background: #334155"></div>
+        <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #334155">Primary</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569">#334155</span>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Texto, navegación, headers</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="height: 88px; background: #64748B"></div>
+        <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #334155">Secondary</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569">#64748B</span>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Texto de apoyo, iconos inactivos</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="height: 88px; background: #EA580C"></div>
+        <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #334155">Accent</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569">#EA580C</span>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Marcas, foco, iconografía activa</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="height: 88px; background: #C2410C"></div>
+        <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #334155">Accent oscuro</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569">#C2410C</span>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Relleno de CTA — 5.1:1 con blanco</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="height: 88px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0"></div>
+        <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #334155">Background</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569">#F8FAFC</span>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Fondo de pantalla</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="height: 88px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0"></div>
+        <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #334155">Card / Border</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569">#FFFFFF · #E2E8F0</span>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Superficies y separadores</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 14px; height: 14px; background: #059669; flex-shrink: 0"></span>
+          <span style="font-size: 14px; font-weight: 600; color: #334155">Success</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B; margin-left: auto">#059669</span>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 17px; color: #64748B">Stock OK · herramienta devuelta a tiempo · presupuesto dentro de rango.</p>
+        <div style="display: flex; align-items: center; gap: 8px; background: #ECFDF5; padding: 6px 10px; align-self: flex-start; white-space: nowrap">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #059669"></span>
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #047857">A TIEMPO</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 14px; height: 14px; background: #D97706; flex-shrink: 0"></span>
+          <span style="font-size: 14px; font-weight: 600; color: #334155">Warning</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B; margin-left: auto">#D97706</span>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 17px; color: #64748B">Stock bajo · préstamo por vencer · desviación de presupuesto en observación.</p>
+        <div style="display: flex; align-items: center; gap: 8px; background: #FFFBEB; padding: 6px 10px; align-self: flex-start; white-space: nowrap">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #D97706"></span>
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #B45309">STOCK BAJO</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 14px; height: 14px; background: #DC2626; flex-shrink: 0"></span>
+          <span style="font-size: 14px; font-weight: 600; color: #334155">Destructive</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B; margin-left: auto">#DC2626</span>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 17px; color: #64748B">Herramienta no devuelta · stock crítico · desviación fuera de rango.</p>
+        <div style="display: flex; align-items: center; gap: 8px; background: #FEF2F2; padding: 6px 10px; align-self: flex-start; white-space: nowrap">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #DC2626"></span>
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #B91C1C">VENCIDA</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin: 0; font-size: 12px; line-height: 18px; color: #475569; background: #FFF7ED; border-left: 0; border: 1px solid #FED7AA; padding: 12px 16px">Los colores semáforo nunca se usan como color de serie en gráficos ni como texto sobre blanco: van como chip tintado (fondo claro + texto en su paso oscuro) para superar 4.5:1, siempre acompañados de etiqueta, nunca solo por color.</p>
+  </div>
+
+  <!-- TIPOGRAFÍA -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Tipografía</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">Fira Sans + Fira Code — &quot;Dashboard Data&quot;</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Fira Sans — interfaz</span>
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">display 32/600</span><span style="font-size: 32px; line-height: 38px; font-weight: 600; letter-spacing: -0.01em; color: #334155">Obra Los Almendros</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">h2 20/600</span><span style="font-size: 20px; line-height: 26px; font-weight: 600; color: #334155">Movimientos de bodega</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">h3 16/600</span><span style="font-size: 16px; line-height: 22px; font-weight: 600; color: #334155">Partida · Tabique 90 mm</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">body 14/400</span><span style="font-size: 14px; line-height: 20px; color: #334155">La cubicación aplica la merma parametrizada por categoría de material.</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">small 13/400</span><span style="font-size: 13px; line-height: 18px; color: #475569">Registrado por Bodega · turno mañana</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">label 11/600</span><span style="font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Cantidad con merma</span></div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Fira Code — datos duros</span>
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">cifra 28/600</span><span style="font-family: 'Fira Code', monospace; font-size: 28px; line-height: 34px; font-weight: 600; color: #334155">1.284,50</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">sku 14/500</span><span style="font-family: 'Fira Code', monospace; font-size: 14px; line-height: 20px; font-weight: 500; color: #334155">MET-MONT-90-3000</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">qr 14/500</span><span style="font-family: 'Fira Code', monospace; font-size: 14px; line-height: 20px; font-weight: 500; color: #334155">BC-HR-0142</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">fecha 13/400</span><span style="font-family: 'Fira Code', monospace; font-size: 13px; line-height: 18px; color: #475569">2026-08-24 07:42</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">rut 13/400</span><span style="font-family: 'Fira Code', monospace; font-size: 13px; line-height: 18px; color: #475569">16.482.905-K</span></div>
+          <div style="display: flex; align-items: baseline; gap: 20px"><span style="font-family: 'Fira Code', monospace; font-size: 10px; color: #64748B; width: 92px; flex-shrink: 0">unidad 13/400</span><span style="font-family: 'Fira Code', monospace; font-size: 13px; line-height: 18px; color: #475569">m² · un · plancha · kg</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ICONOGRAFÍA -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Iconografía</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">stroke 1.75 · grid 24 · sin emojis</span>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">package</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">qr-code</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h3.2l1.6-2.6h7.4L17.3 8h3.2v11.6h-17V8Z"/><circle cx="12" cy="13.6" r="3.5"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">camera</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">bell</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">wrench</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">house</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8.5 20v-5.5M13 20v-9.5M17.5 20v-3.5"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">chart-bar</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8" r="3.4"/><path d="M3 19.2a6.2 6.2 0 0 1 12.4 0"/><path d="M16.2 5.2a3.4 3.4 0 0 1 0 5.6M17.6 13.4A6.2 6.2 0 0 1 21 19.2"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">users</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">ruler</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17l-2.5-1.6-2.5 1.6-2-1.4-2 1.4L7.5 18.9 5 20.5v-17Z"/><path d="M8.8 8.6h6.4M8.8 12.6h6.4"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">receipt</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 4v9.5"/><path d="m8 9.5 4 4 4-4"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">tray-in</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 13.5V4"/><path d="m8 8 4-4 4 4"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">tray-out</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m14.6 6.2 2.6-2.6 3.2 3.2-2.6 2.6"/><path d="m14.6 6.2-9 9L4 20.5l5.3-1.6 9-9"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">hammer</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">warning</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">check</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4v5.2l3.4 2"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">clock</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">search</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h17l-6.6 7.6v6.9l-3.8-2.4v-4.5L3.5 5Z"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">funnel</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.2" width="17" height="15.3"/><path d="M3.5 9.8h17M8 3.5v3.4M16 3.5v3.4"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">calendar</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 9.5px; color: #64748B; text-align: center">gear</span></div>
+    </div>
+  </div>
+
+  <!-- COMPONENTES -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Componentes</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">altura mínima táctil 44 px</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Botones</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 22px; background: #C2410C; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap">Registrar movimiento</div>
+          <div style="display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 22px; background: #FFFFFF; border: 1.5px solid #334155; color: #334155; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap">Cancelar</div>
+          <div style="display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 18px; background: transparent; color: #475569; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap">Ver historial</div>
+          <div style="display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 22px; background: #FFFFFF; border: 1.5px solid #DC2626; color: #B91C1C; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap">Marcar no devuelta</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h17l-6.6 7.6v6.9l-3.8-2.4v-4.5L3.5 5Z"/></svg></div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #FFFFFF; border: 2px solid #EA580C; outline: 2px solid #FDBA74; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg></div>
+          <span style="font-size: 11px; line-height: 15px; color: #64748B">Foco visible: borde acento + halo. Transición 150 ms.</span>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Campos</span>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">SKU de material</span>
+          <div style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; background: #FFFFFF; border: 1px solid #CBD5E1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg><span style="font-family: 'Fira Code', monospace; font-size: 14px; color: #334155">MET-MONT-90-3000</span></div>
+        </div>
+        <div style="display: flex; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+            <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Tipo de partida</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 14px; background: #FFFFFF; border: 1px solid #CBD5E1"><span style="font-size: 14px; color: #334155">Tabique</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9.5 6 6 6-6"/></svg></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Cantidad</span>
+            <div style="display: flex; align-items: stretch; border: 1px solid #CBD5E1; height: 44px">
+              <div style="display: flex; align-items: center; justify-content: center; width: 44px; border-right: 1px solid #E2E8F0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round"><path d="M5 12h14"/></svg></div>
+              <div style="display: flex; align-items: center; justify-content: center; width: 74px; font-family: 'Fira Code', monospace; font-size: 15px; font-weight: 600; color: #334155">24</div>
+              <div style="display: flex; align-items: center; justify-content: center; width: 44px; border-left: 1px solid #E2E8F0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <div style="display: flex; align-items: center; justify-content: center; height: 40px; padding: 0 18px; background: #334155; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">Recepción</div>
+          <div style="display: flex; align-items: center; justify-content: center; height: 40px; padding: 0 18px; background: #FFFFFF; border: 1px solid #E2E8F0; color: #475569; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap">Despacho</div>
+          <div style="display: flex; align-items: center; justify-content: center; height: 40px; padding: 0 18px; background: #FFFFFF; border: 1px solid #E2E8F0; color: #475569; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap">Consumo</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Chips de estado — un solo renglón, con etiqueta siempre</span>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">EstadoHerramienta</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #ECFDF5; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #047857; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #059669"></span>DISPONIBLE</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #FFF7ED; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #C2410C; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #EA580C"></span>PRESTADA</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #F1F5F9; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #475569; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #64748B"></span>MANTENCIÓN</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">EstadoPresupuesto</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #F1F5F9; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #475569; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #64748B"></span>BORRADOR</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #ECFDF5; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #047857; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #059669"></span>APROBADO</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #334155; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #FDBA74"></span>CONGELADO</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">TipoAlerta</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #FEF2F2; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #B91C1C; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #DC2626"></span>NO DEVUELTA</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #FEF2F2; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #B91C1C; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #DC2626"></span>STOCK CRÍTICO</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; background: #FFFBEB; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #B45309; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #D97706"></span>CIERRE DE TURNO</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">RolUsuario</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">BODEGUERO</span>
+            <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #334155; white-space: nowrap">JEFE DE TERRENO</span>
+            <span style="display: inline-flex; align-items: center; background: #334155; padding: 5px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF; white-space: nowrap">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Fila de lista (móvil)</span>
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px">
+          <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #F1F5F9; flex-shrink: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 14px; font-weight: 600; color: #334155">Atornillador Makita</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">BC-HR-0142</span>
+          </div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #FFF7ED; padding: 5px 9px; font-size: 10px; font-weight: 600; color: #C2410C; white-space: nowrap"><span style="width: 5px; height: 5px; border-radius: 50%; background: #EA580C"></span>PRESTADA</span>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Ficha de indicador</span>
+        <div style="border: 1px solid #E2E8F0; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Herramientas prestadas</span>
+          <div style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-family: 'Fira Code', monospace; font-size: 32px; line-height: 34px; font-weight: 600; color: #334155">17</span>
+            <span style="font-size: 13px; color: #64748B">de 42</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px"><span style="display: inline-flex; align-items: center; gap: 6px; background: #FEF2F2; padding: 4px 8px; font-size: 10px; font-weight: 600; color: #B91C1C; white-space: nowrap"><span style="width: 5px; height: 5px; border-radius: 50%; background: #DC2626"></span>3 VENCIDAS</span></div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Encabezado de tabla</span>
+        <div style="display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; gap: 12px; background: #334155; padding: 10px 14px">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: #FFFFFF; flex-grow: 1">MATERIAL</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: #FFFFFF; width: 60px; text-align: right">CANT.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid #E2E8F0"><span style="font-size: 13px; color: #334155; flex-grow: 1">Volcanita ST 10 mm</span><span style="font-family: 'Fira Code', monospace; font-size: 13px; color: #334155; width: 60px; text-align: right">148</span></div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid #E2E8F0"><span style="font-size: 13px; color: #334155; flex-grow: 1">Montante 90 mm</span><span style="font-family: 'Fira Code', monospace; font-size: 13px; color: #334155; width: 60px; text-align: right">312</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGLAS -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Reglas de entrega</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">checklist del sistema</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; gap: 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><div style="display: flex; flex-direction: column; gap: 5px"><span style="font-size: 13px; font-weight: 600; color: #334155">Contraste 4.5:1 en modo claro</span><span style="font-size: 12px; line-height: 17px; color: #64748B">El acento puro se reserva a marcas e íconos; el texto sobre color usa el paso oscuro.</span></div></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; gap: 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><div style="display: flex; flex-direction: column; gap: 5px"><span style="font-size: 13px; font-weight: 600; color: #334155">Objetivo táctil ≥ 44 px</span><span style="font-size: 12px; line-height: 17px; color: #64748B">Guantes y polvo en terreno: botones altos, separación generosa, nada de íconos sueltos de 24 px.</span></div></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; gap: 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><div style="display: flex; flex-direction: column; gap: 5px"><span style="font-size: 13px; font-weight: 600; color: #334155">Chips en una sola línea</span><span style="font-size: 12px; line-height: 17px; color: #64748B"><code style="font-family: 'Fira Code', monospace; font-size: 11.5px">white-space: nowrap</code> y ancho flexible: &quot;A TIEMPO&quot; nunca se parte en dos.</span></div></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; gap: 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><div style="display: flex; flex-direction: column; gap: 5px"><span style="font-size: 13px; font-weight: 600; color: #334155">Cambios de estado atómicos</span><span style="font-size: 12px; line-height: 17px; color: #64748B">La lista de alertas se anuncia con <code style="font-family: 'Fira Code', monospace; font-size: 11.5px">role=&quot;status&quot;</code> y <code style="font-family: 'Fira Code', monospace; font-size: 11.5px">aria-atomic</code>, no como número suelto.</span></div></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; gap: 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><div style="display: flex; flex-direction: column; gap: 5px"><span style="font-size: 13px; font-weight: 600; color: #334155">Íconos vectoriales, cero emojis</span><span style="font-size: 12px; line-height: 17px; color: #64748B">Phosphor outline dibujado en SVG: escala y se recolorea sin perder el trazo.</span></div></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; gap: 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg><div style="display: flex; flex-direction: column; gap: 5px"><span style="font-size: 13px; font-weight: 600; color: #334155">Móvil 375 · web 1024 / 1440</span><span style="font-size: 12px; line-height: 17px; color: #64748B">Transiciones de 150–300 ms, siempre bajo <code style="font-family: 'Fira Code', monospace; font-size: 11.5px">prefers-reduced-motion</code>.</span></div></div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

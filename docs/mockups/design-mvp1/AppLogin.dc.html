@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #334155; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #334155; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="padding: 28px 24px 34px; display: flex; flex-direction: column; gap: 22px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #EA580C; flex-shrink: 0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+      </div>
+      <span style="font-size: 21px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF">Check-In-Obra</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 13px; background: #1E293B; border: 1px solid #475569; padding: 13px 15px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #475569; flex-shrink: 0"><span style="font-size: 14px; font-weight: 600; color: #FFFFFF">JR</span></div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 15px; font-weight: 600; color: #FFFFFF">Jorge Reyes</span>
+        <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; color: #94A3B8">BODEGUERO · LOS ALMENDROS TORRE B</span>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; background: #FFFFFF; padding: 26px 24px 24px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px">
+      <span style="font-size: 16px; font-weight: 600; color: #334155">Ingresa tu PIN de 4 dígitos</span>
+      <div style="display: flex; gap: 14px">
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #334155"></span>
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #334155"></span>
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #334155"></span>
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 2px solid #CBD5E1"></span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">1</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">2</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">3</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">4</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">5</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">6</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">7</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">8</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">9</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; cursor: pointer"><span style="font-size: 12.5px; font-weight: 600; color: #64748B">LIMPIAR</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">0</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 62px; cursor: pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5.5H9.2L3.5 12l5.7 6.5H20a1 1 0 0 0 1-1v-11a1 1 0 0 0-1-1Z"/><path d="m12.5 9.5 5 5m0-5-5 5"/></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px 14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><rect x="4.5" y="10.5" width="15" height="9.5" rx="1"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #475569; flex-grow: 1; text-wrap: pretty">El PIN queda en el teléfono. Si lo olvidaste, lo restablece el administrador de la empresa.</span>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14"/><path d="M17 8.5 20.5 12 17 15.5M20.5 12H10"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Entrar</span>
+    </div>
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Constructora Arauco Ltda. · v1.0 MVP</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

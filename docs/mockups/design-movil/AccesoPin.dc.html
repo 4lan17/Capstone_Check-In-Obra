@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #334155; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #334155; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+
+  <div style="padding: 12px 16px 22px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 4px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+      </div>
+      <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Acceso con PIN</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 13px; background: #1E293B; border: 1px solid #475569; padding: 13px 15px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #475569; flex-shrink: 0"><span style="font-size: 14px; font-weight: 600; color: #FFFFFF">MS</span></div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 15px; font-weight: 600; color: #FFFFFF">Marcelo Sepúlveda</span>
+        <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; color: #94A3B8">TRABAJADOR · CUADRILLA 2</span>
+      </div>
+      <span style="font-size: 12px; font-weight: 500; color: #FDBA74; white-space: nowrap; flex-shrink: 0; cursor: pointer">Cambiar</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; background: #FFFFFF; padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 16px">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <span style="font-size: 16px; font-weight: 600; color: #B91C1C">PIN incorrecto. Te quedan 2 intentos.</span>
+      <div style="display: flex; gap: 14px">
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 2px solid #DC2626"></span>
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 2px solid #DC2626"></span>
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 2px solid #DC2626"></span>
+        <span style="width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 2px solid #DC2626"></span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">1</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">2</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">3</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">4</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">5</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">6</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">7</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">8</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">9</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; cursor: pointer"><span style="font-size: 12.5px; font-weight: 600; color: #64748B">LIMPIAR</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; background: #F8FAFC; border: 1px solid #E2E8F0; cursor: pointer"><span style="font-family: 'Fira Code', monospace; font-size: 25px; font-weight: 500; color: #334155">0</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 60px; cursor: pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5.5H9.2L3.5 12l5.7 6.5H20a1 1 0 0 0 1-1v-11a1 1 0 0 0-1-1Z"/><path d="m12.5 9.5 5 5m0-5-5 5"/></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: flex-start; gap: 10px; background: #FEF2F2; border: 1px solid #DC2626; padding: 12px 14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #991B1B; flex-grow: 1; text-wrap: pretty">Al tercer intento fallido la cuenta se bloquea por 15 minutos y el administrador de la empresa recibe el aviso.</span>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; text-align: center; cursor: pointer">Olvidé mi PIN · avisar al administrador</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

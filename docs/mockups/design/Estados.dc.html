@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 1240px; min-height: 1840px; background: #F8FAFC; padding: 48px 40px 56px; display: flex; flex-direction: column; gap: 40px">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; border-bottom: 2px solid #334155; padding-bottom: 24px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C2410C">Sistema de diseño</span>
+      <h1 style="margin: 0; font-size: 36px; line-height: 1.05; font-weight: 600; letter-spacing: -0.02em; color: #334155">Estados de pantalla</h1>
+      <p style="margin: 0; font-size: 14.5px; line-height: 21px; color: #475569; max-width: 620px; text-wrap: pretty">Toda lista, tabla y formulario de Check-In-Obra pasa por estos estados. Una pantalla no está terminada hasta que los cuatro primeros existen.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 16px 20px; min-width: 260px">
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Vacío</span><span style="font-family: 'Fira Code', monospace; color: #334155">3 variantes</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Carga</span><span style="font-family: 'Fira Code', monospace; color: #334155">esqueleto</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Error</span><span style="font-family: 'Fira Code', monospace; color: #334155">2 causas</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px"><span style="color: #64748B">Sin permiso</span><span style="font-family: 'Fira Code', monospace; color: #334155">por rol</span></div>
+    </div>
+  </div>
+
+  <!-- VACÍOS -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Estados vacíos</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">nunca &quot;no hay datos&quot; a secas</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 36px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">Todavía no hay partidas</span>
+          <span style="font-size: 12.5px; line-height: 18px; color: #64748B; text-wrap: pretty">Crea la primera partida y el motor de cubicación calculará qué material comprar.</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; padding: 0 20px; background: #C2410C; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Nueva partida</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; letter-spacing: 0.06em; color: #94A3B8">PRIMERA VEZ</span>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 36px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">Sin resultados para <span style="font-family: 'Fira Code', monospace; font-size: 14px">BC-HR-99</span></span>
+          <span style="font-size: 12.5px; line-height: 18px; color: #64748B; text-wrap: pretty">Revisa el código o quita los filtros de estado que tienes puestos.</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap">Limpiar filtros</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; letter-spacing: 0.06em; color: #94A3B8">BÚSQUEDA SIN RESULTADOS</span>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 36px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">Ninguna alerta sin resolver</span>
+          <span style="font-size: 12.5px; line-height: 18px; color: #64748B; text-wrap: pretty">Todas las herramientas volvieron a bodega y ningún material está bajo su mínimo.</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; cursor: pointer">
+          <span style="font-size: 13.5px; font-weight: 600; color: #C2410C; white-space: nowrap">Ver las 38 resueltas</span>
+        </div>
+        <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; letter-spacing: 0.06em; color: #94A3B8">VACÍO POSITIVO</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARGA -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Carga</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">esqueleto con la forma del contenido real</span>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 16px">
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="display: flex; align-items: center; gap: 14px; background: #334155; padding: 9px 20px">
+          <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; flex-grow: 1">MATERIAL</span>
+          <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 110px; flex-shrink: 0">CATEGORÍA</span>
+          <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 96px; text-align: right; flex-shrink: 0">CANTIDAD</span>
+          <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 110px; text-align: right; flex-shrink: 0">SUBTOTAL</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid #E2E8F0"><div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1"><div style="height: 11px; width: 62%; background: #E2E8F0"></div><div style="height: 9px; width: 40%; background: #F1F5F9"></div></div><div style="height: 18px; width: 82px; background: #F1F5F9; flex-shrink: 0"></div><div style="height: 11px; width: 62px; background: #E2E8F0; flex-shrink: 0; margin-left: 34px"></div><div style="height: 11px; width: 84px; background: #E2E8F0; flex-shrink: 0; margin-left: 26px"></div></div>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid #E2E8F0"><div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1"><div style="height: 11px; width: 48%; background: #E2E8F0"></div><div style="height: 9px; width: 36%; background: #F1F5F9"></div></div><div style="height: 18px; width: 82px; background: #F1F5F9; flex-shrink: 0"></div><div style="height: 11px; width: 54px; background: #E2E8F0; flex-shrink: 0; margin-left: 42px"></div><div style="height: 11px; width: 90px; background: #E2E8F0; flex-shrink: 0; margin-left: 20px"></div></div>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid #E2E8F0"><div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1"><div style="height: 11px; width: 70%; background: #E2E8F0"></div><div style="height: 9px; width: 44%; background: #F1F5F9"></div></div><div style="height: 18px; width: 82px; background: #F1F5F9; flex-shrink: 0"></div><div style="height: 11px; width: 66px; background: #E2E8F0; flex-shrink: 0; margin-left: 30px"></div><div style="height: 11px; width: 78px; background: #E2E8F0; flex-shrink: 0; margin-left: 32px"></div></div>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 13px 20px"><div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1"><div style="height: 11px; width: 54%; background: #E2E8F0"></div><div style="height: 9px; width: 32%; background: #F1F5F9"></div></div><div style="height: 18px; width: 82px; background: #F1F5F9; flex-shrink: 0"></div><div style="height: 11px; width: 58px; background: #E2E8F0; flex-shrink: 0; margin-left: 38px"></div><div style="height: 11px; width: 86px; background: #E2E8F0; flex-shrink: 0; margin-left: 24px"></div></div>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="height: 12px; width: 46%; background: #E2E8F0"></div>
+        <div style="display: flex; flex-direction: column; gap: 15px">
+          <div style="display: flex; flex-direction: column; gap: 7px"><div style="display: flex; gap: 12px"><div style="height: 10px; flex-grow: 1; background: #E2E8F0"></div><div style="height: 10px; width: 38px; background: #E2E8F0; flex-shrink: 0"></div></div><div style="height: 10px; background: #F1F5F9"></div></div>
+          <div style="display: flex; flex-direction: column; gap: 7px"><div style="display: flex; gap: 12px"><div style="height: 10px; flex-grow: 1; background: #E2E8F0"></div><div style="height: 10px; width: 38px; background: #E2E8F0; flex-shrink: 0"></div></div><div style="height: 10px; background: #F1F5F9"></div></div>
+          <div style="display: flex; flex-direction: column; gap: 7px"><div style="display: flex; gap: 12px"><div style="height: 10px; flex-grow: 1; background: #E2E8F0"></div><div style="height: 10px; width: 38px; background: #E2E8F0; flex-shrink: 0"></div></div><div style="height: 10px; background: #F1F5F9"></div></div>
+        </div>
+        <span style="font-size: 11.5px; line-height: 16px; color: #64748B; text-wrap: pretty">El esqueleto copia la altura de fila real: al llegar los datos nada salta de sitio.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERRORES Y PERMISOS -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Error y permisos</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">qué pasó · qué se pierde · qué hacer</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 3px solid #DC2626; padding: 28px 24px; display: flex; flex-direction: column; gap: 16px">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m9.5 9.5 5 5m0-5-5 5"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">No se pudo cargar el kardex</span>
+          <span style="font-size: 12.5px; line-height: 18px; color: #64748B; text-wrap: pretty">El servidor no respondió. Nada de lo que registraste se perdió: sigue guardado.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 12px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; flex-grow: 1">ERR-503 · 11:04:22</span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Copiar</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 42px; background: #C2410C; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5A8 8 0 1 0 18.5 16"/><path d="M20.5 5.5V11h-5.5"/></svg>
+          <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Reintentar</span>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 3px solid #D97706; padding: 28px 24px; display: flex; flex-direction: column; gap: 16px">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5a15 15 0 0 1 19 0"/><path d="M5.8 12.4a10 10 0 0 1 12.4 0"/><path d="M9.2 16.2a5 5 0 0 1 5.6 0"/><path d="M12 20v.2"/><path d="m3.5 3.5 17 17"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">Sin conexión en terreno</span>
+          <span style="font-size: 12.5px; line-height: 18px; color: #64748B; text-wrap: pretty">Puedes seguir registrando movimientos: se envían solos cuando vuelva la señal.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; background: #FFFBEB; border: 1px solid #FDE68A; padding: 10px 12px">
+          <span style="font-size: 11.5px; color: #B45309; flex-grow: 1">5 movimientos en cola</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #B45309; white-space: nowrap">desde 09:40</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 42px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap">Ver la cola de envío</span>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 28px 24px; display: flex; flex-direction: column; gap: 16px">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="9.5" rx="1"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <span style="font-size: 15.5px; font-weight: 600; color: #334155">Congelar es de Admin</span>
+          <span style="font-size: 12.5px; line-height: 18px; color: #64748B; text-wrap: pretty">Tu rol es Jefe de terreno. Puedes ver el presupuesto y editarlo, pero no fijarlo.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 11px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 11px 13px">
+          <div style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #475569; flex-shrink: 0"><span style="font-size: 10.5px; font-weight: 600; color: #FFFFFF">VS</span></div>
+          <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 12px; font-weight: 600; color: #334155">Valentina Soto</span>
+            <span style="font-size: 10.5px; color: #64748B">Admin de la empresa</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 42px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap">Pedir aprobación</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMACIÓN Y AVISOS -->
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #334155">Confirmación y avisos</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E2E8F0"></div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">el botón dice el verbo, no &quot;aceptar&quot;</span>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px">
+
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 26px 28px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; align-items: flex-start; gap: 14px">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 18px; font-weight: 600; color: #334155">¿Cerrar el turno con 3 pendientes?</span>
+            <span style="font-size: 13px; line-height: 19px; color: #475569; text-wrap: pretty">Se generará una alerta <span style="font-family: 'Fira Code', monospace; font-size: 12px">CIERRE_TURNO</span> por cada herramienta que quede fuera, y el jefe de terreno recibirá el aviso.</span>
+          </div>
+        </div>
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 14px 16px; display: flex; flex-direction: column; gap: 9px">
+          <div style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; width: 86px; flex-shrink: 0">BC-HR-0088</span><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Rotomartillo Bosch GBH</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; width: 86px; flex-shrink: 0">BC-HR-0210</span><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Andamio modular 2 m</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; width: 86px; flex-shrink: 0">BC-HR-0142</span><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Atornillador Makita DF</span></div>
+        </div>
+        <div style="display: flex; gap: 12px">
+          <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 46px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer"><span style="font-size: 14px; font-weight: 600; color: #334155; white-space: nowrap">Volver a revisar</span></div>
+          <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 46px; background: #B91C1C; cursor: pointer"><span style="font-size: 14px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Cerrar con pendientes</span></div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #059669; padding: 15px 18px; display: flex; align-items: center; gap: 13px">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 13.5px; font-weight: 600; color: #334155">Recepción registrada</span><span style="font-size: 12px; color: #64748B">Montante 90 mm · +120 un · saldo 432 un</span></div>
+          <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Deshacer</span>
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #D97706; padding: 15px 18px; display: flex; align-items: center; gap: 13px">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 13.5px; font-weight: 600; color: #334155">Quedas bajo el stock mínimo</span><span style="font-size: 12px; color: #64748B">Volcanita ST 10 mm · saldo 14 pl · mínimo 40 pl</span></div>
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #DC2626; padding: 15px 18px; display: flex; align-items: center; gap: 13px">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="m9.5 9.5 5 5m0-5-5 5"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 13.5px; font-weight: 600; color: #334155">No se pudo guardar el préstamo</span><span style="font-size: 12px; color: #64748B">La herramienta ya está asignada a otro trabajador</span></div>
+          <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Ver</span>
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #64748B; padding: 15px 18px; display: flex; align-items: center; gap: 13px">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="M12 16.5v-5M12 8v.2"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 13.5px; font-weight: 600; color: #334155">Precios del catálogo actualizados</span><span style="font-size: 12px; color: #64748B">3 materiales cambiaron desde tu último cálculo</span></div>
+          <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Recalcular</span>
+        </div>
+        <p style="margin: 4px 0 0; font-size: 12px; line-height: 17px; color: #64748B; text-wrap: pretty">El aviso lleva franja de color <em>y</em> ícono <em>y</em> texto: el color nunca es la única señal. En la app de terreno estos avisos se anuncian con <code style="font-family: 'Fira Code', monospace; font-size: 11.5px">role=&quot;status&quot;</code>.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

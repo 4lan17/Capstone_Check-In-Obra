@@ -1,0 +1,41 @@
+# Nombre explícito del proyecto: aísla contenedores, red y volumen de
+# cualquier otro stack local (p. ej. ToBlame). Sin esta línea Compose usaría
+# el nombre de la carpeta contenedora, que puede variar entre integrantes.
+name: checkinobra
+
+services:
+  backend:
+    build: ./backend
+    # 8081 en el host porque 8080 suele estar tomado por otro proyecto local.
+    # Dentro del contenedor la app sigue escuchando en 8080.
+    ports:
+      - "8081:8080"
+    environment:
+      # Host "db": nombre del servicio en la red interna de Compose, no localhost.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/checkinobra
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: checkinobra
+      POSTGRES_PASSWORD: postgres
+    # 5433 en el host para no chocar con otro Postgres local.
+    # Solo hace falta para conectarse desde fuera de Docker (DBeaver, psql,
+    # o correr el backend desde el IDE); entre contenedores se usa db:5432.
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d checkinobra"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

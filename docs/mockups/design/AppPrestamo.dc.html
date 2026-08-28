@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Préstamo</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 13px; color: #94A3B8; padding-right: 12px">#PR-1284</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div role="status" aria-atomic="true" style="background: #FEF2F2; border: 1px solid #DC2626; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 14px; font-weight: 600; color: #B91C1C">Préstamo vencido hace 14 h</span>
+        <span style="font-size: 12px; line-height: 16px; color: #991B1B">Se generó una alerta NO_DEVUELTA para el jefe de terreno.</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 16px; display: flex; align-items: center; gap: 14px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: #F1F5F9; flex-shrink: 0">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m14.6 6.2 2.6-2.6 3.2 3.2-2.6 2.6"/><path d="m14.6 6.2-9 9L4 20.5l5.3-1.6 9-9"/></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 5px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 17px; font-weight: 600; color: #334155">Rotomartillo Bosch GBH</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B">BC-HR-0088 · Eléctricas</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #FFF7ED; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #C2410C; white-space: nowrap; align-self: flex-start"><span style="width: 5px; height: 5px; border-radius: 50%; background: #EA580C"></span>PRESTADA</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 16px; display: flex; align-items: center; gap: 14px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #334155; flex-shrink: 0">
+        <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">MS</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 15px; font-weight: 600; color: #334155">Marcelo Sepúlveda</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">16.482.905-K · Cuadrilla 2</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #E2E8F0; cursor: pointer; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 18px 16px; display: flex; flex-direction: column; gap: 0">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569; margin-bottom: 16px">Línea de tiempo</span>
+
+      <div style="display: flex; gap: 14px">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 14px; flex-shrink: 0">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #059669"></span>
+          <span style="width: 2px; flex-grow: 1; background: #E2E8F0"></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 20px; flex-grow: 1">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155">Préstamo autorizado</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">2026-08-23 07:12 · Bodega</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 14px; flex-shrink: 0">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #DC2626"></span>
+          <span style="width: 2px; flex-grow: 1; background: #E2E8F0"></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 20px; flex-grow: 1">
+          <span style="font-size: 13.5px; font-weight: 600; color: #B91C1C">Devolución esperada — vencida</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #B91C1C">2026-08-23 18:00</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 14px; flex-shrink: 0">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #FFFFFF; border: 2px solid #CBD5E1"></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+          <span style="font-size: 13.5px; font-weight: 600; color: #94A3B8">Devolución real</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #94A3B8">— pendiente</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 4v9.5"/><path d="m8 9.5 4 4 4-4"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Registrar devolución</span>
+    </div>
+    <div style="display: flex; gap: 10px">
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 46px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+        <span style="font-size: 14px; font-weight: 600; color: #334155; white-space: nowrap">Extender plazo</span>
+      </div>
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 46px; background: #FFFFFF; border: 1.5px solid #DC2626; cursor: pointer">
+        <span style="font-size: 14px; font-weight: 600; color: #B91C1C; white-space: nowrap">Reportar extravío</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

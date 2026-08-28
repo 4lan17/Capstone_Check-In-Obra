@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Rechazar solicitud</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; padding-right: 12px">SM-0412</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; align-items: center; gap: 11px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #334155; flex-shrink: 0"><span style="font-size: 12.5px; font-weight: 600; color: #FFFFFF">MS</span></div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST 10 mm · 18 pl</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">M. Sepúlveda · P-03 · hoy 09:14</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Motivo · lo verá quien la pidió</span>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+          <span style="width: 20px; height: 20px; border: 2px solid #EA580C; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><span style="width: 10px; height: 10px; background: #EA580C"></span></span>
+          <span style="font-size: 14px; font-weight: 600; color: #334155; flex-grow: 1">No hay stock suficiente</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+          <span style="width: 20px; height: 20px; border: 2px solid #CBD5E1; flex-shrink: 0"></span>
+          <span style="font-size: 14px; color: #475569; flex-grow: 1">Supera lo cubicado de la partida</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+          <span style="width: 20px; height: 20px; border: 2px solid #CBD5E1; flex-shrink: 0"></span>
+          <span style="font-size: 14px; color: #475569; flex-grow: 1">Tiene devoluciones vencidas</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer">
+          <span style="width: 20px; height: 20px; border: 2px solid #CBD5E1; flex-shrink: 0"></span>
+          <span style="font-size: 14px; color: #475569; flex-grow: 1">Debe autorizarlo el jefe de terreno</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Detalle (opcional)</span>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; height: 92px">
+        <span style="font-size: 13.5px; line-height: 19px; color: #334155; text-wrap: pretty">Quedan 14 planchas y ya están comprometidas para P-07. Llega despacho el jueves.</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: flex-start; gap: 10px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="M12 11.2v5M12 8.2v.2"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #475569; flex-grow: 1; text-wrap: pretty">Rechazar no consume stock ni genera movimiento de kardex. La solicitud queda RECHAZADA con tu nombre y la hora.</span>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; gap: 10px; flex-shrink: 0">
+    <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 9px; height: 54px; background: #B91C1C; cursor: pointer">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/></svg>
+      <span style="font-size: 15.5px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Rechazar</span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 54px; padding: 0 22px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer; flex-shrink: 0">
+      <span style="font-size: 15.5px; font-weight: 600; color: #334155; white-space: nowrap">Volver</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

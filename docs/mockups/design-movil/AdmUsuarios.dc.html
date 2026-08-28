@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 16px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+    <span style="font-size: 19px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Usuarios</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; white-space: nowrap; flex-shrink: 0">23 activos</span>
+  </div>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0; padding: 12px 16px; display: flex; gap: 8px; flex-shrink: 0; overflow: hidden">
+    <span style="display: inline-flex; align-items: center; background: #334155; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #FFFFFF; white-space: nowrap; cursor: pointer">Todos 23</span>
+    <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Trabajador 14</span>
+    <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Bodeguero 5</span>
+    <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Jefe 3</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #334155; flex-shrink: 0"><span style="font-size: 12.5px; font-weight: 600; color: #FFFFFF">CB</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Camila Bravo</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">cbravo@arauco-ltda.cl</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #EEF2F7; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">JEFE TERRENO</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #334155; flex-shrink: 0"><span style="font-size: 12.5px; font-weight: 600; color: #FFFFFF">JR</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Jorge Reyes</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">jreyes@arauco-ltda.cl</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #EEF2F7; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">BODEGUERO</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #334155; flex-shrink: 0"><span style="font-size: 12.5px; font-weight: 600; color: #FFFFFF">MS</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Marcelo Sepúlveda</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">16.482.905-K · sin correo</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #EEF2F7; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">TRABAJADOR</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #334155; flex-shrink: 0"><span style="font-size: 12.5px; font-weight: 600; color: #FFFFFF">JO</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Javier Ortiz</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">17.930.556-4 · sin correo</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #EEF2F7; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #334155; white-space: nowrap; flex-shrink: 0">TRABAJADOR</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #FFFBEB; border: 1px solid #FDE68A; flex-shrink: 0"><span style="font-size: 12.5px; font-weight: 600; color: #B45309">PA</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Pablo Aguilera</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #B45309">invitado · sin PIN configurado</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #FFFBEB; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0">PENDIENTE</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: flex-start; gap: 10px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><rect x="4.5" y="10.5" width="15" height="9.5" rx="1"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #475569; flex-grow: 1; text-wrap: pretty">Los PIN no se muestran ni se pueden recuperar. Aquí solo puedes ver si está configurado y forzar que se vuelva a elegir.</span>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; background: #C2410C; cursor: pointer">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5v13M5.5 12h13"/></svg>
+      <span style="font-size: 15px; font-weight: 600; color: #FFFFFF">Nuevo usuario</span>
+    </div>
+  </div>
+
+  <div style="height: 78px; background: #FFFFFF; border-top: 1px solid #E2E8F0; display: flex; align-items: flex-start; padding: 8px 8px 0; flex-shrink: 0">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V4.5h9V20"/><path d="M14 9.5h5V20M4 20h16"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Empresa</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="8.5" r="3.4"/><path d="M3.5 19.5a6 6 0 0 1 12 0"/><path d="M16 5.5a3.2 3.2 0 0 1 0 6.2M17.5 14.5a5.6 5.6 0 0 1 3 5"/></svg>
+      <span style="font-size: 10px; font-weight: 600; color: #C2410C">Usuarios</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Materiales</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l7-4.5V20M11 20h9V12l-9-3"/><path d="M14.5 13.5v1.5M14.5 17.5V19"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Obras</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

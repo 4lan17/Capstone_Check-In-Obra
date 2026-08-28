@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0F172A; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #FDBA74; text-decoration: none; }
+    a:hover { color: #FED7AA; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #0F172A; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #0F172A; flex-shrink: 0"></div>
+
+  <div style="padding: 4px 8px 12px 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Escanear código</span>
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2.5 5 13.2h6.2L10.5 21.5 19 10.8h-6.2l.7-8.3Z"/></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; background: #1E293B; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; overflow: hidden">
+
+    <div style="position: absolute; top: 0; left: 0; width: 390px; height: 100%; background: repeating-linear-gradient(115deg, #1E293B 0 22px, #223047 22px 44px); opacity: 0.6"></div>
+
+    <div style="position: relative; width: 248px; height: 248px">
+      <div style="position: absolute; top: 0; left: 0; width: 56px; height: 56px; border-top: 4px solid #EA580C; border-left: 4px solid #EA580C"></div>
+      <div style="position: absolute; top: 0; right: 0; width: 56px; height: 56px; border-top: 4px solid #EA580C; border-right: 4px solid #EA580C"></div>
+      <div style="position: absolute; bottom: 0; left: 0; width: 56px; height: 56px; border-bottom: 4px solid #EA580C; border-left: 4px solid #EA580C"></div>
+      <div style="position: absolute; bottom: 0; right: 0; width: 56px; height: 56px; border-bottom: 4px solid #EA580C; border-right: 4px solid #EA580C"></div>
+      <div style="position: absolute; top: 122px; left: 12px; width: 224px; height: 3px; background: #EA580C"></div>
+      <div style="position: absolute; top: 74px; left: 74px; width: 100px; height: 100px; opacity: 0.35">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+      </div>
+    </div>
+
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 40px">
+      <span style="font-size: 15px; font-weight: 500; color: #FFFFFF; text-align: center">Apunta al QR de la herramienta</span>
+      <span style="font-size: 12.5px; line-height: 18px; color: #94A3B8; text-align: center; text-wrap: pretty">También sirve la credencial del trabajador para asignar el préstamo</span>
+    </div>
+
+    <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; height: 46px; padding: 0 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid #475569; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.2" width="17" height="15.3"/><path d="M8 9.8h8M8 13.8h5"/><path d="M8 3.5v3.4M16 3.5v3.4"/></svg>
+      <span style="font-size: 14px; font-weight: 500; color: #FFFFFF; white-space: nowrap">Ingresar código manualmente</span>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 3px solid #EA580C; padding: 18px 16px 20px; display: flex; flex-direction: column; gap: 14px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: #059669"></span>
+      <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #047857">Código leído</span>
+      <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B; margin-left: auto">08:14:32</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: #F1F5F9; flex-shrink: 0">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 17px; font-weight: 600; color: #334155">Atornillador Makita</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 13px; color: #64748B">BC-HR-0142 · Eléctricas</span>
+      </div>
+      <span style="display: inline-flex; align-items: center; gap: 7px; background: #ECFDF5; padding: 6px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 6px; height: 6px; border-radius: 50%; background: #059669"></span>DISPONIBLE</span>
+    </div>
+
+    <div style="display: flex; gap: 10px">
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; background: #C2410C; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M12 13.5V4"/><path d="m8 8 4-4 4 4"/></svg>
+        <span style="font-size: 15px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Prestar</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.4v5.2l3.4 2"/><circle cx="12" cy="12" r="8.5"/></svg>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

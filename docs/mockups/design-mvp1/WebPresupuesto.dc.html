@@ -1,0 +1,310 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; background: #F8FAFC; display: flex; overflow: hidden">
+  <div style="width: 248px; background: #334155; display: flex; flex-direction: column; flex-shrink: 0">
+    <div style="padding: 24px 20px 20px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid #475569">
+      <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #EA580C; flex-shrink: 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+      </div>
+      <span style="font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF">Check-In-Obra</span>
+    </div>
+
+    <div style="padding: 16px 16px 10px; display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94A3B8">Obra</span>
+      <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; background: #1E293B; border: 1px solid #475569; cursor: pointer">
+        <span style="font-size: 13.5px; font-weight: 500; color: #FFFFFF; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Los Almendros · Torre B</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8.5 20v-5.5M13 20v-9.5M17.5 20v-3.5"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Panel de obra</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Cubicación</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; background: #EA580C; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17l-2.5-1.6-2.5 1.6-2-1.4-2 1.4L7.5 18.9 5 20.5v-17Z"/><path d="M8.8 8.6h6.4M8.8 12.6h6.4"/></svg>
+        <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Presupuesto</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Inventario</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Herramientas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8" r="3.4"/><path d="M3 19.2a6.2 6.2 0 0 1 12.4 0"/><path d="M16.2 5.2a3.4 3.4 0 0 1 0 5.6M17.6 13.4A6.2 6.2 0 0 1 21 19.2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Cuadrillas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Alertas</span>
+        <span style="min-width: 20px; height: 20px; padding: 0 6px; background: #DC2626; color: #FFFFFF; font-family: 'Fira Code', monospace; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center">4</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Configuración</span>
+      </div>
+    </div>
+
+    <div style="padding: 16px; border-top: 1px solid #475569; display: flex; align-items: center; gap: 11px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #475569; flex-shrink: 0"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF">RC</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 13px; font-weight: 500; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rodrigo Cárcamo</span>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.06em; color: #94A3B8">JEFE DE TERRENO</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+    <div style="height: 64px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; padding: 0 32px; gap: 16px; flex-shrink: 0">
+      <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1">
+        <span style="font-size: 13px; color: #64748B">Los Almendros · Torre B</span>
+        <span style="font-size: 13px; color: #CBD5E1">/</span>
+        <span style="font-size: 13px; font-weight: 600; color: #334155">Presupuesto</span>
+        <span style="display: inline-flex; align-items: center; gap: 7px; background: #334155; padding: 4px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF; white-space: nowrap"><span style="width: 6px; height: 6px; border-radius: 50%; background: #FDBA74"></span>CONGELADO</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 38px; padding: 0 16px; border: 1.5px solid #334155; cursor: pointer">
+        <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap">Ver versión anterior</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 38px; padding: 0 16px; background: #C2410C; cursor: pointer">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8.5 20v-5.5M13 20v-9.5M17.5 20v-3.5"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Recomparar ejecutado</span>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 26px 32px 28px; display: flex; flex-direction: column; gap: 18px">
+
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; color: #334155">Presupuesto de tabiquería · MVP 1</h1>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B">Congelado el 2026-07-30 · 11 partidas · 7 materiales</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px">
+          <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-end">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #475569">Presupuestado</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 21px; font-weight: 600; color: #334155">$12.517.800</span>
+          </div>
+          <div style="width: 1px; height: 40px; background: #E2E8F0"></div>
+          <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-end">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #475569">Ejecutado</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 21px; font-weight: 600; color: #334155">$13.043.550</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 18px; flex-grow: 1; min-height: 0">
+
+        <!-- ÍTEMS DEL PRESUPUESTO -->
+        <div style="flex-grow: 1; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px 14px">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #334155">Ítems congelados</h3>
+            <span style="font-size: 12px; color: #64748B">Precios fijados al 2026-07-30 — no se actualizan con el catálogo</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; background: #334155; padding: 9px 20px">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; flex-grow: 1">MATERIAL</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 104px; flex-shrink: 0">CATEGORÍA</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 84px; text-align: right; flex-shrink: 0">CANTIDAD</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 92px; text-align: right; flex-shrink: 0">P. UNITARIO</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 116px; text-align: right; flex-shrink: 0">SUBTOTAL</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Montante 90 mm · 3 m</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">MET-MONT-90-3000</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">METALCOM</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">1.240 un</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$3.290</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$4.079.600</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Canal 90 mm · 3 m</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">MET-CAN-90-3000</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">METALCOM</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">386 un</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$3.050</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$1.177.300</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST 10 mm</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">VOL-ST-10-120240</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">VOLCANITA</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">842 pl</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$5.980</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$5.035.160</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita RH 15 mm · húmedos</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">VOL-RH-15-120240</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">VOLCANITA</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">96 pl</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$9.240</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$887.040</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tornillo drywall T1 25 mm</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">FIJ-TOR-T1-25</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">FIJACIÓN</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">118 kg</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$4.450</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$525.100</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tornillo punta broca 13 mm</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">FIJ-TOR-PB-13</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">FIJACIÓN</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">42 kg</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$5.200</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$218.400</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+              <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Masilla Volcán · saco 22 kg</span>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">VOL-MAS-22</span>
+            </div>
+            <span style="width: 104px; flex-shrink: 0"><span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 3px 8px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: #475569; white-space: nowrap">VOLCANITA</span></span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #334155; width: 84px; text-align: right; flex-shrink: 0">48 un</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B; width: 92px; text-align: right; flex-shrink: 0">$12.400</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 116px; text-align: right; flex-shrink: 0">$595.200</span>
+          </div>
+          <div style="flex-grow: 1"></div>
+          <div style="display: flex; align-items: center; gap: 16px; padding: 15px 20px; background: #F8FAFC; border-top: 1px solid #E2E8F0">
+            <span style="font-size: 12.5px; color: #64748B; flex-grow: 1">7 ítems · calculados por el motor de cubicación sobre 11 partidas</span>
+            <span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569">Total</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 600; color: #334155">$12.517.800</span>
+          </div>
+        </div>
+
+        <!-- REPORTE DE DESVIACIÓN -->
+        <div style="width: 400px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px">
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+            <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Reporte de desviación</span>
+
+            <div style="display: flex; gap: 16px">
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #475569">Desviación</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 32px; line-height: 34px; font-weight: 600; color: #B45309">+4,2 %</span>
+                <div style="display: flex; align-items: center; gap: 7px">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+                  <span style="font-size: 11.5px; color: #B45309; white-space: nowrap">En observación</span>
+                </div>
+              </div>
+              <div style="width: 1px; background: #E2E8F0"></div>
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #475569">Merma real vs estimada</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 32px; line-height: 34px; font-weight: 600; color: #047857">−2,2 pp</span>
+                <div style="display: flex; align-items: center; gap: 7px">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12 2.6 2.6 4.6-5.2"/></svg>
+                  <span style="font-size: 11.5px; color: #047857; white-space: nowrap">9,8 % real · 12 % estimada</span>
+                </div>
+              </div>
+            </div>
+
+            <p style="margin: 0; font-size: 12px; line-height: 17px; color: #475569; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 11px 13px; text-wrap: pretty">La merma vino mejor que lo estimado, pero el sobreconsumo del cielo de pasillo se comió esa ganancia. El exceso está concentrado en una sola partida.</p>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-height: 0">
+            <h3 style="margin: 0; font-size: 14.5px; font-weight: 600; color: #334155">Ejecutado sobre lo presupuestado</h3>
+            <p style="margin: 0 0 14px; font-size: 11.5px; line-height: 16px; color: #64748B">La marca vertical es el monto presupuestado de cada partida.</p>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">P-01 Tabique eje A</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #EA580C; white-space: nowrap; flex-shrink: 0">96 % · $339.100</span>
+                </div>
+                <div style="height: 12px; background: #F1F5F9; display: flex; position: relative">
+                  <div style="width: 74%; background: #EA580C; border-radius: 0 4px 4px 0"></div>
+                  <div style="position: absolute; top: -3px; left: 77%; width: 2px; height: 18px; background: #334155"></div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">P-02 Tabique eje B</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #EA580C; white-space: nowrap; flex-shrink: 0">78 % · $320.190</span>
+                </div>
+                <div style="height: 12px; background: #F1F5F9; display: flex; position: relative">
+                  <div style="width: 60%; background: #EA580C; border-radius: 0 4px 4px 0"></div>
+                  <div style="position: absolute; top: -3px; left: 77%; width: 2px; height: 18px; background: #334155"></div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">P-03 Cielo pasillo 3</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #DC2626; white-space: nowrap; flex-shrink: 0">118 % · $234.000</span>
+                </div>
+                <div style="height: 12px; background: #F1F5F9; display: flex; position: relative">
+                  <div style="width: 91%; background: #DC2626; border-radius: 0 4px 4px 0"></div>
+                  <div style="position: absolute; top: -3px; left: 77%; width: 2px; height: 18px; background: #334155"></div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">P-04 Revestimiento hall</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #EA580C; white-space: nowrap; flex-shrink: 0">54 % · $155.470</span>
+                </div>
+                <div style="height: 12px; background: #F1F5F9; display: flex; position: relative">
+                  <div style="width: 42%; background: #EA580C; border-radius: 0 4px 4px 0"></div>
+                  <div style="position: absolute; top: -3px; left: 77%; width: 2px; height: 18px; background: #334155"></div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">P-05 Tabique baños</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #EA580C; white-space: nowrap; flex-shrink: 0">31 % · $50.900</span>
+                </div>
+                <div style="height: 12px; background: #F1F5F9; display: flex; position: relative">
+                  <div style="width: 24%; background: #EA580C; border-radius: 0 4px 4px 0"></div>
+                  <div style="position: absolute; top: -3px; left: 77%; width: 2px; height: 18px; background: #334155"></div>
+                </div>
+              </div>
+            </div>
+            <div style="flex-grow: 1"></div>
+            <div style="display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid #E2E8F0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+              <span style="font-size: 12px; color: #B91C1C; flex-grow: 1">P-03 supera lo presupuestado en $35.700</span>
+              <span style="font-size: 12px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Revisar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

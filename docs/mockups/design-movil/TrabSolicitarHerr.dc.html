@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Solicitar herramienta</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <div style="display: flex; align-items: center; gap: 10px; height: 46px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 0 13px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="10.6" cy="10.6" r="6.1"/><path d="m15 15 4.6 4.6"/></svg>
+      <span style="font-size: 13.5px; color: #94A3B8; flex-grow: 1">Buscar por nombre o código</span>
+    </div>
+
+    <div style="display: flex; gap: 8px; overflow: hidden">
+      <span style="display: inline-flex; align-items: center; background: #334155; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #FFFFFF; white-space: nowrap; cursor: pointer">Eléctricas</span>
+      <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Medición</span>
+      <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Manuales</span>
+      <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Seguridad</span>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; border-left: 3px solid #EA580C; cursor: pointer">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Atornillador Makita DF</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0142 · 3 disponibles</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #059669"></span>DISPONIBLE</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Sierra circular DeWalt</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B">BC-HR-0057 · 1 disponible</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #059669"></span>DISPONIBLE</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #E2E8F0; background: #F8FAFC">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rotomartillo Bosch GBH</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #94A3B8">BC-HR-0088 · la tienes tú</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #F1F5F9; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #475569; white-space: nowrap; flex-shrink: 0">PRESTADA</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: #F8FAFC">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; font-weight: 600; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Esmeril angular Bosch</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #94A3B8">BC-HR-0071 · vuelve el 08-28</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #FFFBEB; padding: 4px 9px; font-size: 10px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0">MANTENCIÓN</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Cantidad</span>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 54px; background: #FFFFFF; border: 1px solid #E2E8F0">
+          <span style="font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 600; color: #334155">1</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; background: #FFFFFF; border: 1px solid #E2E8F0; cursor: pointer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12M6 12h12"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Para qué partida</span>
+      <div style="display: flex; align-items: center; gap: 11px; height: 50px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 0 14px; cursor: pointer">
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B; flex-shrink: 0">P-03</span>
+        <span style="font-size: 13.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Cielo pasillo 3 · Piso 4</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 3.5 10.2l7.2 2.9 2.9 7.2 6.9-16.8Z"/><path d="m10.7 13.1 4-4"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Enviar solicitud</span>
+    </div>
+    <span style="font-size: 11.5px; color: #64748B; text-align: center; text-wrap: pretty">Queda PENDIENTE hasta que el bodeguero la apruebe.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

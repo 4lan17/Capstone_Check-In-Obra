@@ -1,0 +1,82 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1240, "h": 2480, "title": "Sistema de diseño", "page": "page-1", "print": "flow" },
+    { "file": "Estados.dc.html", "x": 1720, "y": 0, "w": 1240, "h": 1900, "title": "Estados de pantalla", "page": "page-1", "print": "flow" },
+
+    { "file": "AdminMateriales.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "page": "page-2" },
+    { "file": "AdminMerma.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "page": "page-2" },
+
+    { "file": "WebPartidas.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "page": "page-3" },
+    { "file": "WebCubicacion.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "page": "page-3" },
+    { "file": "WebPresupuesto.dc.html", "x": 3120, "y": 0, "w": 1440, "h": 900, "page": "page-3" },
+
+    { "file": "AppLogin.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "AppInicio.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "AppEscaneo.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "AppDespacho.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "AppConsumo.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "AppBodega.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+
+    { "file": "WebDashboard.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "page": "page-5" },
+    { "file": "WebInventario.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "page": "page-5" },
+    { "file": "WebAlertas.dc.html", "x": 3120, "y": 0, "w": 1440, "h": 900, "page": "page-5" }
+  ],
+  "annotations": [
+    {
+      "id": "nota-alcance",
+      "x": 1330,
+      "y": 0,
+      "w": 340,
+      "page": "page-1",
+      "text": "ALCANCE MVP 1 — 14 pantallas\n\nEste canvas es el corte de construcción, no el catálogo completo. Del diseño original (35 pantallas) quedan solo las que sostienen una cadena cerrada: se configura el catálogo y la merma, se cubica, se congela el presupuesto, se mueve material en terreno y la desviación aparece sola en el panel.\n\nLas páginas van en orden de construcción, no por plataforma. Se construyen de izquierda a derecha.\n\nQUEDA FUERA — se difiere a una segunda tanda:\n\n· Herramientas y préstamos completo (9 pantallas). Es un subsistema paralelo que no toca la cadena cubicación → presupuesto → desviación. Las clases Herramienta y PrestamoHerramienta siguen en el diagrama; solo no se implementa su UI ahora.\n\n· Cola offline real (AppSinConexion). Reconciliar movimientos encolados es semanas de trabajo. En MVP 1: banner de sin conexión y reintento.\n\n· Cierre de turno, obra cerrada, presupuesto en borrador, ficha de material, ficha de trabajador, kardex completo, error de escaneo, empresa, obras y alta de usuario.\n\nEl sistema de diseño y los cuatro estados de la derecha se construyen ANTES que cualquier pantalla: cada pantalla los reusa."
+    },
+    {
+      "id": "nota-tokens",
+      "x": 0,
+      "y": -300,
+      "w": 700,
+      "page": "page-1",
+      "text": "PASO 0 — La base, antes de la primera pantalla\n\nLos hex están escritos inline y repetidos cientos de veces en los artboards. Se extraen UNA vez desde aquí a variables CSS o tema de Tailwind, en vez de transcribirlos pantalla por pantalla.\n\nOjo con el acento, que ya viene decidido: #EA580C mide 3.56:1 sobre blanco y NO pasa el 4.5:1. Sirve para íconos, foco y marcas de gráfico. El relleno del botón primario es #C2410C (5.1:1). Dales nombres distintos en los tokens — accent y accent-fill — o alguien los va a mezclar.\n\nLos colores semáforo van como chip tintado con el texto en su paso oscuro, nunca como texto puro sobre blanco.\n\nLos cuatro estados de la derecha — vacío, carga, error, sin permiso — se construyen como cuatro componentes compartidos ahora. Aparecen en las 14 pantallas; rehacerlos catorce veces es el desperdicio clásico."
+    },
+    {
+      "id": "nota-config",
+      "x": 0,
+      "y": -300,
+      "w": 700,
+      "page": "page-2",
+      "text": "PASO 1 — Configuración base · rol ADMIN\n\nVa primero porque sin esto el motor de cubicación no tiene con qué calcular. Es la única parte de Admin que entra al MVP 1.\n\nCatálogo de Material por CategoriaMaterial (METALCOM, VOLCANITA, OSB, FIJACION) con precioUnitario — el precio que después congela el presupuesto.\n\nParametroMerma por material, que es lo que consume MotorCubicacion. La pestaña contrasta la merma parametrizada contra la real medida en obra: Volcanita se corta 14,8 % real contra el 12 % configurado.\n\nDECISIÓN DE MODELO, resolver ahora: cuando el presupuesto se congela, PresupuestoItem tiene que guardar una COPIA del precioUnitario, no una referencia a Material. Si no, cambiar un precio del catálogo reescribe presupuestos históricos y la desviación deja de significar nada. Lo mismo con la merma: el porcentaje con el que se cubicó queda registrado en el ItemCubicado."
+    },
+    {
+      "id": "nota-motor",
+      "x": 0,
+      "y": -320,
+      "w": 760,
+      "page": "page-3",
+      "text": "PASO 2 — Cubicación y presupuesto · rol JEFE_TERRENO\n\nEsto es el corazón del proyecto y lo único genuinamente difícil. Todo lo demás del MVP 1 es CRUD.\n\nPartidas de la obra → entrar a una → MotorCubicacion.calcular(Partida): de tipo, anchoM, altoM y separacionMontantes salen los ItemCubicado, y encima se aplica ParametroMerma. La pantalla lo muestra en tres columnas: cantidad calculada → merma por categoría → cantidad a comprar.\n\nPresupuesto expone ComparadorPresupuesto.compararVsEjecutado() y su ReporteDesviacion — desviacionPct y mermaRealVsEstimada — con bullets de ejecutado sobre presupuestado. La marca vertical de cada barra es el monto del presupuesto: es el valor de referencia, nunca un segundo eje.\n\nORDEN: construir MotorCubicacion headless y con tests unitarios ANTES de tocar estas pantallas. Es lo que un evaluador va a cuestionar, y es lo que se queda sin tiempo si se deja para el final."
+    },
+    {
+      "id": "nota-terreno",
+      "x": 0,
+      "y": -320,
+      "w": 700,
+      "page": "page-4",
+      "text": "PASO 3 — Terreno · rol BODEGUERO\n\nPIN → Inicio → Escaneo QR → Despacho a partida → Consumo → Bodega. Son los movimientos reales que después alimentan la desviación del paso 2: sin esto el presupuesto no tiene contra qué compararse.\n\nCubre Usuario.autenticar(pin) y KardexMovimiento en sus tres tipos: RECEPCION, DESPACHO y CONSUMO. El despacho trae el bloqueo por stock mínimo, que es lo que dispara la Alerta. Consumo compara contra lo cubicado — de ahí sale el 118 % de P-03.\n\nSin barra de estado ni teclado dibujados: en el teléfono real los pone el sistema encima. Todo objetivo táctil ≥ 44 px, pensado para guantes y polvo.\n\nSe implementa como PWA responsive a 390 px, no nativa. El escaneo QR sale con BarcodeDetector en Chrome Android, con @zxing/browser de respaldo. Nativo solo si el ramo lo exige."
+    },
+    {
+      "id": "nota-control",
+      "x": 0,
+      "y": -320,
+      "w": 700,
+      "page": "page-5",
+      "text": "PASO 4 — Control · cierra el ciclo\n\nNo aporta lógica nueva: es donde se ve el resultado de los tres pasos anteriores. Por eso va al final, y por eso es lo primero que hay que mostrar en la defensa.\n\nPanel de obra con el avance por partida y la desviación viva. Inventario con los 34 materiales ordenados por criticidad y la marca vertical en el stock mínimo. Alertas con la bandeja entera, resueltas incluidas.\n\nLa lista de alertas va con role=\"status\" aria-atomic=\"true\" para que el cambio se anuncie completo cuando una alerta entra en vivo, no como número suelto.\n\nAlerta.generar() en MVP 1 cubre dos disparadores: stock bajo el mínimo y desviación sobre el umbral. NO_DEVUELTA y CIERRE_TURNO quedan para la segunda tanda junto con herramientas."
+    }
+  ],
+  "pages": [
+    { "id": "page-1", "name": "0 · Sistema y estados" },
+    { "id": "page-2", "name": "1 · Configuración base" },
+    { "id": "page-3", "name": "2 · Cubicación y presupuesto" },
+    { "id": "page-4", "name": "3 · Terreno · bodega" },
+    { "id": "page-5", "name": "4 · Control" }
+  ],
+  "launch": { "view": "canvas", "page": "page-3" }
+}

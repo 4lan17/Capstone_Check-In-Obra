@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 16px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+    <span style="font-size: 19px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Cola de solicitudes</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; white-space: nowrap; flex-shrink: 0">5 pendientes</span>
+  </div>
+
+  <div style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0; padding: 12px 16px; display: flex; gap: 8px; flex-shrink: 0; overflow: hidden">
+    <span style="display: inline-flex; align-items: center; background: #334155; padding: 7px 12px; font-size: 12px; font-weight: 600; color: #FFFFFF; white-space: nowrap; cursor: pointer">Todas 5</span>
+    <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Herramientas 3</span>
+    <span style="display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 12px; font-size: 12px; font-weight: 500; color: #475569; white-space: nowrap; cursor: pointer">Materiales 2</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px">
+      <div style="display: flex; align-items: center; gap: 11px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #334155; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #FFFFFF">JO</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Sierra circular DeWalt · 1</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">SH-0189 · J. Ortiz · Cuadrilla 2 · 12 min</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #059669"></span>HAY 1</span>
+      </div>
+      <div style="display: flex; gap: 8px; border-top: 1px solid #E2E8F0; padding-top: 11px">
+        <span style="flex-grow: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; background: #C2410C; font-size: 14px; font-weight: 600; color: #FFFFFF; cursor: pointer">Aprobar</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 46px; padding: 0 18px; background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 14px; font-weight: 600; color: #B91C1C; white-space: nowrap; cursor: pointer">Rechazar</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px">
+      <div style="display: flex; align-items: center; gap: 11px">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #334155; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #FFFFFF">MS</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST 10 mm · 18 pl</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">SM-0412 · M. Sepúlveda · P-03 · 42 min</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; background: #FEF2F2; padding: 4px 8px; font-size: 9.5px; font-weight: 600; color: #B91C1C; white-space: nowrap; flex-shrink: 0">QUEDAN 14</span>
+      </div>
+      <div style="background: #FFFBEB; border: 1px solid #FDE68A; padding: 9px 11px; display: flex; align-items: center; gap: 9px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+        <span style="font-size: 11.5px; color: #92400E; flex-grow: 1; text-wrap: pretty">Aprobar 18 dejaría el stock en −4. Puedes entregar 14.</span>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <span style="flex-grow: 1; display: inline-flex; align-items: center; justify-content: center; height: 46px; background: #C2410C; font-size: 14px; font-weight: 600; color: #FFFFFF; cursor: pointer">Aprobar 14</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 46px; padding: 0 18px; background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 14px; font-weight: 600; color: #B91C1C; white-space: nowrap; cursor: pointer">Rechazar</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #334155; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #FFFFFF">RC</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Nivel láser Bosch · 1</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">SH-0190 · R. Cáceres · 8 min</span>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #334155; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #FFFFFF">PA</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tornillo T1 25 mm · 3 kg</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">SM-0413 · P. Aguilera · P-07 · 5 min</span>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; cursor: pointer">
+        <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #334155; flex-shrink: 0"><span style="font-size: 11.5px; font-weight: 600; color: #FFFFFF">DV</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Escuadra magnética · 2</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">SH-0191 · D. Valdés · 3 min</span>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+  </div>
+
+  <div style="height: 78px; background: #FFFFFF; border-top: 1px solid #E2E8F0; display: flex; align-items: flex-start; padding: 8px 8px 0; flex-shrink: 0">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Inicio</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Bodega</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; justify-content: center; padding-top: 2px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; background: #334155; cursor: pointer">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h3v3h-3zM20.5 14v3.5M14 20.5h6.5"/></svg>
+      </div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-3-5.5 3v-17Z"/></svg>
+      <span style="font-size: 10px; font-weight: 600; color: #C2410C">Solicit.</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #64748B">Alertas</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

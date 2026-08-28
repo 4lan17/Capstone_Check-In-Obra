@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Desviación</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="background: #FFFFFF; border: 1px solid #DC2626; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 30px; font-weight: 600; color: #B91C1C">+8,4 %</span>
+        <span style="font-size: 13px; color: #475569; flex-grow: 1; text-wrap: pretty">sobre lo presupuestado</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; border-top: 1px solid #E2E8F0; padding-top: 12px">
+        <span style="font-size: 12.5px; color: #475569; flex-grow: 1">Ejecutado $52.319.400 · presupuesto $48.214.900</span>
+      </div>
+      <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #B91C1C">+$4.104.500</span>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Merma real contra la parametrizada</span>
+      <div style="display: flex; flex-direction: column; gap: 11px">
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-size: 12.5px; font-weight: 600; color: #334155; flex-grow: 1">Volcanita</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">12 %</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 14.5 6-6 6 6"/></svg>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #B91C1C">14,8 %</span>
+          </div>
+          <div style="height: 9px; background: #F1F5F9; display: flex"><span style="width: 74%; background: #DC2626"></span><span style="width: 1px; background: #FFFFFF"></span><span style="width: 25%; background: #F1F5F9"></span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-size: 12.5px; font-weight: 600; color: #334155; flex-grow: 1">Metalcom</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">7 %</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 14.5 6-6 6 6"/></svg>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #B45309">7,9 %</span>
+          </div>
+          <div style="height: 9px; background: #F1F5F9; display: flex"><span style="width: 40%; background: #D97706"></span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-size: 12.5px; font-weight: 600; color: #334155; flex-grow: 1">OSB</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #64748B">10 %</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #047857">8,6 %</span>
+          </div>
+          <div style="height: 9px; background: #F1F5F9; display: flex"><span style="width: 43%; background: #059669"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; min-height: 0">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #475569">De dónde viene el exceso</span>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; flex-shrink: 0">P-03</span>
+          <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Cielo pasillo 3</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #B91C1C; white-space: nowrap; flex-shrink: 0">+$1,82 M</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; flex-shrink: 0">P-07</span>
+          <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique eje 4-6</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0">+$0,94 M</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; flex-shrink: 0">P-02</span>
+          <span style="font-size: 12.5px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Tabique eje 1-3</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0">+$0,71 M</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px">
+          <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; flex-shrink: 0">otras</span>
+          <span style="font-size: 12.5px; color: #64748B; flex-grow: 1">8 partidas</span>
+          <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; font-weight: 500; color: #475569; white-space: nowrap; flex-shrink: 0">+$0,63 M</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; background: #FFFFFF; border: 1.5px solid #334155; cursor: pointer">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15v11h-11l-4 3.5v-14.5Z"/></svg>
+      <span style="font-size: 15px; font-weight: 600; color: #334155">Pedir revisar la merma de volcanita</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

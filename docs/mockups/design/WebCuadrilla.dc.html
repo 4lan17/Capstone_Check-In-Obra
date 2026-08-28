@@ -1,0 +1,284 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; background: #F8FAFC; display: flex; overflow: hidden">
+  <div style="width: 248px; background: #334155; display: flex; flex-direction: column; flex-shrink: 0">
+    <div style="padding: 24px 20px 20px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid #475569">
+      <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #EA580C; flex-shrink: 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+      </div>
+      <span style="font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF">Check-In-Obra</span>
+    </div>
+
+    <div style="padding: 16px 16px 10px; display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94A3B8">Obra</span>
+      <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; background: #1E293B; border: 1px solid #475569; cursor: pointer">
+        <span style="font-size: 13.5px; font-weight: 500; color: #FFFFFF; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Los Almendros · Torre B</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m6 9.5 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div style="padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8.5 20v-5.5M13 20v-9.5M17.5 20v-3.5"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Panel de obra</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.6 14.6 3l6.4 6.4L9.4 21 3 14.6Z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Cubicación</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17l-2.5-1.6-2.5 1.6-2-1.4-2 1.4L7.5 18.9 5 20.5v-17Z"/><path d="M8.8 8.6h6.4M8.8 12.6h6.4"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Presupuesto</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Inventario</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.6a4.2 4.2 0 0 1-5.6 5.6l-4.6 4.6a2.1 2.1 0 0 1-3-3l4.6-4.6a4.2 4.2 0 0 1 5.6-5.6l-2.7 2.7 2.4 2.4 2.7-2.7a4.2 4.2 0 0 1 .6.6Z"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Herramientas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; background: #EA580C; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8" r="3.4"/><path d="M3 19.2a6.2 6.2 0 0 1 12.4 0"/><path d="M16.2 5.2a3.4 3.4 0 0 1 0 5.6M17.6 13.4A6.2 6.2 0 0 1 21 19.2"/></svg>
+        <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Cuadrillas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.6 1.8 5.6 1.8 5.6H4.2S6 14.1 6 9.5Z"/><path d="M9.6 18.6a2.5 2.5 0 0 0 4.8 0"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Alertas</span>
+        <span style="min-width: 20px; height: 20px; padding: 0 6px; background: #DC2626; color: #FFFFFF; font-family: 'Fira Code', monospace; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center">4</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #CBD5E1; flex-grow: 1">Configuración</span>
+      </div>
+    </div>
+
+    <div style="padding: 16px; border-top: 1px solid #475569; display: flex; align-items: center; gap: 11px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #475569; flex-shrink: 0"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF">RC</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 13px; font-weight: 500; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rodrigo Cárcamo</span>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.06em; color: #94A3B8">JEFE DE TERRENO</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+    <div style="height: 64px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; padding: 0 32px; gap: 16px; flex-shrink: 0">
+      <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1">
+        <span style="font-size: 13px; color: #64748B">Los Almendros · Torre B</span>
+        <span style="font-size: 13px; color: #CBD5E1">/</span>
+        <span style="font-size: 13px; color: #64748B">Cuadrillas</span>
+        <span style="font-size: 13px; color: #CBD5E1">/</span>
+        <span style="font-size: 13px; font-weight: 600; color: #334155">Cuadrilla 2</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 38px; padding: 0 16px; border: 1.5px solid #334155; cursor: pointer">
+        <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap">Reasignar partida</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 38px; padding: 0 16px; background: #C2410C; cursor: pointer">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap">Agregar trabajador</span>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 26px 32px 28px; display: flex; flex-direction: column; gap: 18px">
+
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div style="display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: #334155; flex-shrink: 0">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="8" r="3.4"/><path d="M3 19.2a6.2 6.2 0 0 1 12.4 0"/><path d="M16.2 5.2a3.4 3.4 0 0 1 0 5.6M17.6 13.4A6.2 6.2 0 0 1 21 19.2"/></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; color: #334155">Cuadrilla 2</h1>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #64748B">5 trabajadores · P-03 Cielo pasillo 3 · turno mañana</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px">
+          <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-end">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #475569">Herramientas</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 21px; font-weight: 600; color: #334155">8</span>
+          </div>
+          <div style="width: 1px; height: 40px; background: #E2E8F0"></div>
+          <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-end">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #475569">Atrasos 30 d</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 21px; font-weight: 600; color: #B91C1C">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 18px; flex-grow: 1; min-height: 0">
+
+        <div style="flex-grow: 1; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 18px 20px 14px">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #334155; flex-grow: 1">Trabajadores</h3>
+            <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Imprimir credenciales</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; background: #334155; padding: 9px 20px">
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; flex-grow: 1">TRABAJADOR</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 152px; flex-shrink: 0">CREDENCIAL QR</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 128px; text-align: right; flex-shrink: 0">EN SU PODER</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 128px; text-align: right; flex-shrink: 0">ATRASOS 30 D</span>
+            <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; color: #FFFFFF; width: 40px; flex-shrink: 0"></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">MS</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Marcelo Sepúlveda</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">16.482.905-K · jefe de cuadrilla</span>
+              </div>
+            </div>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 152px; flex-shrink: 0">BC-TR-0042</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 128px; text-align: right; flex-shrink: 0">4</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #B91C1C; width: 128px; text-align: right; flex-shrink: 0">6</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">JO</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Javier Ortiz</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">17.930.556-4 · instalador</span>
+              </div>
+            </div>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 152px; flex-shrink: 0">BC-TR-0043</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 128px; text-align: right; flex-shrink: 0">3</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #B45309; width: 128px; text-align: right; flex-shrink: 0">3</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">DP</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Daniel Pizarro</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">19.442.108-7 · instalador</span>
+              </div>
+            </div>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 152px; flex-shrink: 0">BC-TR-0044</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 128px; text-align: right; flex-shrink: 0">1</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #475569; width: 128px; text-align: right; flex-shrink: 0">0</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">RF</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rubén Fuentes</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">14.208.371-0 · ayudante</span>
+              </div>
+            </div>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 152px; flex-shrink: 0">BC-TR-0045</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 128px; text-align: right; flex-shrink: 0">0</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #B45309; width: 128px; text-align: right; flex-shrink: 0">2</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0">
+              <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #F1F5F9; flex-shrink: 0"><span style="font-size: 12px; font-weight: 600; color: #475569">GM</span></div>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 13px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Gonzalo Márquez</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">20.554.916-3 · ayudante</span>
+              </div>
+            </div>
+            <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #475569; width: 152px; flex-shrink: 0">BC-TR-0046</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #334155; width: 128px; text-align: right; flex-shrink: 0">0</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; color: #475569; width: 128px; text-align: right; flex-shrink: 0">0</span>
+            <span style="width: 40px; display: flex; justify-content: flex-end; flex-shrink: 0; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/></svg></span>
+          </div>
+          <div style="flex-grow: 1"></div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 13px 20px; background: #F8FAFC; border-top: 1px solid #E2E8F0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+            <span style="font-size: 12px; color: #B91C1C; flex-grow: 1">Marcelo Sepúlveda concentra 6 de los 11 atrasos de la cuadrilla.</span>
+            <span style="font-size: 12.5px; font-weight: 500; color: #C2410C; cursor: pointer; white-space: nowrap">Ver historial</span>
+          </div>
+        </div>
+
+        <div style="width: 360px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px">
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 6px">
+            <h3 style="margin: 0; font-size: 14.5px; font-weight: 600; color: #334155">Avance de su partida</h3>
+            <p style="margin: 0 0 14px; font-size: 11.5px; line-height: 16px; color: #64748B">P-03 Cielo pasillo 3 · 38,22 m²</p>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 12.5px; color: #334155; flex-grow: 1">Material consumido</span><span style="font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #B91C1C">118 %</span></div>
+                <div style="height: 12px; background: #F1F5F9; display: flex; position: relative"><div style="width: 100%; background: #DC2626"></div><div style="position: absolute; top: -3px; left: 85%; width: 2px; height: 18px; background: #334155"></div></div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span style="width: 2px; height: 11px; background: #334155; flex-shrink: 0"></span>
+                <span style="font-size: 11.5px; color: #64748B; flex-grow: 1">Cubicado: $198.300</span>
+                <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #B91C1C; white-space: nowrap">$234.000</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 14px; flex-grow: 1; min-height: 0">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+              <h3 style="margin: 0; font-size: 14.5px; font-weight: 600; color: #334155">Herramientas de la cuadrilla</h3>
+              <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #64748B">8</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 11px">
+              <div style="display: flex; align-items: center; gap: 11px; padding-bottom: 11px; border-bottom: 1px solid #E2E8F0">
+                <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+                  <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rotomartillo Bosch GBH 2-26</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0088 · M. Sepúlveda</span>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 6px; background: #FEF2F2; padding: 3px 8px; font-size: 9.5px; font-weight: 600; color: #B91C1C; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #DC2626"></span>VENCIDA</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 11px; padding-bottom: 11px; border-bottom: 1px solid #E2E8F0">
+                <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+                  <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Atornillador Makita DF 333</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0142 · J. Ortiz</span>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 6px; background: #FFFBEB; padding: 3px 8px; font-size: 9.5px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #D97706"></span>VENCE HOY</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 11px; padding-bottom: 11px; border-bottom: 1px solid #E2E8F0">
+                <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+                  <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Huincha 8 m Stanley</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0119 · M. Sepúlveda</span>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 6px; background: #FFFBEB; padding: 3px 8px; font-size: 9.5px; font-weight: 600; color: #B45309; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #D97706"></span>VENCE HOY</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 11px; padding-bottom: 11px; border-bottom: 1px solid #E2E8F0">
+                <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+                  <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Escuadra magnética 300 mm</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0184 · J. Ortiz</span>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; padding: 3px 8px; font-size: 9.5px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #059669"></span>A TIEMPO</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 11px; padding-bottom: 11px; border-bottom: 1px solid #E2E8F0">
+                <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+                  <span style="font-size: 12.5px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Balde mezclador 20 L</span>
+                  <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0245 · D. Pizarro</span>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; padding: 3px 8px; font-size: 9.5px; font-weight: 600; color: #047857; white-space: nowrap; flex-shrink: 0"><span style="width: 5px; height: 5px; border-radius: 50%; background: #059669"></span>A TIEMPO</span>
+              </div>
+            </div>
+            <div style="flex-grow: 1"></div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 42px; border: 1.5px solid #334155; cursor: pointer">
+              <span style="font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap">Ver las 8 herramientas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

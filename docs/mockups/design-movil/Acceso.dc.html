@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #334155; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #334155; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+
+  <div style="padding: 30px 24px 32px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #EA580C; flex-shrink: 0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8.5L12 3l8 5.5V20H4Z"/><path d="M9.5 20v-6h5v6"/></svg>
+      </div>
+      <span style="font-size: 21px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF">Check-In-Obra</span>
+    </div>
+    <span style="font-size: 13px; line-height: 19px; color: #94A3B8; text-wrap: pretty">Una sola cuenta para los cuatro roles. Lo que puedes hacer adentro lo decide tu rol, no una app distinta.</span>
+  </div>
+
+  <div style="flex-grow: 1; background: #FFFFFF; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+
+    <div style="display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Correo de empresa</span>
+      <div style="display: flex; align-items: center; gap: 11px; height: 52px; background: #FFFFFF; border: 2px solid #EA580C; padding: 0 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><rect x="3.2" y="5.5" width="17.6" height="13"/><path d="m3.2 6.5 8.8 6.2 8.8-6.2"/></svg>
+        <span style="font-family: 'Fira Code', monospace; font-size: 14px; color: #334155; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">jreyes@arauco-ltda.cl</span>
+        <span style="width: 1.5px; height: 22px; background: #EA580C; flex-shrink: 0"></span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Contraseña</span>
+      <div style="display: flex; align-items: center; gap: 11px; height: 52px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><rect x="4.5" y="10.5" width="15" height="9.5" rx="1"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg>
+        <span style="font-family: 'Fira Code', monospace; font-size: 17px; letter-spacing: 0.18em; color: #334155; flex-grow: 1">••••••••••</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; cursor: pointer"><path d="M2.5 12S6 6.2 12 6.2 21.5 12 21.5 12 18 17.8 12 17.8 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer; flex-shrink: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H14"/><path d="M17 8.5 20.5 12 17 15.5M20.5 12H10"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Entrar</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px">
+      <span style="flex-grow: 1; height: 1px; background: #E2E8F0"></span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: #94A3B8">O EN ESTE TELÉFONO</span>
+      <span style="flex-grow: 1; height: 1px; background: #E2E8F0"></span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 13px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 13px 14px; cursor: pointer">
+      <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #334155; flex-shrink: 0"><span style="font-size: 14px; font-weight: 600; color: #FFFFFF">MS</span></div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 14.5px; font-weight: 600; color: #334155">Marcelo Sepúlveda</span>
+        <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; color: #64748B">TRABAJADOR · PIN DE 4 DÍGITOS</span>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="m9.5 6 6 6-6 6"/></svg>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <div style="display: flex; align-items: flex-start; gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px 14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8.5"/><path d="M12 11.2v5M12 8.2v.2"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #475569; flex-grow: 1; text-wrap: pretty">El correo es para administradores y jefes de terreno. En obra se entra con PIN: el teléfono recuerda al usuario y el PIN nunca sale del equipo.</span>
+    </div>
+
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Constructora Arauco Ltda. · v1.0 MVP</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

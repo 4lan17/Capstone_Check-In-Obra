@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #FFFFFF; flex-grow: 1">Cierre de turno</span>
+    <span style="font-family: 'Fira Code', monospace; font-size: 12.5px; color: #94A3B8; padding-right: 12px">18:00</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 22px; line-height: 24px; font-weight: 600; color: #334155">27</span>
+        <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569; line-height: 12px">Movimientos<br>de kardex</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 22px; line-height: 24px; font-weight: 600; color: #047857">9</span>
+        <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #475569; line-height: 12px">Devueltas<br>a tiempo</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #DC2626; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 22px; line-height: 24px; font-weight: 600; color: #B91C1C">4</span>
+        <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #B91C1C; line-height: 12px">Siguen<br>fuera</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; min-height: 0">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #475569">Herramientas sin devolver</span>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; flex-direction: column">
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+          <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #334155; flex-shrink: 0"><span style="font-size: 11px; font-weight: 600; color: #FFFFFF">MS</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 12.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rotomartillo Bosch GBH</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0088 · M. Sepúlveda</span>
+          </div>
+          <span style="font-size: 12px; font-weight: 600; color: #C2410C; white-space: nowrap; flex-shrink: 0; cursor: pointer">Llamar</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid #E2E8F0">
+          <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #334155; flex-shrink: 0"><span style="font-size: 11px; font-weight: 600; color: #FFFFFF">JO</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 12.5px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Nivel láser Bosch</span>
+            <span style="font-family: 'Fira Code', monospace; font-size: 10.5px; color: #64748B">BC-HR-0203 · J. Ortiz</span>
+          </div>
+          <span style="font-size: 12px; font-weight: 600; color: #C2410C; white-space: nowrap; flex-shrink: 0; cursor: pointer">Llamar</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px">
+          <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F1F5F9; flex-shrink: 0"><span style="font-family: 'Fira Code', monospace; font-size: 11px; font-weight: 600; color: #475569">+2</span></div>
+          <span style="font-size: 12.5px; color: #64748B; flex-grow: 1">Cuadrilla 1 · huincha y escuadra</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 13px 14px; display: flex; flex-direction: column; gap: 9px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569">Queda pendiente para mañana</span>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #B45309; width: 26px; flex-shrink: 0">3</span>
+        <span style="font-size: 12.5px; color: #475569; flex-grow: 1">solicitudes sin resolver</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: #B91C1C; width: 26px; flex-shrink: 0">3</span>
+        <span style="font-size: 12.5px; color: #475569; flex-grow: 1">materiales bajo el mínimo</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFBEB; border: 1px solid #FDE68A; padding: 12px 14px; display: flex; align-items: flex-start; gap: 11px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10.4v4.2M12 17.6v.2"/></svg>
+      <span style="font-size: 12px; line-height: 16px; color: #92400E; flex-grow: 1; text-wrap: pretty">Al cerrar se genera una alerta CIERRE_TURNO con las 4 herramientas fuera y la recibe el jefe de terreno.</span>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; background: #C2410C; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="9.5" rx="1"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/></svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FFFFFF">Cerrar turno</span>
+    </div>
+    <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #64748B; text-align: center">Jorge Reyes · Los Almendros Torre B · 2026-08-26</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
