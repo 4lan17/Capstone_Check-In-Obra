@@ -562,6 +562,287 @@ solo verifica que las entidades calcen con las tablas).
 edita una migración ya aplicada: Flyway guarda un hash de cada una y falla si
 detecta que cambió.
 
+### Esquema
+
+17 tablas, agrupadas por los mismos módulos del diagrama de clases. El mapa de
+relaciones (las llaves foráneas, sin columnas para que se lea):
+
+```mermaid
+erDiagram
+    empresas   ||--o{ usuarios : ""
+    empresas   ||--o{ obras : ""
+    empresas   ||--o{ materiales : ""
+    empresas   ||--o{ herramientas : ""
+
+    obras      ||--o{ cuadrillas : ""
+    usuarios   ||--o| trabajadores : "es"
+    cuadrillas |o--o{ trabajadores : ""
+
+    materiales ||--o| parametros_merma : ""
+    obras      ||--o{ partidas : ""
+    partidas   ||--o{ items_cubicados : ""
+    materiales ||--o{ items_cubicados : ""
+
+    obras         ||--o| presupuestos : ""
+    presupuestos  ||--o{ presupuesto_items : ""
+    materiales    ||--o{ presupuesto_items : ""
+
+    herramientas ||--o{ prestamos_herramienta : ""
+    trabajadores ||--o{ prestamos_herramienta : ""
+    obras        ||--o{ prestamos_herramienta : ""
+    usuarios     ||--o{ prestamos_herramienta : "autoriza"
+
+    obras      ||--o{ kardex_movimientos : ""
+    materiales ||--o{ kardex_movimientos : ""
+    usuarios   ||--o{ kardex_movimientos : "registra"
+
+    trabajadores ||--o{ solicitudes_herramienta : "pide"
+    herramientas ||--o{ solicitudes_herramienta : ""
+    usuarios     |o--o{ solicitudes_herramienta : "resuelve"
+
+    trabajadores ||--o{ solicitudes_material : "pide"
+    materiales   ||--o{ solicitudes_material : ""
+    obras        ||--o{ solicitudes_material : ""
+    usuarios     |o--o{ solicitudes_material : "resuelve"
+
+    obras                 ||--o{ alertas : ""
+    prestamos_herramienta |o--o{ alertas : "origina"
+```
+
+Todo `id` es `BIGSERIAL PRIMARY KEY` y se omite de las tablas de abajo. Los
+enums no son tipos de PostgreSQL: se guardan como `VARCHAR` con el nombre de la
+constante Java (`@Enumerated(EnumType.STRING)`), y los valores válidos están más
+abajo.
+
+#### Configuración
+
+**`empresas`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `nombre` | `VARCHAR(200)` | NOT NULL |
+| `rut` | `VARCHAR(20)` | NOT NULL, UNIQUE |
+
+**`usuarios`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `nombre` | `VARCHAR(200)` | NOT NULL |
+| `email` | `VARCHAR(200)` | NOT NULL, UNIQUE |
+| `rol` | `VARCHAR(20)` | NOT NULL — enum `RolUsuario` |
+| `pin_hash` | `VARCHAR(100)` | nullable — BCrypt, nunca el PIN en claro |
+| `empresa_id` | `BIGINT` | NOT NULL → `empresas` |
+
+#### Obra y equipos
+
+**`obras`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `nombre` | `VARCHAR(200)` | NOT NULL |
+| `cliente` | `VARCHAR(200)` | NOT NULL |
+| `ubicacion` | `VARCHAR(300)` | NOT NULL |
+| `estado` | `VARCHAR(20)` | NOT NULL — enum `EstadoObra` |
+| `empresa_id` | `BIGINT` | NOT NULL → `empresas` |
+
+**`cuadrillas`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `nombre` | `VARCHAR(200)` | NOT NULL |
+| `obra_id` | `BIGINT` | NOT NULL → `obras` |
+
+**`trabajadores`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `rut` | `VARCHAR(20)` | NOT NULL, UNIQUE |
+| `credencial_qr` | `VARCHAR(100)` | UNIQUE, nullable |
+| `usuario_id` | `BIGINT` | NOT NULL, UNIQUE → `usuarios` |
+| `cuadrilla_id` | `BIGINT` | nullable → `cuadrillas` |
+
+El `UNIQUE` en `usuario_id` es lo que hace que la relación sea 1–1: un
+`Trabajador` extiende a un `Usuario`, no es una entidad aparte.
+
+#### Cubicación
+
+**`materiales`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `sku` | `VARCHAR(50)` | NOT NULL, UNIQUE |
+| `nombre` | `VARCHAR(200)` | NOT NULL |
+| `categoria` | `VARCHAR(20)` | NOT NULL — enum `CategoriaMaterial` |
+| `precio_unitario` | `DOUBLE PRECISION` | NOT NULL |
+| `stock_minimo` | `DOUBLE PRECISION` | NOT NULL — bajo esto se dispara `STOCK_CRITICO` |
+| `empresa_id` | `BIGINT` | NOT NULL → `empresas` |
+
+**`parametros_merma`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `porcentaje` | `DOUBLE PRECISION` | NOT NULL |
+| `material_id` | `BIGINT` | NOT NULL, UNIQUE → `materiales` |
+
+**`partidas`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `tipo` | `VARCHAR(20)` | NOT NULL — enum `TipoPartida` |
+| `ancho_m` | `DOUBLE PRECISION` | NOT NULL |
+| `alto_m` | `DOUBLE PRECISION` | NOT NULL |
+| `separacion_montantes` | `DOUBLE PRECISION` | NOT NULL |
+| `obra_id` | `BIGINT` | NOT NULL → `obras` |
+
+**`items_cubicados`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `cantidad_calculada` | `DOUBLE PRECISION` | NOT NULL — salida del motor de cubicación |
+| `cantidad_con_merma` | `DOUBLE PRECISION` | NOT NULL — la anterior más el % de merma |
+| `partida_id` | `BIGINT` | NOT NULL → `partidas` |
+| `material_id` | `BIGINT` | NOT NULL → `materiales` |
+
+#### Presupuesto
+
+**`presupuestos`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `estado` | `VARCHAR(20)` | NOT NULL — enum `EstadoPresupuesto` |
+| `fecha_congelado` | `DATE` | nullable — se llena al congelar |
+| `total` | `DOUBLE PRECISION` | NOT NULL |
+| `obra_id` | `BIGINT` | NOT NULL, UNIQUE → `obras` |
+
+`obra_id` es `UNIQUE`: una obra tiene a lo más un presupuesto.
+
+**`presupuesto_items`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `cantidad` | `DOUBLE PRECISION` | NOT NULL |
+| `precio_unitario` | `DOUBLE PRECISION` | NOT NULL — copiado de `materiales` al agregar el ítem |
+| `subtotal` | `DOUBLE PRECISION` | NOT NULL |
+| `presupuesto_id` | `BIGINT` | NOT NULL → `presupuestos` |
+| `material_id` | `BIGINT` | NOT NULL → `materiales` |
+
+El `precio_unitario` se duplica aquí a propósito. `PresupuestoService` lo copia
+desde `materiales` en el momento de agregar el ítem, así que un cambio de precio
+posterior en el catálogo no altera los presupuestos ya armados.
+
+#### Inventario y trazabilidad
+
+**`herramientas`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `codigo_qr` | `VARCHAR(100)` | NOT NULL, UNIQUE |
+| `nombre` | `VARCHAR(200)` | NOT NULL |
+| `categoria` | `VARCHAR(100)` | NOT NULL — texto libre, no enum |
+| `estado` | `VARCHAR(20)` | NOT NULL — enum `EstadoHerramienta` |
+| `valor_reposicion` | `DOUBLE PRECISION` | NOT NULL |
+| `empresa_id` | `BIGINT` | NOT NULL → `empresas` |
+
+**`prestamos_herramienta`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `fecha_prestamo` | `TIMESTAMP` | NOT NULL |
+| `fecha_devol_esperada` | `TIMESTAMP` | NOT NULL |
+| `fecha_devol_real` | `TIMESTAMP` | nullable — `NULL` = préstamo abierto |
+| `herramienta_id` | `BIGINT` | NOT NULL → `herramientas` |
+| `trabajador_id` | `BIGINT` | NOT NULL → `trabajadores` |
+| `obra_id` | `BIGINT` | NOT NULL → `obras` |
+| `autorizado_por_id` | `BIGINT` | NOT NULL → `usuarios` |
+
+**`kardex_movimientos`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `tipo_movimiento` | `VARCHAR(20)` | NOT NULL — enum `TipoMovimiento` |
+| `cantidad` | `DOUBLE PRECISION` | NOT NULL |
+| `fecha` | `TIMESTAMP` | NOT NULL |
+| `obra_id` | `BIGINT` | NOT NULL → `obras` |
+| `material_id` | `BIGINT` | NOT NULL → `materiales` |
+| `usuario_id` | `BIGINT` | NOT NULL → `usuarios` |
+
+No hay columna de stock en ninguna parte: el stock es la suma del kardex. Por
+eso los movimientos no se editan ni se borran, se compensan con otro movimiento.
+
+**`solicitudes_herramienta`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `cantidad` | `INTEGER` | NOT NULL |
+| `estado` | `VARCHAR(20)` | NOT NULL — enum `EstadoSolicitud` |
+| `fecha_solicitud` | `TIMESTAMP` | NOT NULL |
+| `motivo_rechazo` | `VARCHAR(500)` | nullable |
+| `trabajador_id` | `BIGINT` | NOT NULL → `trabajadores` |
+| `herramienta_id` | `BIGINT` | NOT NULL → `herramientas` |
+| `resuelto_por_id` | `BIGINT` | nullable → `usuarios` — `NULL` mientras está pendiente |
+
+**`solicitudes_material`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `cantidad` | `DOUBLE PRECISION` | NOT NULL |
+| `estado` | `VARCHAR(20)` | NOT NULL — enum `EstadoSolicitud` |
+| `fecha_solicitud` | `TIMESTAMP` | NOT NULL |
+| `motivo_rechazo` | `VARCHAR(500)` | nullable |
+| `trabajador_id` | `BIGINT` | NOT NULL → `trabajadores` |
+| `material_id` | `BIGINT` | NOT NULL → `materiales` |
+| `obra_id` | `BIGINT` | NOT NULL → `obras` |
+| `resuelto_por_id` | `BIGINT` | nullable → `usuarios` |
+
+`cantidad` es `INTEGER` en herramientas y `DOUBLE PRECISION` en materiales: las
+herramientas se cuentan por unidad, los materiales van en m², kg o planchas.
+
+#### Control
+
+**`alertas`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `tipo` | `VARCHAR(20)` | NOT NULL — enum `TipoAlerta` |
+| `mensaje` | `VARCHAR(500)` | NOT NULL |
+| `fecha` | `TIMESTAMP` | NOT NULL |
+| `resuelto` | `BOOLEAN` | NOT NULL |
+| `obra_id` | `BIGINT` | NOT NULL → `obras` |
+| `prestamo_herramienta_id` | `BIGINT` | nullable → `prestamos_herramienta` |
+
+`prestamo_herramienta_id` solo se llena en las alertas de tipo `NO_DEVUELTA`;
+las de `STOCK_CRITICO` y `CIERRE_TURNO` lo dejan en `NULL`.
+
+#### Valores de los enums
+
+| Enum | Columna | Valores |
+|---|---|---|
+| `RolUsuario` | `usuarios.rol` | `ADMIN`, `JEFE_TERRENO`, `BODEGUERO`, `TRABAJADOR` |
+| `EstadoObra` | `obras.estado` | `ACTIVA`, `CERRADA` |
+| `CategoriaMaterial` | `materiales.categoria` | `METALCOM`, `VOLCANITA`, `OSB`, `FIJACION` |
+| `TipoPartida` | `partidas.tipo` | `TABIQUE`, `CIELO`, `REVESTIMIENTO` |
+| `EstadoPresupuesto` | `presupuestos.estado` | `BORRADOR`, `APROBADO`, `CONGELADO` |
+| `EstadoHerramienta` | `herramientas.estado` | `DISPONIBLE`, `PRESTADA`, `MANTENCION` |
+| `EstadoSolicitud` | `solicitudes_*.estado` | `PENDIENTE`, `APROBADA`, `RECHAZADA`, `ENTREGADA` |
+| `TipoMovimiento` | `kardex_movimientos.tipo_movimiento` | `RECEPCION`, `DESPACHO`, `CONSUMO` |
+| `TipoAlerta` | `alertas.tipo` | `NO_DEVUELTA`, `STOCK_CRITICO`, `CIERRE_TURNO` |
+
+Como se guardan por nombre y no por posición, reordenar un `enum` en Java no
+rompe los datos, pero **renombrar una constante sí**: exige una migración que
+actualice las filas existentes.
+
+#### Índices
+
+Además de los que PostgreSQL crea solo por cada `PRIMARY KEY` y `UNIQUE`:
+
+| Índice | Tabla | Columnas | Para qué |
+|---|---|---|---|
+| `idx_kardex_obra_material` | `kardex_movimientos` | `(obra_id, material_id)` | Calcular el stock de un material en una obra |
+| `idx_prestamo_obra_abierto` | `prestamos_herramienta` | `(obra_id, fecha_devol_real)` | Buscar préstamos abiertos (`fecha_devol_real IS NULL`) |
+| `idx_solicitud_herr_trabajador` | `solicitudes_herramienta` | `(trabajador_id)` | Las solicitudes de un trabajador |
+| `idx_solicitud_mat_obra` | `solicitudes_material` | `(obra_id)` | La cola de solicitudes del bodeguero |
+| `idx_alertas_obra_resuelto` | `alertas` | `(obra_id, resuelto)` | Alertas sin resolver de una obra |
+
 ---
 
 ## App móvil
