@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.obra.Trabajador;
 import jakarta.persistence.Column;
@@ -34,7 +35,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SolicitudHerramienta {
+public class SolicitudHerramienta implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,5 +96,10 @@ public class SolicitudHerramienta {
         if (this.estado != EstadoSolicitud.PENDIENTE) {
             throw new IllegalStateException("La solicitud ya fue resuelta (estado actual: " + estado + ")");
         }
+    }
+
+    @Override
+    public Long empresaId() {
+        return trabajador.empresaId();
     }
 }

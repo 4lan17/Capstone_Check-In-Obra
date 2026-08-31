@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,28 +29,37 @@ public class UsuarioController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Usuario crear(@RequestBody CrearUsuarioRequest req) {
-        return usuarioService.crear(req.empresaId(), req.nombre(), req.email(), req.rol(), req.pinInicial());
+    public UsuarioResponse crear(@RequestBody CrearUsuarioRequest req) {
+        // La empresa sale del token, no de la petición. Mientras el cliente
+        // pudiera nombrarla, pedir los datos de otra constructora era cuestión
+        // de cambiar un número en la URL.
+        return UsuarioResponse.de(usuarioService.crear(
+                SesionActual.empresaId(), req.nombre(), req.email(), req.rut(), req.rol(), req.pinInicial()));
     }
 
+    /** Leer el padrón es tan sensible como escribirlo: mismo rol que crear. */
     @GetMapping
-    public List<Usuario> listarPorEmpresa(@RequestParam Long empresaId) {
-        return usuarioService.listarPorEmpresa(empresaId);
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UsuarioResponse> listarPorEmpresa() {
+        return usuarioService.listarPorEmpresa(SesionActual.empresaId()).stream()
+                .map(UsuarioResponse::de)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Usuario obtener(@PathVariable Long id) {
-        return usuarioService.obtener(id);
+    @PreAuthorize("hasRole('ADMIN')")
+    public UsuarioResponse obtener(@PathVariable Long id) {
+        return UsuarioResponse.de(usuarioService.obtener(id));
     }
 
     @PutMapping("/{id}/pin")
     @PreAuthorize("hasRole('ADMIN')")
-    public Usuario redefinirPin(@PathVariable Long id, @RequestBody RedefinirPinRequest req) {
-        return usuarioService.redefinirPin(id, req.nuevoPin());
+    public UsuarioResponse redefinirPin(@PathVariable Long id, @RequestBody RedefinirPinRequest req) {
+        return UsuarioResponse.de(usuarioService.redefinirPin(id, req.nuevoPin()));
     }
 
     public record CrearUsuarioRequest(
-            Long empresaId, String nombre, String email, RolUsuario rol, String pinInicial) {
+            String nombre, String email, String rut, RolUsuario rol, String pinInicial) {
     }
 
     public record RedefinirPinRequest(String nuevoPin) {

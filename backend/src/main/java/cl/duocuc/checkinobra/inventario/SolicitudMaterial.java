@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.cubicacion.Material;
 import cl.duocuc.checkinobra.obra.Obra;
@@ -34,7 +35,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SolicitudMaterial {
+public class SolicitudMaterial implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -90,5 +91,10 @@ public class SolicitudMaterial {
         if (this.estado != EstadoSolicitud.PENDIENTE) {
             throw new IllegalStateException("La solicitud ya fue resuelta (estado actual: " + estado + ")");
         }
+    }
+
+    @Override
+    public Long empresaId() {
+        return obra.empresaId();
     }
 }

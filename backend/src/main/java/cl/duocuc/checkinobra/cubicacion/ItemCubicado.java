@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemCubicado {
+public class ItemCubicado implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,4 +43,9 @@ public class ItemCubicado {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "material_id", nullable = false)
     private Material material;
+
+    @Override
+    public Long empresaId() {
+        return partida.empresaId();
+    }
 }

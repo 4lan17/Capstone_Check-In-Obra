@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.presupuesto;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.obra.Obra;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,7 +30,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Presupuesto {
+public class Presupuesto implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,5 +73,10 @@ public class Presupuesto {
         double suma = items.stream().mapToDouble(PresupuestoItem::getSubtotal).sum();
         this.total = suma;
         return suma;
+    }
+
+    @Override
+    public Long empresaId() {
+        return obra.empresaId();
     }
 }

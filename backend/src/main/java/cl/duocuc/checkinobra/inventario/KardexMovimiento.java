@@ -1,8 +1,10 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.cubicacion.Material;
 import cl.duocuc.checkinobra.obra.Obra;
+import cl.duocuc.checkinobra.obra.Trabajador;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,7 +37,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class KardexMovimiento {
+public class KardexMovimiento implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,6 +66,15 @@ public class KardexMovimiento {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    /**
+     * Quién RECIBE el material, que no es lo mismo que quién lo registra. En un
+     * despacho son dos personas: el bodeguero anota y el trabajador se lleva.
+     * Nulo en una recepción, porque ahí el material entra desde un proveedor.
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "trabajador_id")
+    private Trabajador trabajador;
+
     /** KardexMovimiento.registrar() del diagrama — valida y sella la fecha. */
     public void registrar() {
         if (cantidad <= 0) {
@@ -77,5 +88,10 @@ public class KardexMovimiento {
     /** Signo del movimiento sobre el stock: +1 recepción, −1 despacho/consumo. */
     public int signo() {
         return tipoMovimiento == TipoMovimiento.RECEPCION ? 1 : -1;
+    }
+
+    @Override
+    public Long empresaId() {
+        return obra.empresaId();
     }
 }

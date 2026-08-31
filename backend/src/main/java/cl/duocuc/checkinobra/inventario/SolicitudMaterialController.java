@@ -30,42 +30,48 @@ public class SolicitudMaterialController {
     @PostMapping
     @PreAuthorize("hasRole('TRABAJADOR')")
     @ResponseStatus(HttpStatus.CREATED)
-    public SolicitudMaterial crear(@RequestBody CrearSolicitudRequest req) {
-        return solicitudMaterialService.crear(req.trabajadorId(), req.materialId(), req.obraId(), req.cantidad());
+    public SolicitudMaterialResponse crear(@RequestBody CrearSolicitudRequest req) {
+        return SolicitudMaterialResponse.de(
+                solicitudMaterialService.crear(req.trabajadorId(), req.materialId(), req.obraId(), req.cantidad()));
     }
 
     /** Aprobar/rechazar es de BODEGUERO o ADMIN, según la matriz de permisos. */
     @PutMapping("/{id}/aprobar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public KardexMovimiento aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
-        return solicitudMaterialService.aprobar(id, req.aprobadorId(), req.cantidadAEntregar());
+    public KardexMovimientoResponse aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
+        // Aprobar despacha: lo que sale es el movimiento de kardex.
+        return KardexMovimientoResponse.de(
+                solicitudMaterialService.aprobar(id, req.aprobadorId(), req.cantidadAEntregar()));
     }
 
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public SolicitudMaterial rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
-        return solicitudMaterialService.rechazar(id, req.rechazadorId(), req.motivo());
+    public SolicitudMaterialResponse rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
+        return SolicitudMaterialResponse.de(
+                solicitudMaterialService.rechazar(id, req.rechazadorId(), req.motivo()));
     }
 
     @GetMapping("/{id}")
-    public SolicitudMaterial obtener(@PathVariable Long id) {
-        return solicitudMaterialService.obtener(id);
+    public SolicitudMaterialResponse obtener(@PathVariable Long id) {
+        return SolicitudMaterialResponse.de(solicitudMaterialService.obtener(id));
     }
 
     @GetMapping
-    public List<SolicitudMaterial> listar(
+    public List<SolicitudMaterialResponse> listar(
             @RequestParam(required = false) Long trabajadorId,
             @RequestParam(required = false) Long obraId,
             @RequestParam(required = false, defaultValue = "false") boolean soloPendientes) {
+        List<SolicitudMaterial> solicitudes;
         if (trabajadorId != null) {
-            return solicitudMaterialService.listarPorTrabajador(trabajadorId);
-        }
-        if (obraId != null) {
-            return soloPendientes
+            solicitudes = solicitudMaterialService.listarPorTrabajador(trabajadorId);
+        } else if (obraId != null) {
+            solicitudes = soloPendientes
                     ? solicitudMaterialService.listarPendientesPorObra(obraId)
                     : solicitudMaterialService.listarPorObra(obraId);
+        } else {
+            throw new IllegalArgumentException("Se requiere trabajadorId u obraId");
         }
-        throw new IllegalArgumentException("Se requiere trabajadorId u obraId");
+        return solicitudes.stream().map(SolicitudMaterialResponse::de).toList();
     }
 
     public record CrearSolicitudRequest(Long trabajadorId, Long materialId, Long obraId, double cantidad) {

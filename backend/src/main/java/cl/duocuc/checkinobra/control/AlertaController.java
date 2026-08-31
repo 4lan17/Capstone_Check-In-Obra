@@ -25,35 +25,37 @@ public class AlertaController {
     }
 
     @GetMapping
-    public List<Alerta> listar(
+    public List<AlertaResponse> listar(
             @RequestParam Long obraId, @RequestParam(required = false, defaultValue = "false") boolean soloSinResolver) {
-        return soloSinResolver ? alertaService.listarSinResolver(obraId) : alertaService.listarPorObra(obraId);
+        List<Alerta> alertas =
+                soloSinResolver ? alertaService.listarSinResolver(obraId) : alertaService.listarPorObra(obraId);
+        return alertas.stream().map(AlertaResponse::de).toList();
     }
 
     /** Resolver una alerta es de BODEGUERO, JEFE_TERRENO o ADMIN, según la matriz de permisos. */
     @PutMapping("/{id}/resolver")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
-    public Alerta resolver(@PathVariable Long id) {
-        return alertaService.resolver(id);
+    public AlertaResponse resolver(@PathVariable Long id) {
+        return AlertaResponse.de(alertaService.resolver(id));
     }
 
     @PostMapping("/detectar-no-devueltas")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
-    public List<Alerta> detectarNoDevueltas(@RequestParam Long obraId) {
-        return alertaService.detectarNoDevueltas(obraId);
+    public List<AlertaResponse> detectarNoDevueltas(@RequestParam Long obraId) {
+        return alertaService.detectarNoDevueltas(obraId).stream().map(AlertaResponse::de).toList();
     }
 
     @PostMapping("/detectar-stock-critico")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
-    public List<Alerta> detectarStockCritico(@RequestParam Long obraId) {
-        return alertaService.detectarStockCritico(obraId);
+    public List<AlertaResponse> detectarStockCritico(@RequestParam Long obraId) {
+        return alertaService.detectarStockCritico(obraId).stream().map(AlertaResponse::de).toList();
     }
 
     /** Cerrar turno de bodega es exclusivo de BODEGUERO, según la matriz de permisos. */
     @PostMapping("/cierre-turno")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public Alerta generarCierreTurno(@RequestBody CierreTurnoRequest req) {
-        return alertaService.generarCierreTurno(req.obraId(), req.mensaje());
+    public AlertaResponse generarCierreTurno(@RequestBody CierreTurnoRequest req) {
+        return AlertaResponse.de(alertaService.generarCierreTurno(req.obraId(), req.mensaje()));
     }
 
     public record CierreTurnoRequest(Long obraId, String mensaje) {

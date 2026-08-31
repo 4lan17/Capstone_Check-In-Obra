@@ -61,3 +61,58 @@ Librería recomendada por la skill: **Phosphor Icons**, estilo *outline*.
 - [ ] Transiciones 150–300ms, `prefers-reduced-motion` respetado
 - [ ] Responsive: 375px / 768px / 1024px / 1440px
 - [ ] Contraste de texto 4.5:1 mínimo en modo claro
+
+---
+
+## Estado en la app Flutter
+
+Revisión con `ui-ux-pro-max` (prioridades 1 y 2: accesibilidad e interacción)
+sobre las pantallas de acceso, PIN e inicio.
+
+### Contraste medido
+
+Se midió cada par de colores en uso, no se estimó a ojo. Cuatro no pasaban:
+
+| Uso | Antes | Ahora | Umbral |
+|---|---|---|---|
+| Texto secundario sobre el encabezado azul | 4.04:1 | 6.97:1 (`textOnDark`) | 4.5:1 |
+| Rótulo del separador sobre blanco | 2.56:1 | 4.76:1 (`secondary`) | 4.5:1 |
+| Borde de campo de texto y de tecla | 1.18:1 | 3.27:1 (`borderControl`) | 3:1 |
+| Punto vacío del PIN | 1.48:1 | 3.42:1 (`borderControl`) | 3:1 |
+
+`test/accesibilidad_test.dart` recalcula estos umbrales sobre los tokens, para
+que un cambio de paleta no los rompa en silencio.
+
+### Distinción entre `border` y `borderControl`
+
+El design system tenía un solo token de borde. Son dos cosas: el separador
+decorativo entre superficies (`border`, 1.2:1, y con eso basta) y el contorno
+que identifica un control (`borderControl`, 3:1, exigido por WCAG 1.4.11). Un
+campo de texto dibujado con el primero se lee como un bloque de texto, no como
+algo donde escribir.
+
+### Interacción
+
+- El teclado del PIN y el panel de acceso rápido no daban ninguna respuesta al
+  tacto: el fondo opaco tapaba el splash del `InkWell`. Corregido con
+  `Material` → `InkWell` → contenido transparente (`PanelTocable`).
+- El botón "Entrar" conserva su rótulo mientras carga, en vez de quedar solo
+  con un spinner.
+
+### Lectores de pantalla
+
+- Errores y cambios de estado se anuncian con `liveRegion`.
+- Los controles de solo ícono (ojo del PIN, volver, borrar) tienen nombre.
+- Los íconos decorativos que acompañan a un texto salen del árbol accesible.
+- Los puntos del PIN se anuncian como "N de 4 dígitos ingresados".
+
+### Escalado de texto
+
+Chips, iniciales y teclado tienen caja de proporción fija, así que topan el
+escalado (1.3–1.4) en vez de desbordar. El resto de la app crece libremente.
+
+### Modo oscuro
+
+Deliberadamente no existe: `MaterialApp` fija `themeMode: ThemeMode.light`. La
+app se usa a pleno sol. Si se agrega, hay que medirle el contraste por
+separado — los valores del modo claro no se heredan.

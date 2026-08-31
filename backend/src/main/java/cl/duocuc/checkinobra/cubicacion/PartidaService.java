@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.obra.Obra;
 import cl.duocuc.checkinobra.obra.ObraService;
 import org.springframework.stereotype.Service;
@@ -39,17 +40,20 @@ public class PartidaService {
 
     @Transactional(readOnly = true)
     public List<Partida> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return partidaRepository.findByObraId(obraId);
     }
 
     @Transactional(readOnly = true)
     public Partida obtener(Long id) {
         return partidaRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Partida no encontrada: " + id));
     }
 
     @Transactional(readOnly = true)
     public List<ItemCubicado> itemsCubicados(Long partidaId) {
+        obtener(partidaId);
         return itemCubicadoRepository.findByPartidaId(partidaId);
     }
 }

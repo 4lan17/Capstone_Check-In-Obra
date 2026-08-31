@@ -32,43 +32,43 @@ public class PresupuestoController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Presupuesto crear(@RequestBody CrearPresupuestoRequest req) {
-        return presupuestoService.crear(req.obraId());
+    public PresupuestoResponse crear(@RequestBody CrearPresupuestoRequest req) {
+        return PresupuestoResponse.de(presupuestoService.crear(req.obraId()));
     }
 
     @GetMapping("/{id}")
-    public Presupuesto obtener(@PathVariable Long id) {
-        return presupuestoService.obtener(id);
+    public PresupuestoResponse obtener(@PathVariable Long id) {
+        return PresupuestoResponse.de(presupuestoService.obtener(id));
     }
 
     @GetMapping
-    public Presupuesto obtenerPorObra(@RequestParam Long obraId) {
-        return presupuestoService.obtenerPorObra(obraId);
+    public PresupuestoResponse obtenerPorObra(@RequestParam Long obraId) {
+        return PresupuestoResponse.de(presupuestoService.obtenerPorObra(obraId));
     }
 
     @PostMapping("/{id}/items")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public PresupuestoItem agregarItem(@PathVariable Long id, @RequestBody AgregarItemRequest req) {
-        return presupuestoService.agregarItem(id, req.materialId(), req.cantidad());
+    public PresupuestoItemResponse agregarItem(@PathVariable Long id, @RequestBody AgregarItemRequest req) {
+        return PresupuestoItemResponse.de(presupuestoService.agregarItem(id, req.materialId(), req.cantidad()));
     }
 
     @GetMapping("/{id}/items")
-    public List<PresupuestoItem> listarItems(@PathVariable Long id) {
-        return presupuestoService.listarItems(id);
+    public List<PresupuestoItemResponse> listarItems(@PathVariable Long id) {
+        return presupuestoService.listarItems(id).stream().map(PresupuestoItemResponse::de).toList();
     }
 
     @PutMapping("/{id}/aprobar")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
-    public Presupuesto aprobar(@PathVariable Long id) {
-        return presupuestoService.aprobar(id);
+    public PresupuestoResponse aprobar(@PathVariable Long id) {
+        return PresupuestoResponse.de(presupuestoService.aprobar(id));
     }
 
     /** Congelar el presupuesto es de JEFE_TERRENO o ADMIN, según la matriz de permisos. */
     @PutMapping("/{id}/congelar")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
-    public Presupuesto congelar(@PathVariable Long id) {
-        return presupuestoService.congelar(id);
+    public PresupuestoResponse congelar(@PathVariable Long id) {
+        return PresupuestoResponse.de(presupuestoService.congelar(id));
     }
 
     @GetMapping("/{id}/desviacion")

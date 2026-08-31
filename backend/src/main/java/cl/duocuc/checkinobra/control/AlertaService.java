@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.control;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.cubicacion.Material;
 import cl.duocuc.checkinobra.inventario.KardexMovimientoService;
 import cl.duocuc.checkinobra.inventario.PrestamoHerramienta;
@@ -44,6 +45,7 @@ public class AlertaService {
 
     /** Revisa los préstamos abiertos de la obra y genera NO_DEVUELTA para los vencidos que aún no tienen alerta. */
     public List<Alerta> detectarNoDevueltas(Long obraId) {
+        obraService.obtener(obraId);
         Obra obra = obraService.obtener(obraId);
         List<PrestamoHerramienta> abiertos = prestamoHerramientaRepository.findByObraIdAndFechaDevolRealIsNull(obraId);
         List<Alerta> existentes = alertaRepository.findByObraIdAndResueltoFalse(obraId);
@@ -54,7 +56,10 @@ public class AlertaService {
                         a.getPrestamoHerramienta() != null && a.getPrestamoHerramienta().getId().equals(p.getId())))
                 .map(p -> alertaRepository.save(Alerta.generar(
                         TipoAlerta.NO_DEVUELTA,
-                        p.getHerramienta().getNombre() + " sin devolver — " + p.getTrabajador().getRut(),
+                        // Nombre y RUT: la alerta tiene que decir a quién ir a
+                        // buscar, no solo qué falta.
+                        p.getHerramienta().getNombre() + " sin devolver — "
+                                + p.getTrabajador().nombre() + " (" + p.getTrabajador().rut() + ")",
                         obra,
                         p)))
                 .toList();
@@ -62,6 +67,7 @@ public class AlertaService {
 
     /** Revisa el catálogo de la obra y genera STOCK_CRITICO para lo que quedó bajo el mínimo. */
     public List<Alerta> detectarStockCritico(Long obraId) {
+        obraService.obtener(obraId);
         Obra obra = obraService.obtener(obraId);
         List<Material> materiales = materialService.listarPorEmpresa(obra.getEmpresa().getId());
         List<Alerta> existentes = alertaRepository.findByObraIdAndResueltoFalse(obraId);
@@ -94,16 +100,19 @@ public class AlertaService {
     @Transactional(readOnly = true)
     public Alerta obtener(Long id) {
         return alertaRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Alerta no encontrada: " + id));
     }
 
     @Transactional(readOnly = true)
     public List<Alerta> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return alertaRepository.findByObraId(obraId);
     }
 
     @Transactional(readOnly = true)
     public List<Alerta> listarSinResolver(Long obraId) {
+        obraService.obtener(obraId);
         return alertaRepository.findByObraIdAndResueltoFalse(obraId);
     }
 }

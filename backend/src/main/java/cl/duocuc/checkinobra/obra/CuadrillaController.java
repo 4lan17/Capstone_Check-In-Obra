@@ -28,18 +28,18 @@ public class CuadrillaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Cuadrilla crear(@RequestBody CrearCuadrillaRequest req) {
-        return cuadrillaService.crear(req.obraId(), req.nombre());
+    public CuadrillaResponse crear(@RequestBody CrearCuadrillaRequest req) {
+        return CuadrillaResponse.de(cuadrillaService.crear(req.obraId(), req.nombre()));
     }
 
     @GetMapping
-    public List<Cuadrilla> listarPorObra(@RequestParam Long obraId) {
-        return cuadrillaService.listarPorObra(obraId);
+    public List<CuadrillaResponse> listarPorObra(@RequestParam Long obraId) {
+        return cuadrillaService.listarPorObra(obraId).stream().map(CuadrillaResponse::de).toList();
     }
 
     @GetMapping("/{id}")
-    public Cuadrilla obtener(@PathVariable Long id) {
-        return cuadrillaService.obtener(id);
+    public CuadrillaResponse obtener(@PathVariable Long id) {
+        return CuadrillaResponse.de(cuadrillaService.obtener(id));
     }
 
     public record CrearCuadrillaRequest(Long obraId, String nombre) {

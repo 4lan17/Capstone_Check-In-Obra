@@ -35,8 +35,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtService.validarYExtraer(header.substring(7));
                 String rol = claims.get("rol", String.class);
+                // El principal es el usuario completo, no solo su id: el
+                // empresaId viaja firmado en el token y es lo que después
+                // decide a qué datos puede llegar esta petición.
+                var usuario = new UsuarioAutenticado(
+                        Long.valueOf(claims.getSubject()),
+                        claims.get("email", String.class),
+                        RolUsuario.valueOf(rol),
+                        claims.get("empresaId", Number.class).longValue());
                 var authToken = new UsernamePasswordAuthenticationToken(
-                        claims.getSubject(),
+                        usuario,
                         null,
                         List.of(new SimpleGrantedAuthority("ROLE_" + rol)));
                 SecurityContextHolder.getContext().setAuthentication(authToken);

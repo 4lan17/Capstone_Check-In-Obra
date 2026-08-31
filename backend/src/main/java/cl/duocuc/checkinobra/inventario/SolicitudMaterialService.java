@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.cubicacion.Material;
@@ -71,15 +72,20 @@ public class SolicitudMaterialService {
     public KardexMovimiento aprobar(Long solicitudId, Long aprobadorId, double cantidadAEntregar) {
         SolicitudMaterial solicitud = obtener(solicitudId);
         Usuario aprobador = usuarioRepository.findById(aprobadorId)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
 
         solicitud.aprobar(aprobador);
         solicitudMaterialRepository.save(solicitud);
 
+        // El receptor no hay que preguntarlo: quien pidió el material es quien
+        // se lo lleva. Por eso la cola de solicitudes deja mejor trazabilidad
+        // que un despacho directo.
         return kardexMovimientoService.registrarMovimiento(
                 solicitud.getObra().getId(),
                 solicitud.getMaterial().getId(),
                 aprobadorId,
+                solicitud.getTrabajador().getId(),
                 TipoMovimiento.DESPACHO,
                 cantidadAEntregar);
     }
@@ -88,6 +94,7 @@ public class SolicitudMaterialService {
     public SolicitudMaterial rechazar(Long solicitudId, Long rechazadorId, String motivo) {
         SolicitudMaterial solicitud = obtener(solicitudId);
         Usuario rechazador = usuarioRepository.findById(rechazadorId)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + rechazadorId));
         solicitud.rechazar(rechazador, motivo);
         return solicitudMaterialRepository.save(solicitud);
@@ -96,21 +103,25 @@ public class SolicitudMaterialService {
     @Transactional(readOnly = true)
     public SolicitudMaterial obtener(Long id) {
         return solicitudMaterialRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada: " + id));
     }
 
     @Transactional(readOnly = true)
     public List<SolicitudMaterial> listarPorTrabajador(Long trabajadorId) {
+        trabajadorService.obtener(trabajadorId);
         return solicitudMaterialRepository.findByTrabajadorId(trabajadorId);
     }
 
     @Transactional(readOnly = true)
     public List<SolicitudMaterial> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return solicitudMaterialRepository.findByObraId(obraId);
     }
 
     @Transactional(readOnly = true)
     public List<SolicitudMaterial> listarPendientesPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return solicitudMaterialRepository.findByObraIdAndEstado(obraId, EstadoSolicitud.PENDIENTE);
     }
 }

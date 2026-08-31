@@ -1,6 +1,6 @@
 import 'package:checkinobra_mobile/core/storage/sesion_storage.dart';
 import 'package:checkinobra_mobile/data/api/auth_api.dart';
-import 'package:checkinobra_mobile/features/inicio/pantalla_inicio.dart';
+import 'package:checkinobra_mobile/features/inicio/pantalla_rol_pendiente.dart';
 import 'package:checkinobra_mobile/shared_widgets/panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,26 +56,31 @@ void main() {
     });
   });
 
-  testWidgets('el inicio muestra el rol y sus permisos', (tester) async {
+  testWidgets('el rol pendiente muestra sus permisos y qué falta', (
+    tester,
+  ) async {
+    // El jefe de terreno es uno de los dos roles cuyo flujo no está
+    // construido: el bodeguero y el admin ya entran a su propio shell.
     const sesion = SesionUsuario(
       token: 't',
       usuarioId: 1,
-      nombre: 'Jorge Reyes',
-      rol: 'BODEGUERO',
+      nombre: 'Rodrigo Cárcamo',
+      rol: 'JEFE_TERRENO',
       empresaId: 1,
     );
 
     await tester.pumpWidget(
       const ProviderScope(
-        child: MaterialApp(home: PantallaInicio(sesion: sesion)),
+        child: MaterialApp(home: PantallaRolPendiente(sesion: sesion)),
       ),
     );
     await tester.pump();
 
-    expect(find.text('Jorge Reyes'), findsWidgets);
-    expect(find.text('BODEGUERO'), findsWidgets);
-    // Un permiso propio del bodeguero, y ninguno ajeno a su rol.
-    expect(find.text('Aprobar o rechazar solicitudes'), findsOneWidget);
-    expect(find.text('Congelar el presupuesto'), findsNothing);
+    expect(find.text('Rodrigo Cárcamo'), findsWidgets);
+    // Un permiso propio de su rol, y ninguno ajeno.
+    expect(find.text('Congelar el presupuesto'), findsOneWidget);
+    expect(find.text('Aprobar o rechazar solicitudes'), findsNothing);
+    // Y dice qué falta, en vez de dejarlo esperando sin explicación.
+    expect(find.textContaining('Falta el flujo de cubicación'), findsOneWidget);
   });
 }

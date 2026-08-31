@@ -31,42 +31,48 @@ public class SolicitudHerramientaController {
     @PostMapping
     @PreAuthorize("hasRole('TRABAJADOR')")
     @ResponseStatus(HttpStatus.CREATED)
-    public SolicitudHerramienta crear(@RequestBody CrearSolicitudRequest req) {
-        return solicitudHerramientaService.crear(req.trabajadorId(), req.herramientaId(), req.cantidad());
+    public SolicitudHerramientaResponse crear(@RequestBody CrearSolicitudRequest req) {
+        return SolicitudHerramientaResponse.de(
+                solicitudHerramientaService.crear(req.trabajadorId(), req.herramientaId(), req.cantidad()));
     }
 
     /** Aprobar/rechazar es de BODEGUERO o ADMIN, según la matriz de permisos. */
     @PutMapping("/{id}/aprobar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public PrestamoHerramienta aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
-        return solicitudHerramientaService.aprobar(id, req.aprobadorId(), req.fechaDevolEsperada());
+    public PrestamoHerramientaResponse aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
+        // Aprobar una solicitud produce el préstamo, no la solicitud.
+        return PrestamoHerramientaResponse.de(
+                solicitudHerramientaService.aprobar(id, req.aprobadorId(), req.fechaDevolEsperada()));
     }
 
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public SolicitudHerramienta rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
-        return solicitudHerramientaService.rechazar(id, req.rechazadorId(), req.motivo());
+    public SolicitudHerramientaResponse rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
+        return SolicitudHerramientaResponse.de(
+                solicitudHerramientaService.rechazar(id, req.rechazadorId(), req.motivo()));
     }
 
     @GetMapping("/{id}")
-    public SolicitudHerramienta obtener(@PathVariable Long id) {
-        return solicitudHerramientaService.obtener(id);
+    public SolicitudHerramientaResponse obtener(@PathVariable Long id) {
+        return SolicitudHerramientaResponse.de(solicitudHerramientaService.obtener(id));
     }
 
     @GetMapping
-    public List<SolicitudHerramienta> listar(
+    public List<SolicitudHerramientaResponse> listar(
             @RequestParam(required = false) Long trabajadorId,
             @RequestParam(required = false) Long obraId,
             @RequestParam(required = false, defaultValue = "false") boolean soloPendientes) {
+        List<SolicitudHerramienta> solicitudes;
         if (trabajadorId != null) {
-            return solicitudHerramientaService.listarPorTrabajador(trabajadorId);
-        }
-        if (obraId != null) {
-            return soloPendientes
+            solicitudes = solicitudHerramientaService.listarPorTrabajador(trabajadorId);
+        } else if (obraId != null) {
+            solicitudes = soloPendientes
                     ? solicitudHerramientaService.listarPendientesPorObra(obraId)
                     : solicitudHerramientaService.listarPorObra(obraId);
+        } else {
+            throw new IllegalArgumentException("Se requiere trabajadorId u obraId");
         }
-        throw new IllegalArgumentException("Se requiere trabajadorId u obraId");
+        return solicitudes.stream().map(SolicitudHerramientaResponse::de).toList();
     }
 
     public record CrearSolicitudRequest(Long trabajadorId, Long herramientaId, int cantidad) {
