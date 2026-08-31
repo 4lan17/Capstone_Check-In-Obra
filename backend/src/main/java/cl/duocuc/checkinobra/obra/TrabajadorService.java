@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.RolUsuario;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
@@ -27,7 +28,7 @@ public class TrabajadorService {
         this.cuadrillaService = cuadrillaService;
     }
 
-    public Trabajador crear(Long usuarioId, String rut, Long cuadrillaId) {
+    public Trabajador crear(Long usuarioId, Long cuadrillaId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + usuarioId));
         if (usuario.getRol() != RolUsuario.TRABAJADOR) {
@@ -35,7 +36,6 @@ public class TrabajadorService {
         }
         Cuadrilla cuadrilla = cuadrillaId != null ? cuadrillaService.obtener(cuadrillaId) : null;
         Trabajador trabajador = Trabajador.builder()
-                .rut(rut)
                 .usuario(usuario)
                 .cuadrilla(cuadrilla)
                 .credencialQr(UUID.randomUUID().toString())
@@ -46,12 +46,15 @@ public class TrabajadorService {
     @Transactional(readOnly = true)
     public Trabajador obtener(Long id) {
         return trabajadorRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Trabajador no encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
     public Trabajador buscarPorCredencialQr(String credencialQr) {
+        // Un QR de otra empresa no se resuelve, aunque el código sea válido.
         return trabajadorRepository.findByCredencialQr(credencialQr)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Credencial no reconocida"));
     }
 

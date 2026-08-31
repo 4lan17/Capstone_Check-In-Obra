@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,27 +28,32 @@ public class HerramientaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Herramienta crear(@RequestBody CrearHerramientaRequest req) {
-        return herramientaService.crear(
-                req.empresaId(), req.codigoQr(), req.nombre(), req.categoria(), req.valorReposicion());
+    public HerramientaResponse crear(@RequestBody CrearHerramientaRequest req) {
+        // La empresa sale del token, no de la petición. Mientras el cliente
+        // pudiera nombrarla, pedir los datos de otra constructora era cuestión
+        // de cambiar un número en la URL.
+        return HerramientaResponse.de(herramientaService.crear(
+                SesionActual.empresaId(), req.codigoQr(), req.nombre(), req.categoria(), req.valorReposicion()));
     }
 
     @GetMapping
-    public List<Herramienta> listarPorEmpresa(@RequestParam Long empresaId) {
-        return herramientaService.listarPorEmpresa(empresaId);
+    public List<HerramientaResponse> listarPorEmpresa() {
+        return herramientaService.listarPorEmpresa(SesionActual.empresaId()).stream()
+                .map(HerramientaResponse::de)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Herramienta obtener(@PathVariable Long id) {
-        return herramientaService.obtener(id);
+    public HerramientaResponse obtener(@PathVariable Long id) {
+        return HerramientaResponse.de(herramientaService.obtener(id));
     }
 
     @GetMapping("/por-codigo/{codigoQr}")
-    public Herramienta buscarPorCodigo(@PathVariable String codigoQr) {
-        return herramientaService.buscarPorCodigoQr(codigoQr);
+    public HerramientaResponse buscarPorCodigo(@PathVariable String codigoQr) {
+        return HerramientaResponse.de(herramientaService.buscarPorCodigoQr(codigoQr));
     }
 
     public record CrearHerramientaRequest(
-            Long empresaId, String codigoQr, String nombre, String categoria, double valorReposicion) {
+            String codigoQr, String nombre, String categoria, double valorReposicion) {
     }
 }

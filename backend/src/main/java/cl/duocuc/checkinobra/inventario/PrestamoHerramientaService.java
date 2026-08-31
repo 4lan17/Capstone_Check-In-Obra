@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.obra.Obra;
@@ -43,6 +44,7 @@ public class PrestamoHerramientaService {
     public PrestamoHerramienta prestarDirecto(
             Long herramientaId, Long trabajadorId, Long obraId, Long autorizadorId, LocalDateTime fechaDevolEsperada) {
         Herramienta herramienta = herramientaRepository.findById(herramientaId)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
         if (herramienta.getEstado() != EstadoHerramienta.DISPONIBLE) {
             throw new IllegalStateException("La herramienta no está DISPONIBLE (estado actual: " + herramienta.getEstado() + ")");
@@ -50,6 +52,7 @@ public class PrestamoHerramientaService {
         Trabajador trabajador = trabajadorService.obtener(trabajadorId);
         Obra obra = obraService.obtener(obraId);
         Usuario autorizador = usuarioRepository.findById(autorizadorId)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + autorizadorId));
 
         PrestamoHerramienta prestamo = PrestamoHerramienta.builder()
@@ -87,22 +90,32 @@ public class PrestamoHerramientaService {
     @Transactional(readOnly = true)
     public PrestamoHerramienta obtener(Long id) {
         return prestamoHerramientaRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Préstamo no encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
     public List<PrestamoHerramienta> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return prestamoHerramientaRepository.findByObraId(obraId);
     }
 
     @Transactional(readOnly = true)
     public List<PrestamoHerramienta> listarPorTrabajador(Long trabajadorId) {
+        trabajadorService.obtener(trabajadorId);
         return prestamoHerramientaRepository.findByTrabajadorId(trabajadorId);
     }
 
     @Transactional(readOnly = true)
     public List<PrestamoHerramienta> listarVencidos() {
+        // Esta consulta no lleva obra ni empresa: barría los préstamos vencidos de
+        // todas las constructoras del sistema. Acá se filtra, no se rechaza:
+        // pedir "los vencidos" es legítimo, lo que no corresponde es ver los
+        // ajenos.
+        Long empresa = cl.duocuc.checkinobra.config.SesionActual.empresaId();
         return prestamoHerramientaRepository
-                .findByFechaDevolRealIsNullAndFechaDevolEsperadaBefore(LocalDateTime.now());
+                .findByFechaDevolRealIsNullAndFechaDevolEsperadaBefore(LocalDateTime.now()).stream()
+                .filter(p -> empresa.equals(p.empresaId()))
+                .toList();
     }
 }

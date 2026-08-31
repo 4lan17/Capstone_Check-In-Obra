@@ -1,0 +1,60 @@
+/// Refleja `MaterialResponse` del backend.
+class MaterialObra {
+  const MaterialObra({
+    required this.id,
+    required this.sku,
+    required this.nombre,
+    required this.categoria,
+    required this.precioUnitario,
+    required this.stockMinimo,
+  });
+
+  final int id;
+  final String sku;
+  final String nombre;
+
+  /// `CategoriaMaterial`: METALCOM, VOLCANITA, OSB, FIJACION.
+  final String categoria;
+  final double precioUnitario;
+  final double stockMinimo;
+
+  factory MaterialObra.desdeJson(Map<String, dynamic> j) => MaterialObra(
+    id: j['id'] as int,
+    sku: j['sku'] as String,
+    nombre: j['nombre'] as String,
+    categoria: j['categoria'] as String,
+    precioUnitario: (j['precioUnitario'] as num).toDouble(),
+    stockMinimo: (j['stockMinimo'] as num).toDouble(),
+  );
+}
+
+/// Refleja `ParametroMermaResponse`.
+class ParametroMerma {
+  const ParametroMerma({required this.porcentaje, required this.materialId});
+
+  final double porcentaje;
+  final int materialId;
+
+  factory ParametroMerma.desdeJson(Map<String, dynamic> j) => ParametroMerma(
+    porcentaje: (j['porcentaje'] as num).toDouble(),
+    materialId: j['materialId'] as int,
+  );
+}
+
+/// Un material junto con su saldo en una obra. El stock no viene en
+/// `MaterialResponse` porque no es del material: es la suma de los movimientos
+/// de kardex de ese material **en esa obra**.
+class MaterialConStock {
+  const MaterialConStock({required this.material, required this.stock});
+
+  final MaterialObra material;
+  final double stock;
+
+  bool get critico => stock < material.stockMinimo;
+
+  /// Bajo, pero todavía no bajo el mínimo: el margen es del 25 %.
+  bool get bajo => !critico && stock < material.stockMinimo * 1.25;
+
+  /// Orden de la pantalla de bodega: primero lo que hay que reponer.
+  int get criticidad => critico ? 0 : (bajo ? 1 : 2);
+}

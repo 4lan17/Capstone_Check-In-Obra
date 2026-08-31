@@ -28,22 +28,36 @@ public class KardexMovimientoController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public KardexMovimiento registrar(@RequestBody RegistrarMovimientoRequest req) {
-        return kardexMovimientoService.registrarMovimiento(
-                req.obraId(), req.materialId(), req.usuarioId(), req.tipo(), req.cantidad());
+    public KardexMovimientoResponse registrar(@RequestBody RegistrarMovimientoRequest req) {
+        return KardexMovimientoResponse.de(kardexMovimientoService.registrarMovimiento(
+                req.obraId(),
+                req.materialId(),
+                req.usuarioId(),
+                req.trabajadorId(),
+                req.tipo(),
+                req.cantidad()));
     }
 
+    /** El movimiento de bodega lo consulta quien lo administra o lo controla, no el trabajador. */
     @GetMapping
-    public List<KardexMovimiento> listarPorObra(@RequestParam Long obraId) {
-        return kardexMovimientoService.listarPorObra(obraId);
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
+    public List<KardexMovimientoResponse> listarPorObra(@RequestParam Long obraId) {
+        return kardexMovimientoService.listarPorObra(obraId).stream().map(KardexMovimientoResponse::de).toList();
     }
 
     @GetMapping("/stock")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public double stockActual(@RequestParam Long obraId, @RequestParam Long materialId) {
         return kardexMovimientoService.stockActual(obraId, materialId);
     }
 
     public record RegistrarMovimientoRequest(
-            Long obraId, Long materialId, Long usuarioId, TipoMovimiento tipo, double cantidad) {
+            Long obraId,
+            Long materialId,
+            Long usuarioId,
+            /** A quién se le entrega. Obligatorio en un DESPACHO. */
+            Long trabajadorId,
+            TipoMovimiento tipo,
+            double cantidad) {
     }
 }

@@ -1,5 +1,7 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.Usuario;
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Empresa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +27,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Obra {
+public class Obra implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +46,14 @@ public class Obra {
     @Column(nullable = false, length = 20)
     private EstadoObra estado;
 
+    /**
+     * Quién dirige la obra. Nulo mientras no se le asigne: una obra puede
+     * crearse antes de que se defina el jefe.
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "jefe_terreno_id")
+    private Usuario jefeTerreno;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
@@ -59,5 +69,10 @@ public class Obra {
             throw new IllegalStateException("La obra ya está cerrada");
         }
         this.estado = EstadoObra.CERRADA;
+    }
+
+    @Override
+    public Long empresaId() {
+        return empresa.getId();
     }
 }

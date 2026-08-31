@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Empresa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Herramienta {
+public class Herramienta implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,4 +51,9 @@ public class Herramienta {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
+
+    @Override
+    public Long empresaId() {
+        return empresa.getId();
+    }
 }

@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class MotorCubicacionService {
      */
     public List<ItemCubicado> calcular(Long partidaId) {
         Partida partida = partidaRepository.findById(partidaId)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Partida no encontrada: " + partidaId));
         Long empresaId = partida.getObra().getEmpresa().getId();
 

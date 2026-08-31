@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class ParametroMermaService {
 
     /** Crea o reemplaza la excepción de merma de un material puntual. */
     public ParametroMerma definirParaMaterial(Long materialId, double porcentaje) {
+        materialService.obtener(materialId);
         Material material = materialService.obtener(materialId);
         ParametroMerma parametro = parametroMermaRepository.findByMaterialId(materialId)
                 .orElseGet(() -> ParametroMerma.builder().material(material).build());
@@ -28,6 +30,7 @@ public class ParametroMermaService {
 
     @Transactional(readOnly = true)
     public Optional<ParametroMerma> paraMaterial(Long materialId) {
+        materialService.obtener(materialId);
         return parametroMermaRepository.findByMaterialId(materialId);
     }
 }

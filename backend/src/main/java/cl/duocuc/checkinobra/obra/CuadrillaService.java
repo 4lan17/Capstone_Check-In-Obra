@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +26,14 @@ public class CuadrillaService {
 
     @Transactional(readOnly = true)
     public List<Cuadrilla> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return cuadrillaRepository.findByObraId(obraId);
     }
 
     @Transactional(readOnly = true)
     public Cuadrilla obtener(Long id) {
         return cuadrillaRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Cuadrilla no encontrada: " + id));
     }
 }

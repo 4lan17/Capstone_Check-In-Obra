@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.control;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.inventario.PrestamoHerramienta;
 import cl.duocuc.checkinobra.obra.Obra;
 import jakarta.persistence.Column;
@@ -37,7 +38,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Alerta {
+public class Alerta implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,5 +83,10 @@ public class Alerta {
             throw new IllegalStateException("La alerta ya estaba resuelta");
         }
         this.resuelto = true;
+    }
+
+    @Override
+    public Long empresaId() {
+        return obra.empresaId();
     }
 }

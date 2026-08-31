@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.obra.Obra;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +27,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Partida {
+public class Partida implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,5 +53,10 @@ public class Partida {
     /** Superficie neta en m² — base de MotorCubicacion.calcular(). */
     public double superficieM2() {
         return anchoM * altoM;
+    }
+
+    @Override
+    public Long empresaId() {
+        return obra.empresaId();
     }
 }

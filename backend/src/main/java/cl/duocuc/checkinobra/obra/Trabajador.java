@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,14 +31,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Trabajador {
+public class Trabajador implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, unique = true)
-    private String rut;
 
     /** Payload del QR de la credencial que escanea el bodeguero. */
     @Column(name = "credencial_qr", unique = true)
@@ -50,4 +48,19 @@ public class Trabajador {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cuadrilla_id")
     private Cuadrilla cuadrilla;
+
+    @Override
+    public Long empresaId() {
+        return usuario.empresaId();
+    }
+
+    /** El RUT es de la persona, y la persona es el Usuario. */
+    public String rut() {
+        return usuario.getRut();
+    }
+
+    /** Nombre completo, por la misma razón. */
+    public String nombre() {
+        return usuario.getNombre();
+    }
 }

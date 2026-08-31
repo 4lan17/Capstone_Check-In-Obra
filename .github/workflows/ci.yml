@@ -1,10 +1,12 @@
 name: CI
 
+# develop es la rama de integración: los PR llegan ahí antes que a main, así
+# que si la CI no corre sobre ella, valida siempre después de haber mezclado.
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 # Un push nuevo sobre la misma rama cancela la corrida anterior: no tiene
 # sentido gastar minutos validando un commit que ya quedó atrás.

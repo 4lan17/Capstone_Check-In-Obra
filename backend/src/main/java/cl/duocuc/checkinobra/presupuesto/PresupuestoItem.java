@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.presupuesto;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.cubicacion.Material;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PresupuestoItem {
+public class PresupuestoItem implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,5 +52,10 @@ public class PresupuestoItem {
     public double recalcularSubtotal() {
         this.subtotal = this.cantidad * this.precioUnitario;
         return this.subtotal;
+    }
+
+    @Override
+    public Long empresaId() {
+        return presupuesto.empresaId();
     }
 }

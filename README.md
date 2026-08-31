@@ -476,6 +476,28 @@ Base: `http://localhost:8081` · Swagger: `/swagger-ui.html`
 | Solicitudes de material | `/api/solicitudes-material` |
 | Alertas | `/api/alertas` |
 
+### Dar de alta una constructora
+
+No hay endpoint para crearla, y no es un olvido. Lo hubo, y era incoherente: el
+ADMIN que creaba una empresa no podía verla después, porque el aislamiento por
+empresa lo dejaba fuera de la que acababa de crear. Dar de alta un tenant no es
+una operación de un tenant — necesitaría un rol por encima de los cuatro, y
+este sistema tiene cuatro por diseño.
+
+Una constructora nueva se crea por migración junto con su primer ADMIN, como
+hace `V2__seed_admin.sql`:
+
+```sql
+INSERT INTO empresas (nombre, rut) VALUES ('Constructora Nueva Ltda.', '77.111.222-3');
+
+INSERT INTO usuarios (nombre, email, rol, pin_hash, empresa_id)
+VALUES ('Admin Nueva', 'admin@nueva.cl', 'ADMIN',
+        '<hash BCrypt del PIN inicial>',
+        (SELECT id FROM empresas WHERE rut = '77.111.222-3'));
+```
+
+Su primera acción debe ser cambiar ese PIN desde la app.
+
 ### Autenticación
 
 Dos formas de entrar, ambas devuelven el mismo JWT:
@@ -516,6 +538,62 @@ es `Usuario.rol`, y con eso el backend decide qué autoriza (`@PreAuthorize`).
 | Crear usuarios y asignar rol | — | — | — | ✅ |
 | Catálogo, precios y mermas | — | — | — | ✅ |
 | Crear y cerrar obras | — | — | — | ✅ |
+| Consultar kardex y stock de una obra | — | ✅ | ✅ | ✅ |
+| Consultar el padrón de usuarios | — | — | — | ✅ |
+| Asignar el jefe de terreno de una obra | — | — | — | ✅ |
+
+Las dos últimas filas son lecturas, y también van restringidas: un endpoint sin
+`@PreAuthorize` queda abierto a los cuatro roles, que casi nunca es lo buscado.
+
+### Dónde vive el RUT
+
+En `Usuario`, no en `Trabajador`. Estaba en `Trabajador` y ahí no alcanzaba: un
+jefe de terreno o un bodeguero no tienen registro de trabajador —
+`TrabajadorService` rechaza cualquier rol que no sea `TRABAJADOR`— así que no
+había dónde guardar el suyo. El RUT identifica a una **persona**, no a un rol.
+
+La migración `V3` lo sube a `usuarios`, lo rellena desde `trabajadores` y borra
+la columna duplicada. `Trabajador.rut()` lo lee de su `Usuario`. Queda nulo solo
+para los usuarios anteriores a esa migración; la API lo exige al crear.
+
+La misma migración agrega `obras.jefe_terreno_id` (el mockup `AdminObras` ya
+tenía esa columna y el modelo nunca la tuvo) y `kardex_movimientos.trabajador_id`
+(quién **recibe**, que no es quién **registra**).
+
+### Aislamiento entre empresas
+
+El rol decide **qué** puede hacer alguien. La empresa decide **sobre qué datos**.
+Son dos preguntas distintas y hacen falta las dos: un bodeguero con un token
+perfectamente válido no tiene por qué ver el inventario de otra constructora.
+
+- La empresa **siempre sale del token**, nunca de la petición. Ningún endpoint
+  recibe ya un `empresaId` por query param ni en el cuerpo: pedir los datos de
+  otra constructora dejó de ser expresable.
+- Toda entidad implementa `PerteneceAEmpresa` y sabe decir de quién es
+  recorriendo su propia cadena (`Cuadrilla → Obra → Empresa`).
+- Un recurso de otra empresa devuelve **el mismo 404, con el mismo mensaje**,
+  que un id que no existe. Distinguirlos —403 para lo ajeno, 404 para lo
+  inexistente— permitiría recorrer los ids del sistema y contar las obras de la
+  competencia.
+
+Los tests que lo sostienen viven en `backend/src/test/.../config/`:
+`AislamientoEntreEmpresasTest` falla si alguien agrega una entidad sin
+`PerteneceAEmpresa` o un endpoint que reciba `empresaId` desde afuera, y
+`RespuestasNoExponenEntidadesTest` falla si un controlador vuelve a devolver una
+entidad JPA.
+
+### Forma de las respuestas
+
+Ningún controlador devuelve entidades: cada uno tiene su `record` de respuesta
+(`ObraResponse`, `KardexMovimientoResponse`, …) con las relaciones aplanadas a
+su id más la etiqueta mínima para leerlas. Devolver la entidad arrastraba el
+grafo entero por los `@ManyToOne(fetch = EAGER)` —y con él, en su momento, el
+hash BCrypt del PIN de cada usuario—. `Usuario.pinHash` conserva además
+`@JsonIgnore` como red de seguridad.
+
+Dos records de trabajador, a propósito: `TrabajadorResponse` sin la credencial
+QR, y `TrabajadorCredencialResponse` solo al emitirla o renovarla. Ese QR es un
+UUID portador — quien lo tiene se presenta en bodega como ese trabajador.
 
 ---
 
@@ -846,6 +924,84 @@ Además de los que PostgreSQL crea solo por cada `PRIMARY KEY` y `UNIQUE`:
 ---
 
 ## App móvil
+
+### Flujos por rol
+
+Cada rol entra a su propia app. No es una decisión estética: el bodeguero
+trabaja **sobre una obra** y necesita elegirla antes de ver nada, mientras que
+el administrador trabaja **sobre la empresa entera** y no tiene obra activa. Un
+shell común tendría que negar la mitad de sí mismo en cada caso.
+
+El enrutado está en `main.dart`, en `_paraElRol`.
+
+| Rol | Estado | Dónde |
+|---|---|---|
+| Bodeguero | ✅ Construido | `features/bodega/shell_bodega.dart` |
+| Administrador | ✅ Construido | `features/admin/shell_admin.dart` |
+| Jefe de terreno | ⏳ Pendiente | `features/inicio/pantalla_rol_pendiente.dart` |
+| Trabajador | ⏳ Pendiente | idem |
+
+#### Bodeguero
+
+Cuatro pestañas sobre una obra elegida al entrar y recordada por el teléfono:
+
+1. **Inicio** — contadores del turno, **capital en la obra**, alertas sin
+   resolver, últimos movimientos y el acceso a cerrar turno.
+2. **Bodega** — el catálogo cruzado con el saldo de la obra, ordenado por
+   criticidad y filtrable por crítico/bajo. De ahí se entra al detalle del
+   material, que muestra el kardex completo con el saldo tras cada movimiento,
+   y de ahí a registrar recepción, despacho o consumo.
+3. **Herramientas** — lo que está fuera de bodega y el catálogo. La devolución
+   pregunta en qué estado vuelve la herramienta: si vuelve dañada no puede
+   quedar disponible para el siguiente préstamo.
+4. **Alertas** — dispara la detección en el backend al abrirse (no hay tareas
+   programadas: las alertas nacen cuando alguien mira) y permite resolverlas.
+
+La pantalla de movimiento muestra **el saldo que va a quedar antes de
+confirmar**, y avisa si cruza el mínimo de obra. Es lo que convierte el
+registro en una decisión y no en un formulario a ciegas. El backend además
+rechaza con 409 lo que dejaría el stock negativo.
+
+**Quién recibe.** Un despacho exige indicar a qué trabajador se le entrega, y
+queda en el kardex con su nombre y su RUT. Un consumo puede no tenerlo —es
+material que se gastó en la obra, no que alguien se llevó— y una recepción no
+lo admite, porque ahí el material entra desde un proveedor. Los préstamos
+funcionan igual: el trabajador que recibe la herramienta queda identificado y
+es quien responde por ella hasta devolverla.
+
+**Capital en la obra.** Dos cifras, separadas a propósito porque son problemas
+distintos: los *materiales en bodega* son el stock valorizado a precio de
+catálogo (capital inmovilizado que hay que consumir), y las *herramientas
+fuera* son el valor de reposición de lo que sigue prestado (valor que hay que
+recuperar antes de cerrar el turno). Un solo total las volvería una cifra
+decorativa.
+
+#### Administrador
+
+Cuatro pestañas sobre la empresa:
+
+1. **Obras** — crear, cerrar y **asignar el jefe de terreno a cargo**, que se
+   muestra con nombre y RUT. Solo un `JEFE_TERRENO` o un `ADMIN` puede dirigir
+   una obra: el backend rechaza cualquier otro rol, porque un bodeguero a cargo
+   no tendría los permisos que el puesto necesita. Cerrar advierte que la
+   desviación queda fijada y que no se puede reabrir.
+2. **Materiales** — catálogo por categoría; precio unitario y merma se editan
+   juntos, que es lo que cambia de un material ya creado.
+3. **Usuarios** — el padrón por rol, alta con **RUT**, rol y PIN inicial, y
+   restablecimiento de PIN. El diálogo dice lo que corresponde: el PIN anterior
+   no se puede recuperar, solo reemplazar.
+4. **Empresa** — datos, contadores y el acceso a la **vista de bodega**, porque
+   la matriz de permisos le concede al admin todo lo de bodega.
+
+#### Lo que falta
+
+El **jefe de terreno** necesita el flujo de cubicación: crear partidas, correr
+el motor de cubicación, armar y congelar el presupuesto, y ver la desviación.
+El **trabajador** necesita el de terreno: solicitar herramienta y material,
+mostrar su credencial QR y seguir sus préstamos. Ambos endpoints ya existen en
+el backend y ambos roles ya autentican y autorizan bien; lo que falta son las
+pantallas. Mientras tanto, `PantallaRolPendiente` se lo dice en pantalla junto
+con los permisos que su rol sí tiene.
 
 ### Emulador (teléfono virtual)
 

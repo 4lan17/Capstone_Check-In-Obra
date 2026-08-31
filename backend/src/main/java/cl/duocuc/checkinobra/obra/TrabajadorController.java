@@ -29,38 +29,48 @@ public class TrabajadorController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Trabajador crear(@RequestBody CrearTrabajadorRequest req) {
-        return trabajadorService.crear(req.usuarioId(), req.rut(), req.cuadrillaId());
+    public TrabajadorCredencialResponse crear(@RequestBody CrearTrabajadorRequest req) {
+        // Al crearlo se emite su credencial, y es la única vez que hay que
+        // entregarla junto con el resto de los datos. El RUT no viene acá: es
+        // del Usuario, y se define al registrarlo.
+        return TrabajadorCredencialResponse.de(
+                trabajadorService.crear(req.usuarioId(), req.cuadrillaId()));
     }
 
     @GetMapping("/{id}")
-    public Trabajador obtener(@PathVariable Long id) {
-        return trabajadorService.obtener(id);
+    public TrabajadorResponse obtener(@PathVariable Long id) {
+        return TrabajadorResponse.de(trabajadorService.obtener(id));
     }
 
     @GetMapping("/por-credencial/{credencialQr}")
-    public Trabajador buscarPorCredencial(@PathVariable String credencialQr) {
-        return trabajadorService.buscarPorCredencialQr(credencialQr);
+    public TrabajadorResponse buscarPorCredencial(@PathVariable String credencialQr) {
+        // Quien escanea ya tiene el código en la mano: devolverlo otra vez solo
+        // ampliaría por dónde puede filtrarse.
+        return TrabajadorResponse.de(trabajadorService.buscarPorCredencialQr(credencialQr));
     }
 
     @GetMapping
-    public List<Trabajador> listar(
+    public List<TrabajadorResponse> listar(
             @RequestParam(required = false) Long cuadrillaId,
             @RequestParam(required = false) Long obraId) {
         if (cuadrillaId != null) {
-            return trabajadorService.listarPorCuadrilla(cuadrillaId);
+            return trabajadorService.listarPorCuadrilla(cuadrillaId).stream()
+                    .map(TrabajadorResponse::de)
+                    .toList();
         }
         if (obraId != null) {
-            return trabajadorService.listarPorObra(obraId);
+            return trabajadorService.listarPorObra(obraId).stream().map(TrabajadorResponse::de).toList();
         }
         throw new IllegalArgumentException("Se requiere cuadrillaId u obraId");
     }
 
     @PutMapping("/{id}/credencial")
-    public Trabajador renovarCredencial(@PathVariable Long id) {
-        return trabajadorService.renovarCredencial(id);
+    public TrabajadorCredencialResponse renovarCredencial(@PathVariable Long id) {
+        // Renovar sin devolver el código nuevo dejaría al trabajador sin
+        // credencial: acá sí tiene que viajar.
+        return TrabajadorCredencialResponse.de(trabajadorService.renovarCredencial(id));
     }
 
-    public record CrearTrabajadorRequest(Long usuarioId, String rut, Long cuadrillaId) {
+    public record CrearTrabajadorRequest(Long usuarioId, Long cuadrillaId) {
     }
 }

@@ -1,5 +1,8 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.obra.TrabajadorService;
+import cl.duocuc.checkinobra.obra.Trabajador;
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.cubicacion.Material;
@@ -21,16 +24,19 @@ public class KardexMovimientoService {
     private final ObraService obraService;
     private final MaterialService materialService;
     private final UsuarioRepository usuarioRepository;
+    private final TrabajadorService trabajadorService;
 
     public KardexMovimientoService(
             KardexMovimientoRepository kardexMovimientoRepository,
             ObraService obraService,
             MaterialService materialService,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            TrabajadorService trabajadorService) {
         this.kardexMovimientoRepository = kardexMovimientoRepository;
         this.obraService = obraService;
         this.materialService = materialService;
         this.usuarioRepository = usuarioRepository;
+        this.trabajadorService = trabajadorService;
     }
 
     /**
@@ -39,11 +45,19 @@ public class KardexMovimientoService {
      * mismo bloqueo que ya anticipaba la pantalla de despacho.
      */
     public KardexMovimiento registrarMovimiento(
-            Long obraId, Long materialId, Long usuarioId, TipoMovimiento tipo, double cantidad) {
+            Long obraId,
+            Long materialId,
+            Long usuarioId,
+            Long trabajadorId,
+            TipoMovimiento tipo,
+            double cantidad) {
         Obra obra = obraService.obtener(obraId);
         Material material = materialService.obtener(materialId);
         Usuario usuario = usuarioRepository.findById(usuarioId)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + usuarioId));
+
+        Trabajador receptor = resolverReceptor(tipo, trabajadorId);
 
         if (tipo != TipoMovimiento.RECEPCION) {
             double stockActual = stockActual(obraId, materialId);
@@ -57,6 +71,7 @@ public class KardexMovimientoService {
                 .obra(obra)
                 .material(material)
                 .usuario(usuario)
+                .trabajador(receptor)
                 .tipoMovimiento(tipo)
                 .cantidad(cantidad)
                 .fecha(LocalDateTime.now())
@@ -65,9 +80,33 @@ public class KardexMovimientoService {
         return kardexMovimientoRepository.save(movimiento);
     }
 
+    /**
+     * Quién se lleva el material.
+     *
+     * <p>Un DESPACHO sin receptor deja el kardex sin poder responder "¿a quién se
+     * le entregaron esas 36 planchas?", que es justo lo que el bodeguero necesita
+     * cuando aparece un descuadre. Un CONSUMO puede no tenerlo —es material que
+     * se gastó en la obra, no que alguien se llevó— y una RECEPCION nunca lo
+     * tiene, porque el material entra desde un proveedor.
+     */
+    private Trabajador resolverReceptor(TipoMovimiento tipo, Long trabajadorId) {
+        if (tipo == TipoMovimiento.RECEPCION) {
+            if (trabajadorId != null) {
+                throw new IllegalArgumentException(
+                        "Una recepción no tiene trabajador receptor: el material entra desde un proveedor");
+            }
+            return null;
+        }
+        if (tipo == TipoMovimiento.DESPACHO && trabajadorId == null) {
+            throw new IllegalArgumentException("Un despacho debe indicar a qué trabajador se le entrega");
+        }
+        return trabajadorId == null ? null : trabajadorService.obtener(trabajadorId);
+    }
+
     /** Stock actual = suma con signo de los movimientos de ese material en esa obra. */
     @Transactional(readOnly = true)
     public double stockActual(Long obraId, Long materialId) {
+        obraService.obtener(obraId);
         return kardexMovimientoRepository.findByObraIdAndMaterialId(obraId, materialId).stream()
                 .mapToDouble(m -> m.getCantidad() * m.signo())
                 .sum();
@@ -75,6 +114,7 @@ public class KardexMovimientoService {
 
     @Transactional(readOnly = true)
     public List<KardexMovimiento> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return kardexMovimientoRepository.findByObraId(obraId);
     }
 }

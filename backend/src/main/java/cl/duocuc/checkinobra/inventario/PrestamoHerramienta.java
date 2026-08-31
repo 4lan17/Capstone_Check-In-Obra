@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.obra.Obra;
 import cl.duocuc.checkinobra.obra.Trabajador;
@@ -27,7 +28,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PrestamoHerramienta {
+public class PrestamoHerramienta implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,5 +78,10 @@ public class PrestamoHerramienta {
     /** PrestamoHerramienta.estaVencido(): boolean del diagrama. */
     public boolean estaVencido() {
         return fechaDevolReal == null && LocalDateTime.now().isAfter(fechaDevolEsperada);
+    }
+
+    @Override
+    public Long empresaId() {
+        return obra.empresaId();
     }
 }

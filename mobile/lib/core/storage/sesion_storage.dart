@@ -21,6 +21,7 @@ class SesionStorage {
 
   static const _claveSesion = 'sesion_actual';
   static const _claveUsuarioRecordado = 'usuario_recordado';
+  static const _claveObraActiva = 'obra_activa';
 
   Future<void> guardar(SesionUsuario sesion) async {
     await _storage.write(key: _claveSesion, value: jsonEncode(sesion.aJson()));
@@ -55,6 +56,7 @@ class SesionStorage {
   Future<void> olvidarTodo() async {
     await _storage.delete(key: _claveSesion);
     await _storage.delete(key: _claveUsuarioRecordado);
+    await _storage.delete(key: _claveObraActiva);
   }
 
   Future<UsuarioRecordado?> leerUsuarioRecordado() async {
@@ -74,6 +76,22 @@ class SesionStorage {
   }
 
   Future<String?> leerToken() async => (await leer())?.token;
+
+  /// Obra en la que está trabajando quien usa el teléfono.
+  ///
+  /// El backend no asocia bodegueros a obras —solo los trabajadores tienen
+  /// cuadrilla, y la cuadrilla tiene obra—, así que la elige la persona y el
+  /// teléfono la recuerda. Sin esto habría que preguntarla en cada pantalla,
+  /// y en una obra el bodeguero trabaja en una sola durante semanas.
+  Future<void> guardarObraActiva(int obraId) =>
+      _storage.write(key: _claveObraActiva, value: obraId.toString());
+
+  Future<int?> leerObraActiva() async {
+    final crudo = await _storage.read(key: _claveObraActiva);
+    return crudo == null ? null : int.tryParse(crudo);
+  }
+
+  Future<void> olvidarObraActiva() => _storage.delete(key: _claveObraActiva);
 }
 
 /// Datos mínimos del último usuario que entró en este teléfono, para
