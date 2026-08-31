@@ -7,13 +7,18 @@ import '../../data/api/auth_api.dart';
 import '../../shared_widgets/panel.dart';
 import '../auth/sesion_controller.dart';
 
-/// Pantalla posterior al acceso. Por ahora confirma quién entró y qué le
-/// habilita su rol; el contenido real de cada rol se construye encima.
+/// Lo que ve un rol cuyo flujo todavía no está construido.
 ///
-/// La navegación inferior cambia según el rol (el jefe de terreno no escanea,
-/// el admin no tiene bodega), así que cada rol tendrá su propio shell.
-class PantallaInicio extends ConsumerWidget {
-  const PantallaInicio({super.key, required this.sesion});
+/// Hoy son el jefe de terreno y el trabajador. Bodeguero y administrador
+/// tienen su propio shell (`ShellBodega`, `ShellAdmin`), y el enrutado de
+/// `main.dart` los manda ahí; quien caiga acá es porque su flujo está
+/// pendiente.
+///
+/// Decir eso en pantalla, con los permisos que su rol ya tiene concedidos en
+/// el backend, es más útil que una pantalla vacía: la autenticación y la
+/// autorización funcionan, lo que falta son las pantallas.
+class PantallaRolPendiente extends ConsumerWidget {
+  const PantallaRolPendiente({super.key, required this.sesion});
 
   final SesionUsuario sesion;
 
@@ -32,7 +37,9 @@ class PantallaInicio extends ConsumerWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
-                color: AppColors.textFaint,
+                // Sobre el azul de la barra, `textFaint` medía 4:1 y no
+                // llegaba al 4.5:1 que pide el design system.
+                color: AppColors.textOnDark,
               ),
             ),
             Text(
@@ -49,119 +56,155 @@ class PantallaInicio extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Panel(
-              child: Row(
-                children: [
-                  Iniciales(sesion.nombre, tamano: 52),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          sesion.nombre,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Empresa #${sesion.empresaId} · usuario #${sesion.usuarioId}',
-                          style: const TextStyle(
-                            fontFamily: AppTheme.monoFamily,
-                            fontSize: 11.5,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ChipEstado.neutro(sesion.rol),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            const Etiqueta('Lo que habilita tu rol'),
-            const SizedBox(height: 8),
-            Panel(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  for (var i = 0; i < permisos.length; i++)
-                    Container(
-                      decoration: BoxDecoration(
-                        border: i < permisos.length - 1
-                            ? const Border(
-                                bottom: BorderSide(color: AppColors.border),
-                              )
-                            : null,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 13,
-                      ),
-                      child: Row(
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Panel(
+                child: Row(
+                  children: [
+                    Iniciales(sesion.nombre, tamano: 52),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.check,
-                            size: 18,
-                            color: AppColors.successDark,
+                          Text(
+                            sesion.nombre,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              permisos[i],
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                color: AppColors.primary,
-                              ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Empresa #${sesion.empresaId} · usuario #${sesion.usuarioId}',
+                            style: const TextStyle(
+                              fontFamily: AppTheme.monoFamily,
+                              fontSize: 11.5,
+                              color: AppColors.secondary,
                             ),
                           ),
                         ],
                       ),
                     ),
-                ],
+                    ChipEstado.neutro(sesion.rol),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            Panel(
-              color: AppColors.warningTint,
-              borderColor: AppColors.warning,
-              child: const Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.construction_outlined,
-                    size: 20,
-                    color: AppColors.warningDark,
-                  ),
-                  SizedBox(width: 11),
-                  Expanded(
-                    child: Text(
-                      'Autenticación lista. Las pantallas de cada rol se '
-                      'construyen a continuación sobre esta base.',
-                      style: TextStyle(
+              const SizedBox(height: 18),
+              const Etiqueta('Lo que habilita tu rol'),
+              const SizedBox(height: 8),
+              Panel(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < permisos.length; i++)
+                      Container(
+                        decoration: BoxDecoration(
+                          border: i < permisos.length - 1
+                              ? const Border(
+                                  bottom: BorderSide(color: AppColors.border),
+                                )
+                              : null,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
+                        child: Row(
+                          children: [
+                            // El visto no aporta nada que el texto no diga: es
+                            // una lista de permisos, todos concedidos.
+                            const ExcludeSemantics(
+                              child: Icon(
+                                Icons.check,
+                                size: 18,
+                                color: AppColors.successDark,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                permisos[i],
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Panel(
+                color: AppColors.warningTint,
+                borderColor: AppColors.warning,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ExcludeSemantics(
+                          child: Icon(
+                            Icons.construction_outlined,
+                            size: 20,
+                            color: AppColors.warningDark,
+                          ),
+                        ),
+                        SizedBox(width: 11),
+                        Expanded(
+                          child: Text(
+                            'Tu rol ya está reconocido y el backend te '
+                            'autoriza todo lo de arriba. Lo que falta son las '
+                            'pantallas.',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              height: 1.4,
+                              color: Color(0xFF92400E),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _queFalta(sesion.rol),
+                      style: const TextStyle(
                         fontSize: 12.5,
                         height: 1.4,
                         color: Color(0xFF92400E),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
+  /// Qué pantallas faltan por rol, para que no sea un "vuelve después" a secas.
+  String _queFalta(String rol) => switch (rol) {
+    'JEFE_TERRENO' =>
+      'Falta el flujo de cubicación: crear partidas, calcular con el motor de '
+          'cubicación, armar y congelar el presupuesto, y ver la desviación de '
+          'la obra.',
+    'TRABAJADOR' =>
+      'Falta el flujo de terreno: solicitar herramienta y material, mostrar la '
+          'credencial QR y seguir tus préstamos.',
+    _ => 'El flujo de este rol todavía no se construye.',
+  };
 
   /// Refleja la matriz de permisos del README y los `@PreAuthorize` del backend.
   List<String> _permisosDe(String rol) => switch (rol) {

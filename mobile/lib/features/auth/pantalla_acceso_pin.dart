@@ -75,54 +75,60 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
                 child: Container(
                   width: double.infinity,
                   color: Colors.white,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
-                    child: Column(
-                      children: [
-                        _Titulo(
-                          error: sesion.hasError
-                              ? mensajeDeError(sesion.error!)
-                              : null,
-                          cargando: sesion.isLoading,
-                        ),
-                        const SizedBox(height: 14),
-                        _Puntos(cantidad: _pin.length, error: sesion.hasError),
-                        const SizedBox(height: 22),
-                        _Teclado(
-                          habilitado: !sesion.isLoading,
-                          alPulsar: (d) => _tecla(d, usuario),
-                          alLimpiar: () => setState(() => _pin = ''),
-                          alBorrar: _borrar,
-                        ),
-                        const SizedBox(height: 18),
-                        const Panel(
-                          color: AppColors.background,
-                          padding: EdgeInsets.all(12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.lock_outline,
-                                size: 19,
-                                color: AppColors.secondary,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'El PIN no se guarda en el teléfono. Si lo '
-                                  'olvidaste, lo restablece el administrador '
-                                  'de la empresa.',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    height: 1.4,
-                                    color: AppColors.textMuted,
+                  child: SafeArea(
+                    top: false,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+                      child: Column(
+                        children: [
+                          _Titulo(
+                            error: sesion.hasError
+                                ? mensajeDeError(sesion.error!)
+                                : null,
+                            cargando: sesion.isLoading,
+                          ),
+                          const SizedBox(height: 14),
+                          _Puntos(
+                            cantidad: _pin.length,
+                            error: sesion.hasError,
+                          ),
+                          const SizedBox(height: 22),
+                          _Teclado(
+                            habilitado: !sesion.isLoading,
+                            alPulsar: (d) => _tecla(d, usuario),
+                            alLimpiar: () => setState(() => _pin = ''),
+                            alBorrar: _borrar,
+                          ),
+                          const SizedBox(height: 18),
+                          const Panel(
+                            color: AppColors.background,
+                            padding: EdgeInsets.all(12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 19,
+                                  color: AppColors.secondary,
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'El PIN no se guarda en el teléfono. Si lo '
+                                    'olvidaste, lo restablece el administrador '
+                                    'de la empresa.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      height: 1.4,
+                                      color: AppColors.textMuted,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -151,6 +157,7 @@ class _Encabezado extends ConsumerWidget {
             Row(
               children: [
                 IconButton(
+                  tooltip: 'Volver al acceso con correo',
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
@@ -170,8 +177,8 @@ class _Encabezado extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Panel(
-                color: const Color(0xFF1E293B),
-                borderColor: const Color(0xFF475569),
+                color: AppColors.surfaceDark,
+                borderColor: AppColors.borderOnDark,
                 padding: const EdgeInsets.all(13),
                 child: Row(
                   children: [
@@ -249,24 +256,31 @@ class _Titulo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (cargando) {
-      return const Text(
-        'Verificando…',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textMuted,
-        ),
-      );
-    }
-    return Text(
-      error ?? 'Ingresa tu PIN de 4 dígitos',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: error != null ? AppColors.destructiveDark : AppColors.primary,
-      ),
+    // Este texto es el único aviso de que el PIN falló: el teclado no cambia
+    // y los puntos solo se vacían. `liveRegion` hace que se anuncie al pasar
+    // de "Verificando…" a un error, en vez de cambiar en silencio.
+    return Semantics(
+      liveRegion: true,
+      child: cargando
+          ? const Text(
+              'Verificando…',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMuted,
+              ),
+            )
+          : Text(
+              error ?? 'Ingresa tu PIN de 4 dígitos',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: error != null
+                    ? AppColors.destructiveDark
+                    : AppColors.primary,
+              ),
+            ),
     );
   }
 }
@@ -279,26 +293,37 @@ class _Puntos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(4, (i) {
-        final lleno = i < cantidad;
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 7),
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: lleno
-                ? (error ? AppColors.destructive : AppColors.primary)
-                : Colors.white,
-            border: Border.all(
-              color: error ? AppColors.destructive : const Color(0xFFCBD5E1),
-              width: 2,
+    // Cuántos dígitos van es la única confirmación de que la tecla registró.
+    // Es información gráfica pura, así que se dice en palabras y se anuncia
+    // en cuanto cambia.
+    return Semantics(
+      liveRegion: true,
+      label: '$cantidad de 4 dígitos ingresados',
+      excludeSemantics: true,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(4, (i) {
+          final lleno = i < cantidad;
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 7),
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: lleno
+                  ? (error ? AppColors.destructive : AppColors.primary)
+                  : Colors.white,
+              // El borde es lo único que dibuja un punto vacío: con el gris
+              // anterior medía 1.5:1 sobre blanco y sencillamente no se veía
+              // a pleno sol.
+              border: Border.all(
+                color: error ? AppColors.destructive : AppColors.borderControl,
+                width: 2,
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 }
@@ -318,21 +343,54 @@ class _Teclado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      // Teclas de ~62 px de alto: muy por encima del mínimo de 44 px.
-      childAspectRatio: 1.6,
-      children: [
-        for (final d in ['1', '2', '3', '4', '5', '6', '7', '8', '9'])
+    // Las celdas tienen proporción fija (`childAspectRatio`), así que un
+    // dígito a 25 px con el texto del sistema al 200 % no cabe. Se topa el
+    // escalado del teclado en 1.4 — las teclas ya son grandes por diseño, lo
+    // que este tope protege es que el "LIMPIAR" no desborde su celda.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.4,
+      child: GridView.count(
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        // Teclas de ~62 px de alto: muy por encima del mínimo de 44 px.
+        childAspectRatio: 1.6,
+        children: [
+          for (final d in ['1', '2', '3', '4', '5', '6', '7', '8', '9'])
+            _Tecla(
+              semanticLabel: d,
+              onTap: habilitado ? () => alPulsar(d) : null,
+              child: Text(
+                d,
+                style: const TextStyle(
+                  fontFamily: AppTheme.monoFamily,
+                  fontSize: 25,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
           _Tecla(
-            onTap: habilitado ? () => alPulsar(d) : null,
-            child: Text(
-              d,
-              style: const TextStyle(
+            semanticLabel: 'Limpiar el PIN',
+            conFondo: false,
+            onTap: habilitado ? alLimpiar : null,
+            child: const Text(
+              'LIMPIAR',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.secondary,
+              ),
+            ),
+          ),
+          _Tecla(
+            semanticLabel: '0',
+            onTap: habilitado ? () => alPulsar('0') : null,
+            child: const Text(
+              '0',
+              style: TextStyle(
                 fontFamily: AppTheme.monoFamily,
                 fontSize: 25,
                 fontWeight: FontWeight.w500,
@@ -340,66 +398,67 @@ class _Teclado extends StatelessWidget {
               ),
             ),
           ),
-        _Tecla(
-          conFondo: false,
-          onTap: habilitado ? alLimpiar : null,
-          child: const Text(
-            'LIMPIAR',
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: AppColors.secondary,
-            ),
-          ),
-        ),
-        _Tecla(
-          onTap: habilitado ? () => alPulsar('0') : null,
-          child: const Text(
-            '0',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFamily,
-              fontSize: 25,
-              fontWeight: FontWeight.w500,
+          _Tecla(
+            // Tecla solo de ícono: sin esta etiqueta se anuncia como "botón".
+            semanticLabel: 'Borrar el último dígito',
+            conFondo: false,
+            onTap: habilitado ? alBorrar : null,
+            child: const Icon(
+              Icons.backspace_outlined,
+              size: 24,
               color: AppColors.primary,
             ),
           ),
-        ),
-        _Tecla(
-          conFondo: false,
-          onTap: habilitado ? alBorrar : null,
-          child: const Icon(
-            Icons.backspace_outlined,
-            size: 24,
-            color: AppColors.primary,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 class _Tecla extends StatelessWidget {
-  const _Tecla({required this.child, this.onTap, this.conFondo = true});
+  const _Tecla({
+    required this.child,
+    required this.semanticLabel,
+    this.onTap,
+    this.conFondo = true,
+  });
 
   final Widget child;
+
+  /// Lo que anuncia el lector de pantalla al enfocar la tecla.
+  final String semanticLabel;
+
   final VoidCallback? onTap;
   final bool conFondo;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        alignment: Alignment.center,
-        decoration: conFondo
-            ? const BoxDecoration(
-                color: AppColors.background,
-                border: Border.fromBorderSide(
-                  BorderSide(color: AppColors.border),
-                ),
-              )
-            : null,
-        child: child,
+    // El `Material` va afuera y pone el color; el `Container` de adentro solo
+    // dibuja el borde. Al revés —que es como estaba— el fondo opaco del
+    // `Container` tapa el splash del `InkWell` y la tecla no acusa recibo:
+    // se aprieta y no pasa nada. Con guantes y sin respuesta visible, se
+    // aprieta de nuevo, y el PIN termina con un dígito de más.
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Material(
+        color: conFondo ? AppColors.background : Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            alignment: Alignment.center,
+            decoration: conFondo
+                ? const BoxDecoration(
+                    border: Border.fromBorderSide(
+                      BorderSide(color: AppColors.borderControl),
+                    ),
+                  )
+                : null,
+            child: child,
+          ),
+        ),
       ),
     );
   }

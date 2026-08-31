@@ -43,6 +43,59 @@ class Panel extends StatelessWidget {
   }
 }
 
+/// Panel que se toca. No es `InkWell(child: Panel(...))`: ese envoltorio
+/// parece funcionar pero no da ninguna respuesta al tacto, porque el
+/// `Container` opaco del `Panel` se dibuja *encima* del splash y lo tapa. El
+/// dedo aprieta y no pasa nada visible — que en obra se lee como "la app se
+/// colgó" y termina en un segundo toque, es decir, la acción repetida.
+///
+/// El orden correcto es `Material` (pone el color y recibe el splash) →
+/// `InkWell` → contenido con fondo transparente.
+class PanelTocable extends StatelessWidget {
+  const PanelTocable({
+    super.key,
+    required this.child,
+    required this.onTap,
+    required this.semanticLabel,
+    this.color = AppColors.card,
+    this.borderColor = AppColors.borderControl,
+    this.padding = const EdgeInsets.all(14),
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
+
+  /// Lo que anuncia el lector de pantalla. Obligatorio: un panel entero
+  /// tocable no se describe solo.
+  final String semanticLabel;
+
+  final Color color;
+  final Color borderColor;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: semanticLabel,
+      child: Material(
+        color: color,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              border: Border.fromBorderSide(BorderSide(color: borderColor)),
+            ),
+            child: ExcludeSemantics(child: child),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Rótulo de sección: mayúsculas, pequeño y espaciado.
 class Etiqueta extends StatelessWidget {
   const Etiqueta(this.texto, {super.key, this.color = AppColors.textMuted});
@@ -114,31 +167,39 @@ class ChipEstado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      color: fondo,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (punto != null) ...[
-            Container(
-              width: 5,
-              height: 5,
-              decoration: BoxDecoration(color: punto, shape: BoxShape.circle),
+    // El design system exige que el chip no quiebre línea. A 10 px, con el
+    // texto del sistema al 200 %, "SIN CONEXIÓN" en una sola línea desborda
+    // la fila que lo contiene. Se topa el escalado del chip —y solo del
+    // chip— en 1.3: sigue creciendo con la preferencia del usuario, pero
+    // dentro de lo que la fila aguanta.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.3,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        color: fondo,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (punto != null) ...[
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(color: punto, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              texto.toUpperCase(),
+              // El chip nunca quiebra línea: el ancho se adapta al texto.
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: textoColor,
+              ),
             ),
-            const SizedBox(width: 6),
           ],
-          Text(
-            texto.toUpperCase(),
-            // El chip nunca quiebra línea: el ancho se adapta al texto.
-            softWrap: false,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: textoColor,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -167,17 +228,26 @@ class Iniciales extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Las iniciales son una abreviatura decorativa: el nombre completo
+    // siempre está escrito al lado. Leerlas en voz alta ("E S") solo agrega
+    // ruido antes del dato que sí importa.
     return Container(
       width: tamano,
       height: tamano,
       color: AppColors.primary,
       alignment: Alignment.center,
-      child: Text(
-        de(nombre),
-        style: TextStyle(
-          fontSize: tamano * 0.32,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+      child: ExcludeSemantics(
+        // El cuadro tiene lado fijo, así que el texto no puede escalar sin
+        // desbordarlo.
+        child: MediaQuery.withNoTextScaling(
+          child: Text(
+            de(nombre),
+            style: TextStyle(
+              fontSize: tamano * 0.32,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
         ),
       ),
     );

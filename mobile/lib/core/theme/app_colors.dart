@@ -19,7 +19,17 @@ abstract final class AppColors {
 
   static const background = Color(0xFFF8FAFC);
   static const card = Color(0xFFFFFFFF);
+
+  /// Separador decorativo entre superficies. Mide 1.2:1 y con eso basta:
+  /// no identifica ningún control, solo agrupa.
   static const border = Color(0xFFE2E8F0);
+
+  /// Borde de un control — campo de texto, tecla, panel que se toca.
+  /// Mide 3.3:1 sobre el relleno de los campos, por encima del 3:1 que
+  /// exige WCAG para el contorno que identifica un componente. El `border`
+  /// decorativo no sirve acá: sobre el relleno queda en 1.2:1 y el campo
+  /// parece un bloque de texto, no algo donde escribir.
+  static const borderControl = Color(0xFF7E8CA0);
 
   /// Semáforo. Se usan como chip tintado (fondo claro + texto oscuro),
   /// nunca como texto de color puro sobre blanco.
@@ -36,5 +46,18 @@ abstract final class AppColors {
   static const destructiveTint = Color(0xFFFEF2F2);
 
   static const textMuted = Color(0xFF475569);
+
+  /// Texto y bordes tenues **sobre fondo claro**. Mide 2.6:1 sobre blanco,
+  /// así que no se usa para texto: solo para íconos decorativos que
+  /// acompañan a un texto que ya dice lo mismo.
   static const textFaint = Color(0xFF94A3B8);
+
+  /// Texto secundario **sobre las superficies oscuras** (`primary` y el
+  /// panel `surfaceDark`). Mide 7:1 sobre `primary`; `textFaint` ahí se
+  /// quedaba en 4:1 y no pasaba el 4.5:1 del propio design system.
+  static const textOnDark = Color(0xFFCBD5E1);
+
+  /// Panel oscuro sobre el encabezado, y su borde.
+  static const surfaceDark = Color(0xFF1E293B);
+  static const borderOnDark = Color(0xFF64748B);
 }

@@ -59,90 +59,113 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
             child: Container(
               width: double.infinity,
               color: Colors.white,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Etiqueta('Correo de empresa'),
-                      const SizedBox(height: 7),
-                      _CampoTexto(
-                        controlador: _email,
-                        hint: 'nombre@empresa.cl',
-                        icono: Icons.mail_outline,
-                        teclado: TextInputType.emailAddress,
-                        mono: true,
-                        validador: (v) => (v == null || !v.contains('@'))
-                            ? 'Escribe un correo válido'
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      const Etiqueta('PIN de 4 dígitos'),
-                      const SizedBox(height: 7),
-                      _CampoTexto(
-                        controlador: _pin,
-                        hint: '••••',
-                        icono: Icons.lock_outline,
-                        teclado: TextInputType.number,
-                        oculto: _ocultarPin,
-                        mono: true,
-                        maxLength: 4,
-                        formatters: [FilteringTextInputFormatter.digitsOnly],
-                        sufijo: IconButton(
-                          icon: Icon(
-                            _ocultarPin
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            size: 20,
+              // `bottom` sí: el último elemento del formulario quedaba bajo la
+              // barra de gestos en los teléfonos sin botones físicos.
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Etiqueta('Correo de empresa'),
+                        const SizedBox(height: 7),
+                        _CampoTexto(
+                          controlador: _email,
+                          hint: 'nombre@empresa.cl',
+                          icono: Icons.mail_outline,
+                          teclado: TextInputType.emailAddress,
+                          mono: true,
+                          validador: (v) => (v == null || !v.contains('@'))
+                              ? 'Escribe un correo válido'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        const Etiqueta('PIN de 4 dígitos'),
+                        const SizedBox(height: 7),
+                        _CampoTexto(
+                          controlador: _pin,
+                          hint: '••••',
+                          icono: Icons.lock_outline,
+                          teclado: TextInputType.number,
+                          oculto: _ocultarPin,
+                          mono: true,
+                          maxLength: 4,
+                          formatters: [FilteringTextInputFormatter.digitsOnly],
+                          // Un botón que es solo un ícono no se anuncia solo:
+                          // sin `tooltip`, el lector de pantalla lo lee como
+                          // "botón" a secas. El texto además cambia con el
+                          // estado, para que se sepa qué va a pasar al tocarlo.
+                          sufijo: IconButton(
+                            tooltip: _ocultarPin
+                                ? 'Mostrar el PIN'
+                                : 'Ocultar el PIN',
+                            icon: Icon(
+                              _ocultarPin
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              size: 20,
+                              color: AppColors.secondary,
+                            ),
+                            onPressed: () =>
+                                setState(() => _ocultarPin = !_ocultarPin),
+                          ),
+                          validador: (v) => (v == null || v.length != 4)
+                              ? 'El PIN son 4 dígitos'
+                              : null,
+                          alEnviar: (_) => _entrar(),
+                        ),
+                        if (sesion.hasError) ...[
+                          const SizedBox(height: 14),
+                          _Error(mensaje: mensajeDeError(sesion.error!)),
+                        ],
+                        const SizedBox(height: 18),
+                        // Mientras carga se mantiene el texto junto al giro. Un
+                        // botón que se queda solo con un spinner pierde su
+                        // nombre: el lector de pantalla deja de tener qué
+                        // anunciar y quien mira ya no sabe qué se está haciendo.
+                        FilledButton(
+                          onPressed: cargando ? null : _entrar,
+                          child: cargando
+                              ? const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text('Entrando…'),
+                                  ],
+                                )
+                              : const Text('Entrar'),
+                        ),
+                        if (recordado != null) ...[
+                          const SizedBox(height: 20),
+                          const _Separador('O en este teléfono'),
+                          const SizedBox(height: 16),
+                          _AccesoRapido(recordado: recordado),
+                        ],
+                        const SizedBox(height: 22),
+                        const _NotaPin(),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Check-In-Obra · v1.0 MVP 1',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: AppTheme.monoFamily,
+                            fontSize: 11,
                             color: AppColors.secondary,
                           ),
-                          onPressed: () =>
-                              setState(() => _ocultarPin = !_ocultarPin),
                         ),
-                        validador: (v) => (v == null || v.length != 4)
-                            ? 'El PIN son 4 dígitos'
-                            : null,
-                        alEnviar: (_) => _entrar(),
-                      ),
-                      if (sesion.hasError) ...[
-                        const SizedBox(height: 14),
-                        _Error(mensaje: mensajeDeError(sesion.error!)),
                       ],
-                      const SizedBox(height: 18),
-                      FilledButton(
-                        onPressed: cargando ? null : _entrar,
-                        child: cargando
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Entrar'),
-                      ),
-                      if (recordado != null) ...[
-                        const SizedBox(height: 20),
-                        const _Separador('O en este teléfono'),
-                        const SizedBox(height: 16),
-                        _AccesoRapido(recordado: recordado),
-                      ],
-                      const SizedBox(height: 22),
-                      const _NotaPin(),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Check-In-Obra · v1.0 MVP 1',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: AppTheme.monoFamily,
-                          fontSize: 11,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -185,7 +208,7 @@ class _Encabezado extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textFaint,
+                color: AppColors.textOnDark,
               ),
             ),
           ],
@@ -249,11 +272,11 @@ class _CampoTexto extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: AppColors.borderControl),
         ),
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: AppColors.borderControl),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.zero,
@@ -279,30 +302,38 @@ class _Error extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Panel(
-      color: AppColors.destructiveTint,
-      borderColor: AppColors.destructive,
-      padding: const EdgeInsets.all(13),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.error_outline,
-            size: 20,
-            color: AppColors.destructiveDark,
-          ),
-          const SizedBox(width: 11),
-          Expanded(
-            child: Text(
-              mensaje,
-              style: const TextStyle(
-                fontSize: 13,
-                height: 1.4,
+    // `liveRegion` hace que el lector de pantalla lea el mensaje en cuanto
+    // aparece. Sin esto el error se dibuja en silencio: quien no lo ve se
+    // queda esperando a que el botón haga algo.
+    return Semantics(
+      liveRegion: true,
+      child: Panel(
+        color: AppColors.destructiveTint,
+        borderColor: AppColors.destructive,
+        padding: const EdgeInsets.all(13),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ExcludeSemantics(
+              child: Icon(
+                Icons.error_outline,
+                size: 20,
                 color: AppColors.destructiveDark,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 11),
+            Expanded(
+              child: Text(
+                mensaje,
+                style: const TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: AppColors.destructiveDark,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -320,7 +351,7 @@ class _Separador extends StatelessWidget {
         const Expanded(child: Divider(color: AppColors.border, height: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Etiqueta(texto, color: AppColors.textFaint),
+          child: Etiqueta(texto, color: AppColors.secondary),
         ),
         const Expanded(child: Divider(color: AppColors.border, height: 1)),
       ],
@@ -335,47 +366,51 @@ class _AccesoRapido extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return PanelTocable(
       onTap: () => Navigator.of(context)
           .push(MaterialPageRoute(builder: (_) => const PantallaAccesoPin())),
-      child: Panel(
-        color: AppColors.background,
-        child: Row(
-          children: [
-            Iniciales(recordado.nombre),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recordado.nombre,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
+      // El panel entero es un solo control. Sin una etiqueta que lo diga, el
+      // lector de pantalla recita nombre, rol y "PIN de 4 dígitos" como tres
+      // textos sueltos y nunca menciona que ahí se toca para entrar.
+      semanticLabel:
+          'Entrar como ${recordado.nombre}, '
+          '${nombreDeRol(recordado.rol)}, con PIN de 4 dígitos',
+      color: AppColors.background,
+      child: Row(
+        children: [
+          Iniciales(recordado.nombre),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  recordado.nombre,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${nombreDeRol(recordado.rol).toUpperCase()} · PIN DE 4 DÍGITOS',
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                      color: AppColors.secondary,
-                    ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${nombreDeRol(recordado.rol).toUpperCase()} · PIN DE 4 DÍGITOS',
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                    color: AppColors.secondary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.accentFill,
-            ),
-          ],
-        ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            size: 22,
+            color: AppColors.accentFill,
+          ),
+        ],
       ),
     );
   }
@@ -392,7 +427,13 @@ class _NotaPin extends StatelessWidget {
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, size: 19, color: AppColors.secondary),
+          ExcludeSemantics(
+            child: Icon(
+              Icons.info_outline,
+              size: 19,
+              color: AppColors.secondary,
+            ),
+          ),
           SizedBox(width: 10),
           Expanded(
             child: Text(
