@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Empresa;
 import cl.duocuc.checkinobra.config.EmpresaService;
 import org.springframework.stereotype.Service;
@@ -36,18 +37,21 @@ public class HerramientaService {
 
     @Transactional(readOnly = true)
     public List<Herramienta> listarPorEmpresa(Long empresaId) {
+        AccesoEmpresa.exigirEmpresa(empresaId);
         return herramientaRepository.findByEmpresaId(empresaId);
     }
 
     @Transactional(readOnly = true)
     public Herramienta obtener(Long id) {
         return herramientaRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + id));
     }
 
     @Transactional(readOnly = true)
     public Herramienta buscarPorCodigoQr(String codigoQr) {
         return herramientaRepository.findByCodigoQr(codigoQr)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Código no reconocido"));
     }
 }

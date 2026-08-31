@@ -31,38 +31,40 @@ public class PrestamoHerramientaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public PrestamoHerramienta prestarDirecto(@RequestBody PrestarDirectoRequest req) {
-        return prestamoHerramientaService.prestarDirecto(
-                req.herramientaId(), req.trabajadorId(), req.obraId(), req.autorizadorId(), req.fechaDevolEsperada());
+    public PrestamoHerramientaResponse prestarDirecto(@RequestBody PrestarDirectoRequest req) {
+        return PrestamoHerramientaResponse.de(prestamoHerramientaService.prestarDirecto(
+                req.herramientaId(), req.trabajadorId(), req.obraId(), req.autorizadorId(), req.fechaDevolEsperada()));
     }
 
     @PutMapping("/{id}/devolucion")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public PrestamoHerramienta registrarDevolucion(
+    public PrestamoHerramientaResponse registrarDevolucion(
             @PathVariable Long id, @RequestBody RegistrarDevolucionRequest req) {
-        return prestamoHerramientaService.registrarDevolucion(id, req.nuevoEstadoHerramienta());
+        return PrestamoHerramientaResponse.de(
+                prestamoHerramientaService.registrarDevolucion(id, req.nuevoEstadoHerramienta()));
     }
 
     @GetMapping("/{id}")
-    public PrestamoHerramienta obtener(@PathVariable Long id) {
-        return prestamoHerramientaService.obtener(id);
+    public PrestamoHerramientaResponse obtener(@PathVariable Long id) {
+        return PrestamoHerramientaResponse.de(prestamoHerramientaService.obtener(id));
     }
 
     @GetMapping
-    public List<PrestamoHerramienta> listar(
+    public List<PrestamoHerramientaResponse> listar(
             @RequestParam(required = false) Long obraId,
             @RequestParam(required = false) Long trabajadorId,
             @RequestParam(required = false, defaultValue = "false") boolean soloVencidos) {
+        List<PrestamoHerramienta> prestamos;
         if (soloVencidos) {
-            return prestamoHerramientaService.listarVencidos();
+            prestamos = prestamoHerramientaService.listarVencidos();
+        } else if (obraId != null) {
+            prestamos = prestamoHerramientaService.listarPorObra(obraId);
+        } else if (trabajadorId != null) {
+            prestamos = prestamoHerramientaService.listarPorTrabajador(trabajadorId);
+        } else {
+            throw new IllegalArgumentException("Se requiere obraId, trabajadorId o soloVencidos=true");
         }
-        if (obraId != null) {
-            return prestamoHerramientaService.listarPorObra(obraId);
-        }
-        if (trabajadorId != null) {
-            return prestamoHerramientaService.listarPorTrabajador(trabajadorId);
-        }
-        throw new IllegalArgumentException("Se requiere obraId, trabajadorId o soloVencidos=true");
+        return prestamos.stream().map(PrestamoHerramientaResponse::de).toList();
     }
 
     public record PrestarDirectoRequest(

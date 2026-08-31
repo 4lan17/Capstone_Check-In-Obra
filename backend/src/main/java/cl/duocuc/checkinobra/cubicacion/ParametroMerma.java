@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ParametroMerma {
+public class ParametroMerma implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,5 +41,10 @@ public class ParametroMerma {
     /** ParametroMerma.aplicar(cantidad): float del diagrama. */
     public double aplicar(double cantidad) {
         return cantidad * (1 + porcentaje / 100.0);
+    }
+
+    @Override
+    public Long empresaId() {
+        return material.empresaId();
     }
 }

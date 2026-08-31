@@ -23,7 +23,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Empresa {
+public class Empresa implements PerteneceAEmpresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,5 +45,11 @@ public class Empresa {
             throw new IllegalArgumentException("El usuario no puede ser nulo");
         }
         u.setEmpresa(this);
+    }
+
+    @Override
+    /** Es la raíz de la cadena: su propia empresa es ella misma. */
+    public Long empresaId() {
+        return id;
     }
 }

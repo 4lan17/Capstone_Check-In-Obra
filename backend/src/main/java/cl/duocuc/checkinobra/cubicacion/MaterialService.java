@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Empresa;
 import cl.duocuc.checkinobra.config.EmpresaService;
 import org.springframework.stereotype.Service;
@@ -40,17 +41,20 @@ public class MaterialService {
 
     @Transactional(readOnly = true)
     public List<Material> listarPorEmpresa(Long empresaId) {
+        AccesoEmpresa.exigirEmpresa(empresaId);
         return materialRepository.findByEmpresaId(empresaId);
     }
 
     @Transactional(readOnly = true)
     public List<Material> listarPorEmpresaYCategoria(Long empresaId, CategoriaMaterial categoria) {
+        AccesoEmpresa.exigirEmpresa(empresaId);
         return materialRepository.findByEmpresaIdAndCategoria(empresaId, categoria);
     }
 
     @Transactional(readOnly = true)
     public Material obtener(Long id) {
         return materialRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Material no encontrado: " + id));
     }
 

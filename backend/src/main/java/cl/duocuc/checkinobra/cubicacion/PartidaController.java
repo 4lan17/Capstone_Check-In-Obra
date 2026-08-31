@@ -32,30 +32,31 @@ public class PartidaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Partida crear(@RequestBody CrearPartidaRequest req) {
-        return partidaService.crear(req.obraId(), req.tipo(), req.anchoM(), req.altoM(), req.separacionMontantes());
+    public PartidaResponse crear(@RequestBody CrearPartidaRequest req) {
+        return PartidaResponse.de(
+                partidaService.crear(req.obraId(), req.tipo(), req.anchoM(), req.altoM(), req.separacionMontantes()));
     }
 
     @GetMapping
-    public List<Partida> listarPorObra(@RequestParam Long obraId) {
-        return partidaService.listarPorObra(obraId);
+    public List<PartidaResponse> listarPorObra(@RequestParam Long obraId) {
+        return partidaService.listarPorObra(obraId).stream().map(PartidaResponse::de).toList();
     }
 
     @GetMapping("/{id}")
-    public Partida obtener(@PathVariable Long id) {
-        return partidaService.obtener(id);
+    public PartidaResponse obtener(@PathVariable Long id) {
+        return PartidaResponse.de(partidaService.obtener(id));
     }
 
     @PostMapping("/{id}/cubicar")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
     @Operation(summary = "MotorCubicacion.calcular(p): List<ItemCubicado>")
-    public List<ItemCubicado> cubicar(@PathVariable Long id) {
-        return motorCubicacionService.calcular(id);
+    public List<ItemCubicadoResponse> cubicar(@PathVariable Long id) {
+        return motorCubicacionService.calcular(id).stream().map(ItemCubicadoResponse::de).toList();
     }
 
     @GetMapping("/{id}/items-cubicados")
-    public List<ItemCubicado> itemsCubicados(@PathVariable Long id) {
-        return partidaService.itemsCubicados(id);
+    public List<ItemCubicadoResponse> itemsCubicados(@PathVariable Long id) {
+        return partidaService.itemsCubicados(id).stream().map(ItemCubicadoResponse::de).toList();
     }
 
     public record CrearPartidaRequest(

@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,33 +31,41 @@ public class MaterialController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Material crear(@RequestBody CrearMaterialRequest req) {
-        return materialService.crear(
-                req.empresaId(), req.sku(), req.nombre(), req.categoria(), req.precioUnitario(), req.stockMinimo());
+    public MaterialResponse crear(@RequestBody CrearMaterialRequest req) {
+        // La empresa sale del token, no de la petición. Mientras el cliente
+        // pudiera nombrarla, pedir los datos de otra constructora era cuestión
+        // de cambiar un número en la URL.
+        return MaterialResponse.de(materialService.crear(
+                SesionActual.empresaId(),
+                req.sku(),
+                req.nombre(),
+                req.categoria(),
+                req.precioUnitario(),
+                req.stockMinimo()));
     }
 
     @GetMapping
-    public List<Material> listar(
-            @RequestParam Long empresaId, @RequestParam(required = false) CategoriaMaterial categoria) {
-        return categoria == null
+    public List<MaterialResponse> listar(@RequestParam(required = false) CategoriaMaterial categoria) {
+        Long empresaId = SesionActual.empresaId();
+        List<Material> materiales = categoria == null
                 ? materialService.listarPorEmpresa(empresaId)
                 : materialService.listarPorEmpresaYCategoria(empresaId, categoria);
+        return materiales.stream().map(MaterialResponse::de).toList();
     }
 
     @GetMapping("/{id}")
-    public Material obtener(@PathVariable Long id) {
-        return materialService.obtener(id);
+    public MaterialResponse obtener(@PathVariable Long id) {
+        return MaterialResponse.de(materialService.obtener(id));
     }
 
     @PutMapping("/{id}/precio")
     @PreAuthorize("hasRole('ADMIN')")
-    public Material actualizarPrecio(@PathVariable Long id, @RequestBody ActualizarPrecioRequest req) {
-        return materialService.actualizarPrecio(id, req.nuevoPrecio());
+    public MaterialResponse actualizarPrecio(@PathVariable Long id, @RequestBody ActualizarPrecioRequest req) {
+        return MaterialResponse.de(materialService.actualizarPrecio(id, req.nuevoPrecio()));
     }
 
     public record CrearMaterialRequest(
-            Long empresaId, String sku, String nombre, CategoriaMaterial categoria,
-            double precioUnitario, double stockMinimo) {
+            String sku, String nombre, CategoriaMaterial categoria, double precioUnitario, double stockMinimo) {
     }
 
     public record ActualizarPrecioRequest(double nuevoPrecio) {

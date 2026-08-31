@@ -25,14 +25,14 @@ public class ParametroMermaController {
     /** Definir parámetros de merma es exclusivo de ADMIN, según la matriz de permisos. */
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ParametroMerma definir(@PathVariable Long materialId, @RequestBody DefinirMermaRequest req) {
-        return parametroMermaService.definirParaMaterial(materialId, req.porcentaje());
+    public ParametroMermaResponse definir(@PathVariable Long materialId, @RequestBody DefinirMermaRequest req) {
+        return ParametroMermaResponse.de(parametroMermaService.definirParaMaterial(materialId, req.porcentaje()));
     }
 
     @GetMapping
-    public ParametroMerma obtener(@PathVariable Long materialId) {
-        return parametroMermaService.paraMaterial(materialId)
-                .orElseThrow(() -> new NoSuchElementException("El material no tiene parámetro de merma propio"));
+    public ParametroMermaResponse obtener(@PathVariable Long materialId) {
+        return ParametroMermaResponse.de(parametroMermaService.paraMaterial(materialId)
+                .orElseThrow(() -> new NoSuchElementException("El material no tiene parámetro de merma propio")));
     }
 
     public record DefinirMermaRequest(double porcentaje) {

@@ -1,5 +1,9 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.UsuarioService;
+import cl.duocuc.checkinobra.config.Usuario;
+import cl.duocuc.checkinobra.config.RolUsuario;
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Empresa;
 import cl.duocuc.checkinobra.config.EmpresaService;
 import cl.duocuc.checkinobra.control.AlertaRepository;
@@ -18,19 +22,24 @@ public class ObraService {
     private final EmpresaService empresaService;
     private final PrestamoHerramientaRepository prestamoHerramientaRepository;
     private final AlertaRepository alertaRepository;
+    private final UsuarioService usuarioService;
 
     public ObraService(
             ObraRepository obraRepository,
             EmpresaService empresaService,
             PrestamoHerramientaRepository prestamoHerramientaRepository,
-            AlertaRepository alertaRepository) {
+            AlertaRepository alertaRepository,
+            UsuarioService usuarioService) {
         this.obraRepository = obraRepository;
         this.empresaService = empresaService;
         this.prestamoHerramientaRepository = prestamoHerramientaRepository;
         this.alertaRepository = alertaRepository;
+        this.usuarioService = usuarioService;
     }
 
-    public Obra crear(Long empresaId, String nombre, String cliente, String ubicacion) {
+    public Obra crear(
+            Long empresaId, String nombre, String cliente, String ubicacion, Long jefeTerrenoId) {
+        AccesoEmpresa.exigirEmpresa(empresaId);
         Empresa empresa = empresaService.obtener(empresaId);
         Obra obra = Obra.builder()
                 .nombre(nombre)
@@ -38,18 +47,47 @@ public class ObraService {
                 .ubicacion(ubicacion)
                 .estado(EstadoObra.ACTIVA)
                 .empresa(empresa)
+                .jefeTerreno(jefeTerrenoId == null ? null : jefeDeTerrenoValido(jefeTerrenoId))
                 .build();
         return obraRepository.save(obra);
     }
 
+    /** Asigna o cambia el jefe a cargo. Pasar {@code null} lo deja sin jefe. */
+    public Obra asignarJefeDeTerreno(Long obraId, Long jefeTerrenoId) {
+        Obra obra = obtener(obraId);
+        obra.setJefeTerreno(jefeTerrenoId == null ? null : jefeDeTerrenoValido(jefeTerrenoId));
+        return obraRepository.save(obra);
+    }
+
+    /**
+     * Solo un JEFE_TERRENO o un ADMIN puede dirigir una obra. Un bodeguero o un
+     * trabajador a cargo no tendrían los permisos que el puesto necesita —
+     * cubicar, congelar el presupuesto— así que asignarlos sería crear una obra
+     * que nadie puede llevar.
+     */
+    private Usuario jefeDeTerrenoValido(Long usuarioId) {
+        Usuario candidato = usuarioService.obtener(usuarioId);
+        if (candidato.getRol() != RolUsuario.JEFE_TERRENO && candidato.getRol() != RolUsuario.ADMIN) {
+            throw new IllegalStateException(
+                    "El jefe de una obra debe tener rol JEFE_TERRENO o ADMIN, y " + candidato.getNombre()
+                            + " es " + candidato.getRol());
+        }
+        return candidato;
+    }
+
     @Transactional(readOnly = true)
     public List<Obra> listarPorEmpresa(Long empresaId) {
+        AccesoEmpresa.exigirEmpresa(empresaId);
         return obraRepository.findByEmpresaId(empresaId);
     }
 
     @Transactional(readOnly = true)
     public Obra obtener(Long id) {
+        // Punto de paso de casi todo el sistema: partidas, presupuestos, kardex,
+        // préstamos y alertas llegan a su obra por acá, así que comprobar la
+        // empresa una vez acá los cubre a todos.
         return obraRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Obra no encontrada: " + id));
     }
 
