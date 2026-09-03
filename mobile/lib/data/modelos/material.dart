@@ -3,6 +3,7 @@ class MaterialObra {
   const MaterialObra({
     required this.id,
     required this.sku,
+    required this.codigoBarra,
     required this.nombre,
     required this.categoria,
     required this.precioUnitario,
@@ -11,6 +12,12 @@ class MaterialObra {
 
   final int id;
   final String sku;
+
+  /// El código impreso de fábrica en el envase — lo que lee el escáner de
+  /// código de barras. Nulo en los materiales que no traen etiqueta, que se
+  /// siguen encontrando por SKU.
+  final String? codigoBarra;
+
   final String nombre;
 
   /// `CategoriaMaterial`: METALCOM, VOLCANITA, OSB, FIJACION.
@@ -21,6 +28,7 @@ class MaterialObra {
   factory MaterialObra.desdeJson(Map<String, dynamic> j) => MaterialObra(
     id: j['id'] as int,
     sku: j['sku'] as String,
+    codigoBarra: j['codigoBarra'] as String?,
     nombre: j['nombre'] as String,
     categoria: j['categoria'] as String,
     precioUnitario: (j['precioUnitario'] as num).toDouble(),

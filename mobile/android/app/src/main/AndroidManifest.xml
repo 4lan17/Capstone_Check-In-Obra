@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- La cámara es el escáner del bodeguero: lee la credencial QR del
+         trabajador para resolver sus solicitudes, y el código de barras de un
+         material o una herramienta para encontrarlo sin buscarlo en la lista.
+         `mobile_scanner` ya declara el permiso, pero se repite acá para que
+         quien lea este manifiesto sepa por qué la app pide cámara. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:label="Check-In Obra"
         android:name="${applicationName}"

@@ -10,7 +10,9 @@ import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
 import 'bodega_providers.dart';
 import 'pantalla_cierre_turno.dart';
+import 'pantalla_escaneo.dart';
 import 'pantalla_prestamo.dart';
+import 'pantalla_solicitudes.dart';
 
 /// Lo primero que ve el bodeguero: cómo va el turno y qué requiere atención.
 class PantallaInicioBodega extends ConsumerWidget {
@@ -66,6 +68,47 @@ class PantallaInicioBodega extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.border),
                 _BotonCierre(),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          const _Solicitudes(),
+          const SizedBox(height: 20),
+          const Etiqueta('Escanear'),
+          const SizedBox(height: 8),
+          // El escaneo va arriba de "Registrar" porque es por donde empieza el
+          // trabajo del mesón: primero se identifica a quien viene a buscar
+          // algo, o lo que trae en la mano, y recién después se elige qué
+          // movimiento anotar.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _AccesoRapido(
+                    icono: Icons.qr_code_scanner,
+                    titulo: 'Credencial',
+                    detalle: 'Ver y aprobar lo que pidió el trabajador',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PantallaEscaneoCredencial(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _AccesoRapido(
+                    icono: Icons.barcode_reader,
+                    titulo: 'Código de barras',
+                    detalle: 'Encontrar un material o una herramienta',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PantallaEscaneoCodigo(),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -182,6 +225,110 @@ class PantallaInicioBodega extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// La cola de solicitudes de la obra.
+///
+/// Va arriba de todo lo demás porque es gente esperando: el resto de la
+/// pantalla son cifras que se pueden mirar en cualquier momento, esto no.
+class _Solicitudes extends ConsumerWidget {
+  const _Solicitudes();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final estado = ref.watch(solicitudesPendientesProvider);
+    final pendientes = estado.valueOrNull;
+    final fallo = estado.hasError;
+    final hayGenteEsperando = (pendientes ?? 0) > 0;
+
+    // Si la consulta falló, el panel no puede quedarse diciendo "cargando":
+    // tocarlo reintenta en vez de llevar a una lista que tampoco va a cargar.
+    void reintentar() {
+      ref.invalidate(solicitudesMaterialProvider);
+      ref.invalidate(solicitudesHerramientaProvider);
+    }
+
+    final (fondo, borde, colorTexto) = switch ((fallo, hayGenteEsperando)) {
+      (true, _) => (
+        AppColors.destructiveTint,
+        AppColors.destructive,
+        AppColors.destructiveDark,
+      ),
+      (_, true) => (
+        AppColors.warningTint,
+        AppColors.warning,
+        AppColors.warningDark,
+      ),
+      _ => (AppColors.card, AppColors.borderControl, AppColors.secondary),
+    };
+
+    return PanelTocable(
+      semanticLabel: switch ((fallo, pendientes)) {
+        (true, _) =>
+          'No se pudieron cargar las solicitudes. Tocar para reintentar',
+        (_, null) => 'Solicitudes pendientes, cargando',
+        (_, 0) => 'Solicitudes: ninguna pendiente. Tocar para ver la cola',
+        (_, 1) => '1 solicitud pendiente. Tocar para resolverla',
+        (_, final n) => '$n solicitudes pendientes. Tocar para resolverlas',
+      },
+      borderColor: borde,
+      color: fondo,
+      onTap: fallo
+          ? reintentar
+          : () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PantallaSolicitudesObra(),
+              ),
+            ),
+      child: Row(
+        children: [
+          Icon(
+            fallo ? Icons.error_outline : Icons.inbox_outlined,
+            size: 22,
+            color: fallo || hayGenteEsperando
+                ? colorTexto
+                : AppColors.secondary,
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Solicitudes',
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  switch ((fallo, pendientes)) {
+                    (true, _) => 'No se pudieron cargar. Toca para reintentar.',
+                    (_, null) => 'Cargando…',
+                    (_, 0) => 'Nadie está esperando material ni herramientas',
+                    (_, 1) => '1 trabajador espera respuesta',
+                    (_, final n) => '$n solicitudes esperan respuesta',
+                  },
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.35,
+                    color: colorTexto,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            fallo ? Icons.refresh : Icons.chevron_right,
+            size: 22,
+            color: AppColors.accentFill,
           ),
         ],
       ),

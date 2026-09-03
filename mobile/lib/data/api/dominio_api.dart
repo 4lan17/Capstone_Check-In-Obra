@@ -1,11 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
 import '../modelos/alerta.dart';
 import '../modelos/herramienta.dart';
+import '../modelos/importacion.dart';
 import '../modelos/kardex.dart';
 import '../modelos/material.dart';
 import '../modelos/obra.dart';
+import '../modelos/solicitud.dart';
 import '../modelos/trabajador.dart';
 import '../modelos/usuario.dart';
 import 'cliente_rest.dart';
@@ -60,18 +64,28 @@ class MaterialesApi {
   Future<MaterialObra> obtener(int id) =>
       _rest.uno('/api/materiales/$id', MaterialObra.desdeJson);
 
+  /// Lo que resuelve el escáner de código de barras: el backend prueba el
+  /// código impreso de fábrica y después el SKU, porque quien apunta la cámara
+  /// a una etiqueta no sabe cuál de los dos está leyendo.
+  Future<MaterialObra> porCodigo(String codigo) => _rest.uno(
+    '/api/materiales/por-codigo/${Uri.encodeComponent(codigo)}',
+    MaterialObra.desdeJson,
+  );
+
   Future<MaterialObra> crear({
     required String sku,
     required String nombre,
     required String categoria,
     required double precioUnitario,
     required double stockMinimo,
+    String? codigoBarra,
   }) => _rest.crear('/api/materiales', {
     'sku': sku,
     'nombre': nombre,
     'categoria': categoria,
     'precioUnitario': precioUnitario,
     'stockMinimo': stockMinimo,
+    'codigoBarra': codigoBarra,
   }, MaterialObra.desdeJson);
 
   Future<MaterialObra> actualizarPrecio(int id, double nuevoPrecio) =>
@@ -132,8 +146,11 @@ class HerramientasApi {
       _rest.lista('/api/herramientas', Herramienta.desdeJson);
 
   /// Lo que resuelve el escaneo de QR.
+  /// El código va codificado: el ingreso manual del escáner acepta cualquier
+  /// texto, y un "/" partiría la ruta en dos segmentos —405 en vez de "código
+  /// no reconocido"— mientras que un "?" o un "#" la truncarían.
   Future<Herramienta> porCodigo(String codigoQr) => _rest.uno(
-    '/api/herramientas/por-codigo/$codigoQr',
+    '/api/herramientas/por-codigo/${Uri.encodeComponent(codigoQr)}',
     Herramienta.desdeJson,
   );
 
@@ -271,9 +288,141 @@ class TrabajadoresApi {
   );
 
   Future<Trabajador> porCredencial(String credencialQr) => _rest.uno(
-    '/api/trabajadores/por-credencial/$credencialQr',
+    '/api/trabajadores/por-credencial/${Uri.encodeComponent(credencialQr)}',
     Trabajador.desdeJson,
   );
+}
+
+/// Las solicitudes que el trabajador levanta y el bodeguero resuelve.
+///
+/// Aprobar no devuelve la solicitud: devuelve lo que la solicitud produjo —un
+/// movimiento de kardex si era material, un préstamo si era herramienta—.
+/// Es la forma del backend y conviene respetarla, porque es lo que hay que
+/// mostrar después de aprobar.
+class SolicitudesApi {
+  const SolicitudesApi(this._rest);
+
+  final ClienteRest _rest;
+
+  Future<List<SolicitudMaterial>> materialesPorObra(
+    int obraId, {
+    bool soloPendientes = true,
+  }) => _rest.lista(
+    '/api/solicitudes-material',
+    SolicitudMaterial.desdeJson,
+    params: {'obraId': obraId, 'soloPendientes': soloPendientes},
+  );
+
+  /// Todo lo que pidió un trabajador, resuelto o no. Es lo que se consulta tras
+  /// escanear su credencial.
+  Future<List<SolicitudMaterial>> materialesPorTrabajador(int trabajadorId) =>
+      _rest.lista(
+        '/api/solicitudes-material',
+        SolicitudMaterial.desdeJson,
+        params: {'trabajadorId': trabajadorId},
+      );
+
+  /// `cantidadAEntregar` puede ser menor que la pedida: si no hay tanto en
+  /// bodega, se entrega lo que hay. El backend rechaza con 409 lo que dejaría
+  /// el saldo negativo.
+  Future<MovimientoKardex> aprobarMaterial(
+    int solicitudId, {
+    required int aprobadorId,
+    required double cantidadAEntregar,
+  }) => _rest.actualizar('/api/solicitudes-material/$solicitudId/aprobar', {
+    'aprobadorId': aprobadorId,
+    'cantidadAEntregar': cantidadAEntregar,
+  }, MovimientoKardex.desdeJson);
+
+  Future<SolicitudMaterial> rechazarMaterial(
+    int solicitudId, {
+    required int rechazadorId,
+    required String motivo,
+  }) => _rest.actualizar('/api/solicitudes-material/$solicitudId/rechazar', {
+    'rechazadorId': rechazadorId,
+    'motivo': motivo,
+  }, SolicitudMaterial.desdeJson);
+
+  Future<List<SolicitudHerramienta>> herramientasPorObra(
+    int obraId, {
+    bool soloPendientes = true,
+  }) => _rest.lista(
+    '/api/solicitudes-herramienta',
+    SolicitudHerramienta.desdeJson,
+    params: {'obraId': obraId, 'soloPendientes': soloPendientes},
+  );
+
+  Future<List<SolicitudHerramienta>> herramientasPorTrabajador(
+    int trabajadorId,
+  ) => _rest.lista(
+    '/api/solicitudes-herramienta',
+    SolicitudHerramienta.desdeJson,
+    params: {'trabajadorId': trabajadorId},
+  );
+
+  /// Aprobar genera el préstamo, así que la fecha de devolución esperada es
+  /// obligatoria: es la que después vence y dispara la alerta.
+  Future<Prestamo> aprobarHerramienta(
+    int solicitudId, {
+    required int aprobadorId,
+    required DateTime fechaDevolEsperada,
+  }) => _rest.actualizar('/api/solicitudes-herramienta/$solicitudId/aprobar', {
+    'aprobadorId': aprobadorId,
+    'fechaDevolEsperada': fechaDevolEsperada.toIso8601String(),
+  }, Prestamo.desdeJson);
+
+  Future<SolicitudHerramienta> rechazarHerramienta(
+    int solicitudId, {
+    required int rechazadorId,
+    required String motivo,
+  }) => _rest.actualizar('/api/solicitudes-herramienta/$solicitudId/rechazar', {
+    'rechazadorId': rechazadorId,
+    'motivo': motivo,
+  }, SolicitudHerramienta.desdeJson);
+}
+
+/// Alta masiva de catálogo desde una planilla Excel.
+///
+/// Se llama dos veces con el mismo archivo: primero sin confirmar —para ver el
+/// informe— y después confirmando. No es una llamada de más: es lo que evita
+/// cargar un catálogo a ciegas y descubrir el error cuando ya está adentro.
+class ImportacionApi {
+  const ImportacionApi(this._rest);
+
+  final ClienteRest _rest;
+
+  Future<ResultadoImportacion> materiales({
+    required Uint8List contenido,
+    required String nombreArchivo,
+    bool confirmar = false,
+  }) => _rest.subir(
+    '/api/materiales/importar',
+    ResultadoImportacion.desdeJson,
+    contenido: contenido,
+    nombreArchivo: nombreArchivo,
+    params: {'confirmar': confirmar},
+  );
+
+  Future<ResultadoImportacion> herramientas({
+    required Uint8List contenido,
+    required String nombreArchivo,
+    bool confirmar = false,
+  }) => _rest.subir(
+    '/api/herramientas/importar',
+    ResultadoImportacion.desdeJson,
+    contenido: contenido,
+    nombreArchivo: nombreArchivo,
+    params: {'confirmar': confirmar},
+  );
+
+  /// La planilla vacía con las columnas en el orden que espera el servidor.
+  /// Se descarga antes de llenarla: el lector va por posición, no por el
+  /// nombre del encabezado.
+  Future<Uint8List> plantillaDeMateriales() =>
+      _rest.descargar('/api/materiales/plantilla-importacion');
+
+  Future<Uint8List> plantillaDeHerramientas() =>
+      _rest.descargar('/api/herramientas/plantilla-importacion');
 }
 
 class EmpresaApi {
@@ -316,4 +465,10 @@ final trabajadoresApiProvider = Provider(
 );
 final empresaApiProvider = Provider(
   (ref) => EmpresaApi(ref.watch(clienteRestProvider)),
+);
+final solicitudesApiProvider = Provider(
+  (ref) => SolicitudesApi(ref.watch(clienteRestProvider)),
+);
+final importacionApiProvider = Provider(
+  (ref) => ImportacionApi(ref.watch(clienteRestProvider)),
 );

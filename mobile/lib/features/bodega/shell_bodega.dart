@@ -9,6 +9,7 @@ import '../obra/pantalla_elegir_obra.dart';
 import 'bodega_providers.dart';
 import 'pantalla_alertas.dart';
 import 'pantalla_bodega.dart';
+import 'pantalla_escaneo.dart';
 import 'pantalla_herramientas.dart';
 import 'pantalla_inicio_bodega.dart';
 
@@ -53,6 +54,18 @@ class _ShellBodegaState extends ConsumerState<ShellBodega> {
         automaticallyImplyLeading: widget.comoAdmin,
         title: _TituloObra(comoAdmin: widget.comoAdmin),
         actions: [
+          // El escaneo de credencial está en el encabezado y no solo en el
+          // inicio: es la acción que se dispara con el trabajador enfrente, y
+          // puede pasar estando en cualquier pestaña.
+          IconButton(
+            tooltip: 'Escanear la credencial de un trabajador',
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PantallaEscaneoCredencial(),
+              ),
+            ),
+          ),
           if (!widget.comoAdmin)
             IconButton(
               tooltip: 'Cerrar sesión',

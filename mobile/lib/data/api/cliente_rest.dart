@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../../core/network/api_client.dart';
@@ -83,6 +85,57 @@ class ClienteRest {
     return desde(r.data!);
   }
 
+  /// Sube un archivo con `multipart/form-data` — la planilla de la
+  /// importación masiva.
+  ///
+  /// Recibe el contenido y no una ruta a propósito: en Android moderno el
+  /// explorador de archivos devuelve un `content://`, no una ruta del sistema
+  /// de archivos, así que un archivo elegido desde Drive o desde el correo no
+  /// tiene ruta que abrir.
+  ///
+  /// Los timeouts se alargan solo para esta llamada. Los ocho segundos que usa
+  /// el resto de la app están pensados para peticiones de unos kilobytes en la
+  /// red de la obra; subir una planilla y esperar a que el servidor la valide
+  /// entera es otra cosa, y cortarla a los ocho segundos daría "el servidor no
+  /// respondió" sobre una importación que iba bien.
+  Future<T> subir<T>(
+    String ruta,
+    T Function(Map<String, dynamic>) desde, {
+    required Uint8List contenido,
+    required String nombreArchivo,
+    Map<String, dynamic>? params,
+  }) async {
+    final formulario = FormData.fromMap({
+      'archivo': MultipartFile.fromBytes(contenido, filename: nombreArchivo),
+    });
+
+    final r = await _client.dio.post<Map<String, dynamic>>(
+      ruta,
+      data: formulario,
+      queryParameters: params,
+      options: Options(
+        sendTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
+    _exigirExito(r);
+    return desde(r.data!);
+  }
+
+  /// Baja un archivo binario — la plantilla de importación.
+  Future<Uint8List> descargar(String ruta) async {
+    final r = await _client.dio.get<List<int>>(
+      ruta,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    if ((r.statusCode ?? 0) < 200 || (r.statusCode ?? 0) >= 300) {
+      // El cuerpo de error también llega en bytes, así que el mensaje del
+      // backend no se puede leer como en el resto de las llamadas.
+      throw ApiException(r.statusCode ?? 0, _porDefecto(r.statusCode ?? 0));
+    }
+    return Uint8List.fromList(r.data ?? const []);
+  }
+
   void _exigirExito(Response<dynamic> r) {
     final codigo = r.statusCode ?? 0;
     if (codigo >= 200 && codigo < 300) return;
@@ -102,6 +155,7 @@ class ClienteRest {
     403 => 'Tu rol no permite esta acción.',
     404 => 'No se encontró lo que buscabas.',
     409 => 'La operación choca con el estado actual.',
+    413 => 'El archivo es demasiado grande.',
     _ => 'El servidor respondió con código $codigo.',
   };
 }

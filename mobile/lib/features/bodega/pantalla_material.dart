@@ -63,7 +63,13 @@ class PantallaMaterial extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    m.sku,
+                    // El código de barras al lado del SKU: son los dos códigos
+                    // con los que este material se puede encontrar escaneando,
+                    // y verlos acá permite comprobar contra la etiqueta real
+                    // cuando el escáner no lo reconoce.
+                    m.codigoBarra == null
+                        ? m.sku
+                        : '${m.sku} · ${m.codigoBarra}',
                     style: const TextStyle(
                       fontFamily: AppTheme.monoFamily,
                       fontSize: 12.5,
