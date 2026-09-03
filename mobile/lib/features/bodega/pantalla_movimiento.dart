@@ -47,8 +47,7 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
     super.dispose();
   }
 
-  double get _valor =>
-      double.tryParse(_cantidad.text.replaceAll(',', '.')) ?? 0;
+  double get _valor => Formato.numero(_cantidad.text) ?? 0;
 
   bool get _entra => _tipo == 'RECEPCION';
 
@@ -216,7 +215,7 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
                     ),
                   ),
                   validador: (v) {
-                    final n = double.tryParse((v ?? '').replaceAll(',', '.'));
+                    final n = Formato.numero(v ?? '');
                     if (n == null || n <= 0) {
                       return 'Escribe una cantidad mayor a cero';
                     }

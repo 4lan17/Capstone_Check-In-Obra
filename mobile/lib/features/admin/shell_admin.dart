@@ -11,6 +11,7 @@ import '../auth/sesion_controller.dart';
 import '../bodega/bodega_providers.dart';
 import '../bodega/shell_bodega.dart';
 import '../obra/obra_activa.dart';
+import 'pantalla_importacion.dart';
 import 'pantalla_materiales.dart';
 import 'pantalla_obras.dart';
 import 'pantalla_usuarios.dart';
@@ -216,6 +217,55 @@ class _PantallaEmpresa extends ConsumerWidget {
                       Text(
                         'Kardex, herramientas y alertas de una obra. Tu rol '
                         'incluye todo lo de bodega.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.35,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  size: 22,
+                  color: AppColors.accentFill,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          PanelTocable(
+            semanticLabel:
+                'Importación masiva. Cargar materiales y herramientas desde '
+                'una planilla Excel',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PantallaImportacion()),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.table_view_outlined,
+                  size: 22,
+                  color: AppColors.accentFill,
+                ),
+                const SizedBox(width: 13),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Importación masiva',
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Cargar materiales y herramientas nuevos desde una '
+                        'planilla Excel, en vez de uno por uno.',
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.35,

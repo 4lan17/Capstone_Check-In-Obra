@@ -13,6 +13,8 @@ import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
 import '../bodega/bodega_providers.dart';
 import '../bodega/pantalla_bodega.dart';
+import '../bodega/pantalla_escaneo.dart';
+import 'pantalla_importacion.dart';
 
 /// Categorías de `CategoriaMaterial`. El rubro es tabiquería y cielos, así que
 /// son estas cuatro y no un campo libre.
@@ -42,11 +44,29 @@ class PantallaMateriales extends ConsumerWidget {
               detalle:
                   'Sin materiales no se puede cubicar ni mover bodega. '
                   'Empieza por los que más se usan en la obra.',
+              // Con el catálogo vacío, cargar la planilla que la constructora
+              // ya tiene en Excel es mucho más razonable que teclear treinta y
+              // cuatro materiales en un teléfono. Por eso la importación
+              // aparece acá y no escondida en otra pestaña.
               accion: Builder(
-                builder: (context) => FilledButton.icon(
-                  onPressed: () => _nuevo(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar material'),
+                builder: (context) => Column(
+                  children: [
+                    FilledButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PantallaImportacion(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Importar desde Excel'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextButton.icon(
+                      onPressed: () => _nuevo(context),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Agregar uno a uno'),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -189,7 +209,7 @@ class _HojaEdicionState extends ConsumerState<_HojaEdicion> {
         await api.actualizarPrecio(widget.material.id, precio);
       }
 
-      final merma = double.tryParse(_merma.text.replaceAll(',', '.'));
+      final merma = Formato.numero(_merma.text);
       if (merma != null) {
         await api.definirMerma(widget.material.id, merma);
       }
@@ -289,6 +309,7 @@ class PantallaNuevoMaterial extends ConsumerStatefulWidget {
 
 class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
   final _sku = TextEditingController();
+  final _codigoBarra = TextEditingController();
   final _nombre = TextEditingController();
   final _precio = TextEditingController();
   final _minimo = TextEditingController();
@@ -300,10 +321,20 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
   @override
   void dispose() {
     _sku.dispose();
+    _codigoBarra.dispose();
     _nombre.dispose();
     _precio.dispose();
     _minimo.dispose();
     super.dispose();
+  }
+
+  Future<void> _leerCodigo() async {
+    final codigo = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const PantallaCapturaCodigo()),
+    );
+    if (codigo != null && mounted) {
+      setState(() => _codigoBarra.text = codigo);
+    }
   }
 
   Future<void> _guardar() async {
@@ -321,7 +352,10 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
             nombre: _nombre.text.trim(),
             categoria: _categoria,
             precioUnitario: double.parse(_precio.text.replaceAll('.', '')),
-            stockMinimo: double.parse(_minimo.text.replaceAll(',', '.')),
+            stockMinimo: Formato.numero(_minimo.text)!,
+            codigoBarra: _codigoBarra.text.trim().isEmpty
+                ? null
+                : _codigoBarra.text.trim(),
           );
       ref.invalidate(catalogoProvider);
       if (!mounted) return;
@@ -359,6 +393,28 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
                       : null,
                 ),
                 ayuda: 'Único en la empresa. Es lo que viene en la guía de despacho.',
+              ),
+              const SizedBox(height: 16),
+              CampoConEtiqueta(
+                etiqueta: 'Código de barras (opcional)',
+                campo: CampoTexto(
+                  controlador: _codigoBarra,
+                  hint: '7801234567890',
+                  icono: Icons.barcode_reader,
+                  mono: true,
+                  teclado: TextInputType.number,
+                  habilitado: !_enviando,
+                  sufijo: IconButton(
+                    tooltip: 'Leerlo con la cámara',
+                    icon: const Icon(Icons.qr_code_scanner, size: 20),
+                    color: AppColors.accentFill,
+                    onPressed: _enviando ? null : _leerCodigo,
+                  ),
+                ),
+                ayuda:
+                    'El que viene impreso en el envase. Con él, el bodeguero '
+                    'encuentra este material escaneándolo en vez de buscarlo '
+                    'en la lista.',
               ),
               const SizedBox(height: 16),
               CampoConEtiqueta(
@@ -419,8 +475,7 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                   ],
                   habilitado: !_enviando,
-                  validador: (v) =>
-                      double.tryParse((v ?? '').replaceAll(',', '.')) == null
+                  validador: (v) => Formato.numero(v ?? '') == null
                       ? 'Escribe el mínimo'
                       : null,
                 ),
