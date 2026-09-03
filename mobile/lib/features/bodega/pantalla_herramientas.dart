@@ -10,6 +10,7 @@ import '../../data/modelos/herramienta.dart';
 import '../../shared_widgets/campo_texto.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
+import '../admin/pantalla_importacion.dart';
 import 'bodega_providers.dart';
 import 'pantalla_prestamo.dart';
 
@@ -55,6 +56,22 @@ class _PantallaHerramientasState extends ConsumerState<PantallaHerramientas> {
             ).push(MaterialPageRoute(builder: (_) => const PantallaPrestamo())),
             icon: const Icon(Icons.add),
             label: const Text('Prestar herramienta'),
+          ),
+          const SizedBox(height: 10),
+          // Las herramientas las etiqueta y las da de alta la propia bodega
+          // cuando llegan: veinte taladros nuevos son una planilla, no veinte
+          // formularios.
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PantallaImportacion(
+                  inicial: CatalogoImportable.herramientas,
+                  soloEseCatalogo: true,
+                ),
+              ),
+            ),
+            icon: const Icon(Icons.upload_file, size: 20),
+            label: const Text('Importar herramientas desde Excel'),
           ),
           const SizedBox(height: 20),
           const Etiqueta('Fuera de bodega'),

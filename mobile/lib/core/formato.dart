@@ -42,6 +42,38 @@ abstract final class Formato {
     return _fechaCorta.format(d);
   }
 
+  /// Lee un número **tal como lo teclea alguien en Chile**.
+  ///
+  /// El caso difícil es el punto: en "5.980" separa miles y en "0.75" es
+  /// decimal, y el teclado numérico de Android ofrece los dos signos sin
+  /// distinguirlos. La regla es la misma que aplica el backend al leer una
+  /// planilla ({@code Numeros.decimal}), para que el mismo texto signifique lo
+  /// mismo tecleado que importado:
+  ///
+  /// - con coma, la coma es el decimal y el punto separa miles ("12.500,75");
+  /// - con punto solo, separa miles **si** deja exactamente tres dígitos detrás
+  ///   ("5.980" → 5980) y es decimal en cualquier otro caso ("0.75" → 0,75).
+  ///
+  /// Antes cada pantalla tenía su propia regla: la de movimiento leía "1.200"
+  /// como 1,2 y la de aprobación leía "0.5" como 5. Son cantidades que van al
+  /// kardex, así que un factor de mil o de diez ahí no se nota hasta el
+  /// descuadre.
+  static double? numero(String texto) {
+    var limpio = texto.replaceAll(' ', '').replaceAll('\u00A0', '').trim();
+    if (limpio.isEmpty) return null;
+
+    if (limpio.contains(',')) {
+      limpio = limpio.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      final ultimoPunto = limpio.lastIndexOf('.');
+      final separadorDeMiles =
+          ultimoPunto > 0 && limpio.length - ultimoPunto - 1 == 3;
+      if (separadorDeMiles) limpio = limpio.replaceAll('.', '');
+    }
+
+    return double.tryParse(limpio);
+  }
+
   /// "hace 2 h", "hace 14 h", "hace 3 d" — para la antigüedad de una alerta.
   static String antiguedad(DateTime d) {
     final minutos = DateTime.now().difference(d).inMinutes;

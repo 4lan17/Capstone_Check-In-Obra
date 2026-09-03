@@ -40,6 +40,7 @@ mientras la obra todavía está abierta.
 | Flyway | — | Migraciones versionadas del esquema |
 | JJWT | 0.12.6 | Emisión y validación de JWT |
 | springdoc-openapi | 2.8.6 | Swagger UI / OpenAPI 3 |
+| Apache POI | 5.4.1 | Leer y generar las planillas `.xlsx` de la importación masiva |
 | Lombok | — | Reduce boilerplate en entidades |
 | Maven Wrapper | — | Build sin instalar Maven |
 
@@ -47,11 +48,12 @@ mientras la obra todavía está abierta.
 | Componente | Versión | Para qué |
 |---|---|---|
 | Flutter | 3.47.1 (stable) | Framework, solo Android |
-| `mobile_scanner` | ^7.4.0 | Escaneo de QR (material, herramienta, credencial) |
+| `mobile_scanner` | ^7.4.0 | Escáner de cámara: credencial QR del trabajador y código de barras de material y herramientas |
 | `dio` | ^5.11.0 | Cliente HTTP contra la API |
 | `flutter_riverpod` | ^2.6.1 | Manejo de estado |
 | `drift` | ^2.34.3 | Base local (cola de movimientos sin conexión) |
 | `flutter_secure_storage` | ^11.0.0 | Guardar el JWT y el PIN de forma segura |
+| `file_picker` | ^12.2.0 | Elegir y guardar la planilla `.xlsx` de la importación masiva |
 | `fl_chart` | ^1.2.0 | Gráficos de desviación y consumo |
 | `intl` | ^0.20.3 | Formato de fechas y montos en es-CL |
 
@@ -146,7 +148,7 @@ checkinobra/
 │   ├── design-system/               Paleta, tipografía, reglas UX
 │   └── mockups/                     3 lienzos de pantallas (.dc.html)
 │
-├── scripts/                         Utilidades en Python (fuera de producción)
+├── scripts/                         Utilidades del repo (emulador, skills)
 ├── docker-compose.yml
 └── .env.example
 ```
@@ -339,6 +341,18 @@ flutter run
 Con el celular conectado por USB (con depuración USB activada) o el emulador
 abierto. Confirmar que Flutter lo ve con `flutter devices`.
 
+**Sobre el emulador** — si no tienes el celular a mano, el camino corto es:
+
+```bash
+scripts/run-emulador.sh
+```
+
+Arranca el AVD `Check-In-Obra_Pixel5` si no está corriendo, espera a que
+termine de bootear, crea el `.env` desde `.env.example` si falta y lanza
+`flutter run -d emulator-5554`. Lo que le pases se lo pasa a `flutter run`
+(`scripts/run-emulador.sh --release`). Requiere tener el AVD creado — ver
+[Emulador (teléfono virtual)](#emulador-teléfono-virtual).
+
 > **En Windows, si el celular no aparece** en `flutter devices`, casi siempre
 > falta el driver USB del fabricante. Instalar el
 > [Google USB Driver](https://developer.android.com/studio/run/win-usb) desde
@@ -443,6 +457,7 @@ cd mobile
 flutter pub get                       # instalar dependencias
 flutter analyze                       # análisis estático
 flutter run                           # correr en el dispositivo
+flutter run -d emulator-5554          # correr en el emulador (ver scripts/run-emulador.sh)
 flutter build apk --debug             # APK de depuración
 flutter build apk --release           # APK de release
 dart run build_runner build           # generar código de Drift
@@ -498,6 +513,50 @@ VALUES ('Admin Nueva', 'admin@nueva.cl', 'ADMIN',
 
 Su primera acción debe ser cambiar ese PIN desde la app.
 
+### Escaneo e importación masiva
+
+Los endpoints que sostienen el escáner del bodeguero y la carga de catálogo:
+
+| Método y ruta | Para qué | Rol |
+|---|---|---|
+| `GET /api/trabajadores/por-credencial/{qr}` | Resolver la credencial QR que el bodeguero acaba de escanear | Bodeguero · Jefe · Admin |
+| `GET /api/materiales/por-codigo/{codigo}` | Resolver un código de barras **o** un SKU al material del catálogo | Autenticado |
+| `GET /api/herramientas/por-codigo/{codigo}` | Ídem para el código impreso en la etiqueta de una herramienta | Autenticado |
+| `POST /api/materiales/importar` | Alta masiva de materiales desde `.xlsx` | Admin |
+| `POST /api/herramientas/importar` | Alta masiva de herramientas desde `.xlsx` | Bodeguero · Admin |
+| `GET /api/materiales/plantilla-importacion` | Descargar la planilla vacía con las columnas en orden | Admin |
+| `GET /api/herramientas/plantilla-importacion` | Ídem para herramientas | Bodeguero · Admin |
+
+Los dos `importar` son `multipart/form-data` con el archivo en el campo
+`archivo`, y aceptan `?confirmar=`:
+
+- **`confirmar=false`** (por defecto) — **simula**. Valida el archivo completo y
+  devuelve el mismo informe que devolvería la importación real, sin escribir
+  nada. Es lo que la app muestra antes de dejar apretar el botón.
+- **`confirmar=true`** — importa, y solo si **ninguna** fila tiene problemas.
+
+La importación es **todo o nada**. Con una fila mala no se guarda ninguna: se
+corrige la planilla y se vuelve a subir. Importar "lo que se pueda" deja el
+catálogo a medias y sin forma de saber qué entró. El informe es el mismo en los
+dos casos:
+
+```json
+{
+  "confirmado": false,
+  "filasLeidas": 34,
+  "filasValidas": 33,
+  "importadas": 0,
+  "errores": [
+    { "fila": 12, "detalle": "La categoría 'PLANCHA' no existe (válidas: METALCOM, VOLCANITA, OSB, FIJACION)" }
+  ]
+}
+```
+
+El número de fila es **el que muestra Excel**, para poder ir directo a
+corregirla. El tope es de 2.000 filas y 5 MB por archivo: una planilla de
+catálogo pesa kilobytes, y un archivo mucho mayor casi siempre es el archivo
+equivocado.
+
 ### Autenticación
 
 Dos formas de entrar, ambas devuelven el mismo JWT:
@@ -528,6 +587,7 @@ es `Usuario.rol`, y con eso el backend decide qué autoriza (`@PreAuthorize`).
 |---|:---:|:---:|:---:|:---:|
 | Solicitar herramienta o material | ✅ | — | — | — |
 | Mostrar credencial QR | ✅ | — | — | — |
+| Escanear la credencial de un trabajador | — | ✅ | ✅ | ✅ |
 | Aprobar o rechazar solicitudes | — | ✅ | — | ✅ |
 | Recepción, despacho y consumo | — | ✅ | — | ✅ |
 | Autorizar préstamo y devolución | — | ✅ | — | ✅ |
@@ -537,6 +597,8 @@ es `Usuario.rol`, y con eso el backend decide qué autoriza (`@PreAuthorize`).
 | Resolver alertas | — | ✅ | ✅ | ✅ |
 | Crear usuarios y asignar rol | — | — | — | ✅ |
 | Catálogo, precios y mermas | — | — | — | ✅ |
+| Importar materiales desde Excel | — | — | — | ✅ |
+| Importar herramientas desde Excel | — | ✅ | — | ✅ |
 | Crear y cerrar obras | — | — | — | ✅ |
 | Consultar kardex y stock de una obra | — | ✅ | ✅ | ✅ |
 | Consultar el padrón de usuarios | — | — | — | ✅ |
@@ -635,6 +697,9 @@ solo verifica que las entidades calcen con las tablas).
 |---|---|
 | `V1__init_schema.sql` | Crea las 17 tablas con sus llaves foráneas e índices |
 | `V2__seed_admin.sql` | Inserta una empresa y el admin de arranque |
+| `V3__rut_en_usuario_...sql` | Sube el RUT a `usuarios`, agrega el jefe de la obra y el receptor del despacho |
+| `V4__codigo_de_barra_en_materiales.sql` | Agrega `materiales.codigo_barra` (único **por empresa**) para el escáner |
+| `V5__normaliza_codigos_a_mayusculas.sql` | Pasa a mayúsculas los SKU y códigos de herramienta existentes |
 
 **Para cambiar el esquema** se crea un archivo nuevo (`V3__...sql`). Nunca se
 edita una migración ya aplicada: Flyway guarda un hash de cada una y falla si
@@ -748,7 +813,8 @@ El `UNIQUE` en `usuario_id` es lo que hace que la relación sea 1–1: un
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `sku` | `VARCHAR(50)` | NOT NULL, UNIQUE |
+| `sku` | `VARCHAR(50)` | NOT NULL, UNIQUE — interno, el de la guía de despacho |
+| `codigo_barra` | `VARCHAR(50)` | UNIQUE **por empresa**, nullable — el de fábrica, lo que lee el escáner |
 | `nombre` | `VARCHAR(200)` | NOT NULL |
 | `categoria` | `VARCHAR(20)` | NOT NULL — enum `CategoriaMaterial` |
 | `precio_unitario` | `DOUBLE PRECISION` | NOT NULL |
@@ -945,8 +1011,9 @@ El enrutado está en `main.dart`, en `_paraElRol`.
 
 Cuatro pestañas sobre una obra elegida al entrar y recordada por el teléfono:
 
-1. **Inicio** — contadores del turno, **capital en la obra**, alertas sin
-   resolver, últimos movimientos y el acceso a cerrar turno.
+1. **Inicio** — contadores del turno, la **cola de solicitudes**, los dos
+   escaneos, **capital en la obra**, alertas sin resolver, últimos movimientos
+   y el acceso a cerrar turno.
 2. **Bodega** — el catálogo cruzado con el saldo de la obra, ordenado por
    criticidad y filtrable por crítico/bajo. De ahí se entra al detalle del
    material, que muestra el kardex completo con el saldo tras cada movimiento,
@@ -956,6 +1023,31 @@ Cuatro pestañas sobre una obra elegida al entrar y recordada por el teléfono:
    quedar disponible para el siguiente préstamo.
 4. **Alertas** — dispara la detección en el backend al abrirse (no hay tareas
    programadas: las alertas nacen cuando alguien mira) y permite resolverlas.
+
+**El QR identifica a la persona, no al material.** El trabajador muestra su
+credencial en el teléfono, el bodeguero la escanea y en la pantalla siguiente
+aparece lo que esa persona pidió, listo para **aprobar o rechazar**: aprobar una
+solicitud de material despacha del kardex a su nombre, y aprobar una de
+herramienta genera el préstamo con su fecha de devolución. El código no
+autoriza por sí solo — quien aprueba sigue siendo el bodeguero autenticado, y
+así queda registrado.
+
+Aprobar material **pregunta cuánto se entrega** en vez de asumir lo pedido: en
+bodega pasa seguido que no alcanza para todo, y entregar 30 de las 36 planchas
+pedidas es una decisión legítima que el kardex tiene que reflejar. Rechazar
+exige un motivo, que es lo único que el trabajador va a ver en su teléfono.
+
+**El escáner de código de barras** resuelve otro problema: encontrar la ficha
+correcta sin buscarla en una lista de materiales parecidos. Lee el código
+impreso de fábrica en el envase, el SKU de la empresa o la etiqueta de una
+herramienta —quien apunta la cámara no tiene por qué saber cuál es— y lleva
+directo a registrar el movimiento. Con una herramienta, la acción depende de
+dónde esté: si está en bodega lleva a prestarla, y si está prestada, a recibirla
+de vuelta.
+
+Los dos escaneos tienen **ingreso manual** al lado: una etiqueta rota, una
+credencial mojada o un permiso de cámara denegado no pueden dejar al bodeguero
+sin poder despachar.
 
 La pantalla de movimiento muestra **el saldo que va a quedar antes de
 confirmar**, y avisa si cruza el mínimo de obra. Es lo que convierte el
@@ -986,12 +1078,24 @@ Cuatro pestañas sobre la empresa:
    no tendría los permisos que el puesto necesita. Cerrar advierte que la
    desviación queda fijada y que no se puede reabrir.
 2. **Materiales** — catálogo por categoría; precio unitario y merma se editan
-   juntos, que es lo que cambia de un material ya creado.
+   juntos, que es lo que cambia de un material ya creado. El alta admite el
+   **código de barras** del envase, que se puede leer con la cámara en vez de
+   teclear trece dígitos.
 3. **Usuarios** — el padrón por rol, alta con **RUT**, rol y PIN inicial, y
    restablecimiento de PIN. El diálogo dice lo que corresponde: el PIN anterior
    no se puede recuperar, solo reemplazar.
-4. **Empresa** — datos, contadores y el acceso a la **vista de bodega**, porque
-   la matriz de permisos le concede al admin todo lo de bodega.
+4. **Empresa** — datos, contadores, la **importación masiva** y el acceso a la
+   **vista de bodega**, porque la matriz de permisos le concede al admin todo lo
+   de bodega.
+
+**Importación masiva.** El catálogo de la constructora ya vive en Excel:
+cargarlo a mano en un teléfono son treinta y cuatro formularios y varios errores
+de dedo que después se propagan a cada presupuesto. La pantalla descarga la
+plantilla con las columnas en orden, sube la planilla llena, **muestra el
+informe fila por fila** y recién entonces deja confirmar. Si algo está mal no se
+importa nada: se corrige el archivo y se vuelve a subir. El bodeguero tiene la
+misma pantalla acotada a herramientas, porque es quien las etiqueta y las da de
+alta cuando llegan.
 
 #### Lo que falta
 
@@ -1037,12 +1141,27 @@ hw.gpu.mode=host
 **Arrancarlo:**
 
 ```bash
+scripts/run-emulador.sh               # arranca el AVD, espera el boot y corre la app
+```
+
+El script es el atajo de estos tres pasos, que también sirven sueltos:
+
+```bash
 emulator -avd Check-In-Obra_Pixel5 &
 flutter devices                       # debe aparecer emulator-5554
 flutter run -d emulator-5554
 ```
 
+`-d emulator-5554` es lo que evita que Flutter pregunte cuál dispositivo usar
+cuando además hay un celular conectado por USB.
+
 También se puede lanzar desde Android Studio: *Device Manager* → ▶ junto al AVD.
+
+> Si tu AVD se llama distinto o levanta en otro puerto:
+> `AVD=MiAvd DISPOSITIVO=emulator-5556 scripts/run-emulador.sh`.
+>
+> El script es de Ubuntu/macOS. En Windows, corre los tres comandos sueltos
+> desde PowerShell.
 
 > **Aceleración por hardware.** El emulador necesita KVM (Linux) o WHPX
 > (Windows) para no ir lentísimo. Comprobar con:
@@ -1099,6 +1218,9 @@ exige compilar contra 37 y el build falla sin eso. Es retrocompatible: no afecta
 
 En `docs/`:
 
+- **`ESPECIFICACION.md`** — qué hace el sistema y bajo qué reglas: actores,
+  modelo de datos, los 51 requisitos funcionales, las 27 reglas de negocio con
+  su código de respuesta, los ciclos de vida y los requisitos no funcionales.
 - **`diagrams/`** — Diagrama de clases del MVP1. Es la fuente de verdad del
   modelo: entidades, enums y relaciones del backend salen de ahí.
 - **`design-system/`** — Paleta, tipografía (Fira Sans + Fira Code), estilo e
@@ -1109,11 +1231,14 @@ En `docs/`:
 
 Los `.dc.html` se abren directamente en el navegador.
 
-### Estado del proyecto
+### Especificación y estado
 
-**[`docs/PENDIENTES.md`](docs/PENDIENTES.md)** — qué está hecho, qué falta, en
-qué orden conviene atacarlo y qué riesgos hay abiertos. Es el documento a
-revisar antes de tomar una tarea.
+- **[`docs/ESPECIFICACION.md`](docs/ESPECIFICACION.md)** — la especificación del
+  sistema completo. Es el documento a revisar para saber **qué debe hacer** algo
+  y por qué, antes de cambiarlo.
+- **[`docs/PENDIENTES.md`](docs/PENDIENTES.md)** — qué está hecho, qué falta, en
+  qué orden conviene atacarlo y qué riesgos hay abiertos. Es el documento a
+  revisar antes de tomar una tarea.
 
 ---
 

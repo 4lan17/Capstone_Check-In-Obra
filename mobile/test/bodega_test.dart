@@ -7,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 MaterialObra _material({double minimo = 40}) => MaterialObra(
   id: 1,
   sku: 'VOL-ST-10',
+  codigoBarra: '7801234567890',
   nombre: 'Volcanita ST 10 mm',
   categoria: 'VOLCANITA',
   precioUnitario: 5980,
@@ -33,6 +34,40 @@ MovimientoKardex _mov(
 
 void main() {
   setUpAll(() => initializeDateFormatting('es_CL'));
+
+  group('Cantidades tecleadas en obra', () {
+    // El teclado numérico de Android ofrece punto y coma sin distinguirlos, y
+    // estas cantidades van derecho al kardex: leer "0.5" como 5 es un despacho
+    // diez veces mayor que el real.
+    test('la coma siempre es decimal', () {
+      expect(Formato.numero('12,5'), 12.5);
+      expect(Formato.numero('0,75'), 0.75);
+      expect(Formato.numero('12.500,75'), 12500.75);
+    });
+
+    test('el punto separa miles solo si deja tres dígitos detrás', () {
+      expect(Formato.numero('5.980'), 5980);
+      expect(Formato.numero('1.234.567'), 1234567);
+      expect(Formato.numero('0.5'), 0.5);
+      expect(Formato.numero('12.5'), 12.5);
+    });
+
+    test('lo que no es número no se convierte en cero', () {
+      // Devolver 0 ante basura haría que un formulario inválido pase como una
+      // cantidad válida de cero.
+      expect(Formato.numero(''), isNull);
+      expect(Formato.numero('  '), isNull);
+      expect(Formato.numero('treinta y seis'), isNull);
+    });
+
+    test('lee lo que la propia app escribe', () {
+      // La hoja de aprobación rellena el campo con Formato.cantidad; si ese
+      // texto no se pudiera releer, aprobar cambiaría la cantidad pedida.
+      for (final valor in [36.0, 1200.0, 12.5, 0.75]) {
+        expect(Formato.numero(Formato.cantidad(valor)), valor);
+      }
+    });
+  });
 
   group('Signo del movimiento', () {
     test('la recepción suma y el despacho y el consumo restan', () {

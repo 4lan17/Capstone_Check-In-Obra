@@ -42,6 +42,9 @@ dependencies:
   fl_chart: ^1.2.0
   intl: ^0.20.3
   flutter_dotenv: ^6.0.1
+  # Elegir la planilla .xlsx de la importación masiva desde el explorador
+  # de archivos de Android.
+  file_picker: ^12.2.0
 
 dev_dependencies:
   flutter_test:
