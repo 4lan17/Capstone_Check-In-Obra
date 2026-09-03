@@ -9,6 +9,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -67,6 +68,19 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorBody> faltaParametro(MissingServletRequestParameterException ex) {
         return cuerpo(HttpStatus.BAD_REQUEST, "Falta el parámetro obligatorio '" + ex.getParameterName() + "'");
+    }
+
+    /**
+     * La planilla de una importación masiva pasó el tope de tamaño.
+     *
+     * <p>Sin este manejador, Spring responde un 500 genérico y quien está
+     * subiendo el archivo no tiene forma de saber que el problema es el peso.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorBody> archivoDemasiadoGrande(MaxUploadSizeExceededException ex) {
+        return cuerpo(HttpStatus.PAYLOAD_TOO_LARGE,
+                "El archivo supera el tamaño máximo permitido. Una planilla de catálogo no debería pesar tanto: "
+                        + "revisa que no traiga imágenes ni hojas de más.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

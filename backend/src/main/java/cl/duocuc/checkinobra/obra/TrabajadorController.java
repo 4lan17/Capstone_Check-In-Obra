@@ -42,7 +42,18 @@ public class TrabajadorController {
         return TrabajadorResponse.de(trabajadorService.obtener(id));
     }
 
+    /**
+     * Resuelve la credencial que el bodeguero acaba de escanear.
+     *
+     * <p>Restringido a quien opera bodega. Antes lo podía llamar cualquier
+     * usuario autenticado, y desde que escanear la credencial es el paso previo
+     * a aprobar solicitudes, eso deja a un trabajador resolviendo el código de
+     * un compañero desde su propio teléfono. El código es portador (RN-27 de la
+     * especificación): quien lo tiene se presenta como ese trabajador, así que
+     * importa quién puede canjearlo.
+     */
     @GetMapping("/por-credencial/{credencialQr}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO', 'JEFE_TERRENO')")
     public TrabajadorResponse buscarPorCredencial(@PathVariable String credencialQr) {
         // Quien escanea ya tiene el código en la mano: devolverlo otra vez solo
         // ampliaría por dónde puede filtrarse.

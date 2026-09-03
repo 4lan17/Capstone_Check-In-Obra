@@ -4,6 +4,7 @@ package cl.duocuc.checkinobra.cubicacion;
 public record MaterialResponse(
         Long id,
         String sku,
+        String codigoBarra,
         String nombre,
         String categoria,
         double precioUnitario,
@@ -14,6 +15,7 @@ public record MaterialResponse(
         return new MaterialResponse(
                 m.getId(),
                 m.getSku(),
+                m.getCodigoBarra(),
                 m.getNombre(),
                 m.getCategoria().name(),
                 m.getPrecioUnitario(),

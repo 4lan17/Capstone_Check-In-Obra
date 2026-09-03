@@ -89,6 +89,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Apache POI — lee y escribe las planillas .xlsx de la importación masiva -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.4.1</version>
+		</dependency>
+
 		<!-- Swagger / OpenAPI — tampoco está en Spring Initializr, se agrega a mano -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
