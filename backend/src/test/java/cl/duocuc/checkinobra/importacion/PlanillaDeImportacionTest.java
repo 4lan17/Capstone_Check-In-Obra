@@ -75,6 +75,13 @@ class PlanillaDeImportacionTest {
         // Un punto que no deja tres dígitos detrás es decimal, no separador.
         assertThat(Numeros.decimal("12.5", "La cantidad")).isEqualTo(12.5);
         assertThat(Numeros.decimal("0.75", "La cantidad")).isEqualTo(0.75);
+        // Tres dígitos detrás de un cero no son miles: 0.750 kilos es una
+        // cantidad, no setecientos cincuenta.
+        assertThat(Numeros.decimal("0.750", "La cantidad")).isEqualTo(0.75);
+        assertThat(Numeros.decimal("12.500.000", "El precio")).isEqualTo(12_500_000);
+        assertThat(Numeros.decimal("-5.980", "El ajuste")).isEqualTo(-5980);
+        // Un primer grupo de cuatro dígitos no tiene forma de miles.
+        assertThat(Numeros.decimal("1234.567", "La cantidad")).isEqualTo(1234.567);
     }
 
     @Test
