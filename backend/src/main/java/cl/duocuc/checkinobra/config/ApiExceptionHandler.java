@@ -1,5 +1,9 @@
 package cl.duocuc.checkinobra.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -20,8 +24,18 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    public record ErrorBody(Instant instante, int status, String mensaje) {
+    /**
+     * @param codigo qué conflicto es, para que la app decida sin leer el mensaje
+     *     (ver {@link ConflictoException}). Nulo cuando el status ya lo dice todo.
+     */
+    public record ErrorBody(Instant instante, int status, String mensaje, String codigo) {
     }
+
+    /** Dos escrituras chocaron sobre la misma fila; repetir la petición es seguro. */
+    public static final String CONFLICTO_CONCURRENTE = "CONFLICTO_CONCURRENTE";
+
+    /** Un UNIQUE de la base rechazó el dato; repetir la petición da lo mismo. */
+    public static final String DATO_DUPLICADO = "DATO_DUPLICADO";
 
     @ExceptionHandler(AccesoDenegadoException.class)
     public ResponseEntity<ErrorBody> accesoDenegado(AccesoDenegadoException ex) {
@@ -35,7 +49,33 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorBody> conflicto(IllegalStateException ex) {
-        return cuerpo(HttpStatus.CONFLICT, ex.getMessage());
+        String codigo = ex instanceof ConflictoException c ? c.codigo() : null;
+        return cuerpo(HttpStatus.CONFLICT, ex.getMessage(), codigo);
+    }
+
+    /**
+     * La base rechazó un dato repetido que la validación previa no vio, porque
+     * otra petición lo insertó entre la comprobación y la escritura (dos
+     * importaciones de la misma planilla, un doble tap sin clave de
+     * idempotencia). Sin este manejador salía un 500.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorBody> datoDuplicado(DataIntegrityViolationException ex) {
+        return cuerpo(HttpStatus.CONFLICT,
+                "Otro registro con esos mismos datos se guardó recién. Actualiza y revisa antes de repetir.",
+                DATO_DUPLICADO);
+    }
+
+    /** Se esperó demasiado por una fila bloqueada, o una versión cambió debajo. */
+    @ExceptionHandler({PessimisticLockingFailureException.class, OptimisticLockingFailureException.class})
+    public ResponseEntity<ErrorBody> conflictoConcurrente(RuntimeException ex, HttpServletRequest request) {
+        // Es transitorio: si la petición traía clave de idempotencia, el
+        // reintento con esa misma clave tiene que volver a ejecutarse, no
+        // recibir este mismo 409.
+        request.setAttribute(IdempotenciaFilter.NO_GUARDAR, true);
+        return cuerpo(HttpStatus.CONFLICT,
+                "Otra operación sobre lo mismo estaba en curso. Vuelve a intentarlo.",
+                CONFLICTO_CONCURRENTE);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -145,6 +185,10 @@ public class ApiExceptionHandler {
     }
 
     private ResponseEntity<ErrorBody> cuerpo(HttpStatus status, String mensaje) {
-        return ResponseEntity.status(status).body(new ErrorBody(Instant.now(), status.value(), mensaje));
+        return cuerpo(status, mensaje, null);
+    }
+
+    private ResponseEntity<ErrorBody> cuerpo(HttpStatus status, String mensaje, String codigo) {
+        return ResponseEntity.status(status).body(new ErrorBody(Instant.now(), status.value(), mensaje, codigo));
     }
 }

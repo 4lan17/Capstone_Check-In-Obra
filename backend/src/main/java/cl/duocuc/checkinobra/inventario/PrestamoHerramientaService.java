@@ -7,6 +7,8 @@ import cl.duocuc.checkinobra.obra.Obra;
 import cl.duocuc.checkinobra.obra.ObraService;
 import cl.duocuc.checkinobra.obra.Trabajador;
 import cl.duocuc.checkinobra.obra.TrabajadorService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,34 +25,50 @@ public class PrestamoHerramientaService {
     private final TrabajadorService trabajadorService;
     private final ObraService obraService;
     private final UsuarioRepository usuarioRepository;
+    private final EntityManager entityManager;
 
     public PrestamoHerramientaService(
             PrestamoHerramientaRepository prestamoHerramientaRepository,
             HerramientaRepository herramientaRepository,
             TrabajadorService trabajadorService,
             ObraService obraService,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            EntityManager entityManager) {
         this.prestamoHerramientaRepository = prestamoHerramientaRepository;
         this.herramientaRepository = herramientaRepository;
         this.trabajadorService = trabajadorService;
         this.obraService = obraService;
         this.usuarioRepository = usuarioRepository;
+        this.entityManager = entityManager;
     }
 
     /**
      * Préstamo directo del bodeguero, sin pasar por una SolicitudHerramienta
      * (la otra vía es SolicitudHerramientaService.aprobar()).
+     *
+     * <p>La herramienta se bloquea antes de mirar su estado: dos préstamos
+     * simultáneos de la misma herramienta la veían DISPONIBLE los dos y la
+     * entregaban dos veces.
+     *
+     * @param autorizadorId quien entrega; lo pone el controlador desde el token
      */
     public PrestamoHerramienta prestarDirecto(
             Long herramientaId, Long trabajadorId, Long obraId, Long autorizadorId, LocalDateTime fechaDevolEsperada) {
+        if (fechaDevolEsperada == null) {
+            throw new IllegalArgumentException("Falta la fecha de devolución esperada");
+        }
+        if (fechaDevolEsperada.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("La fecha de devolución esperada ya pasó: " + fechaDevolEsperada);
+        }
         Herramienta herramienta = herramientaRepository.findById(herramientaId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
+        entityManager.refresh(herramienta, LockModeType.PESSIMISTIC_WRITE);
         if (herramienta.getEstado() != EstadoHerramienta.DISPONIBLE) {
             throw new IllegalStateException("La herramienta no está DISPONIBLE (estado actual: " + herramienta.getEstado() + ")");
         }
         Trabajador trabajador = trabajadorService.obtener(trabajadorId);
-        Obra obra = obraService.obtener(obraId);
+        Obra obra = obraService.obtenerAbiertaParaRegistrar(obraId);
         Usuario autorizador = usuarioRepository.findById(autorizadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + autorizadorId));
@@ -78,6 +96,8 @@ public class PrestamoHerramientaService {
             throw new IllegalArgumentException("El estado de devolución no puede ser PRESTADA");
         }
         PrestamoHerramienta prestamo = obtener(prestamoId);
+        // Dos devoluciones simultáneas del mismo préstamo pasaban las dos.
+        entityManager.refresh(prestamo, LockModeType.PESSIMISTIC_WRITE);
         prestamo.registrarDevolucion();
 
         Herramienta herramienta = prestamo.getHerramienta();

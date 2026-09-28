@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +34,7 @@ public class PrestamoHerramientaController {
     @ResponseStatus(HttpStatus.CREATED)
     public PrestamoHerramientaResponse prestarDirecto(@RequestBody PrestarDirectoRequest req) {
         return PrestamoHerramientaResponse.de(prestamoHerramientaService.prestarDirecto(
-                req.herramientaId(), req.trabajadorId(), req.obraId(), req.autorizadorId(), req.fechaDevolEsperada()));
+                req.herramientaId(), req.trabajadorId(), req.obraId(), SesionActual.usuarioId(), req.fechaDevolEsperada()));
     }
 
     @PutMapping("/{id}/devolucion")
@@ -68,7 +69,7 @@ public class PrestamoHerramientaController {
     }
 
     public record PrestarDirectoRequest(
-            Long herramientaId, Long trabajadorId, Long obraId, Long autorizadorId, LocalDateTime fechaDevolEsperada) {
+            Long herramientaId, Long trabajadorId, Long obraId, LocalDateTime fechaDevolEsperada) {
     }
 
     public record RegistrarDevolucionRequest(EstadoHerramienta nuevoEstadoHerramienta) {

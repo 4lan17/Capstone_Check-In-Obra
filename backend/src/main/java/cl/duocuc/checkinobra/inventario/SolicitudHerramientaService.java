@@ -5,6 +5,8 @@ import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.obra.Trabajador;
 import cl.duocuc.checkinobra.obra.TrabajadorService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,22 +28,26 @@ public class SolicitudHerramientaService {
     private final TrabajadorService trabajadorService;
     private final UsuarioRepository usuarioRepository;
     private final PrestamoHerramientaService prestamoHerramientaService;
+    private final EntityManager entityManager;
 
     public SolicitudHerramientaService(
             SolicitudHerramientaRepository solicitudHerramientaRepository,
             HerramientaRepository herramientaRepository,
             TrabajadorService trabajadorService,
             UsuarioRepository usuarioRepository,
-            PrestamoHerramientaService prestamoHerramientaService) {
+            PrestamoHerramientaService prestamoHerramientaService,
+            EntityManager entityManager) {
         this.solicitudHerramientaRepository = solicitudHerramientaRepository;
         this.herramientaRepository = herramientaRepository;
         this.trabajadorService = trabajadorService;
         this.usuarioRepository = usuarioRepository;
         this.prestamoHerramientaService = prestamoHerramientaService;
+        this.entityManager = entityManager;
     }
 
-    public SolicitudHerramienta crear(Long trabajadorId, Long herramientaId, int cantidad) {
-        Trabajador trabajador = trabajadorService.obtener(trabajadorId);
+    /** @param usuarioId quien pide; el controlador lo saca del token */
+    public SolicitudHerramienta crear(Long usuarioId, Long herramientaId, int cantidad) {
+        Trabajador trabajador = trabajadorService.obtenerPorUsuario(usuarioId);
         Herramienta herramienta = herramientaRepository.findById(herramientaId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
@@ -58,7 +64,7 @@ public class SolicitudHerramientaService {
 
     /** SolicitudHerramienta.aprobar(): PrestamoHerramienta del diagrama. */
     public PrestamoHerramienta aprobar(Long solicitudId, Long aprobadorId, LocalDateTime fechaDevolEsperada) {
-        SolicitudHerramienta solicitud = obtener(solicitudId);
+        SolicitudHerramienta solicitud = bloquear(solicitudId);
         Usuario aprobador = usuarioRepository.findById(aprobadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
@@ -77,12 +83,24 @@ public class SolicitudHerramientaService {
 
     /** SolicitudHerramienta.rechazar() del diagrama. */
     public SolicitudHerramienta rechazar(Long solicitudId, Long rechazadorId, String motivo) {
-        SolicitudHerramienta solicitud = obtener(solicitudId);
+        SolicitudHerramienta solicitud = bloquear(solicitudId);
         Usuario rechazador = usuarioRepository.findById(rechazadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + rechazadorId));
         solicitud.rechazar(rechazador, motivo);
         return solicitudHerramientaRepository.save(solicitud);
+    }
+
+    /**
+     * Dos aprobaciones simultáneas de la misma solicitud —un doble tap, o dos
+     * bodegueros con la cola abierta— la veían PENDIENTE las dos y generaban
+     * dos despachos. Con la fila bloqueada, la segunda espera y ve la solicitud
+     * ya resuelta.
+     */
+    private SolicitudHerramienta bloquear(Long solicitudId) {
+        var solicitud = obtener(solicitudId);
+        entityManager.refresh(solicitud, LockModeType.PESSIMISTIC_WRITE);
+        return solicitud;
     }
 
     @Transactional(readOnly = true)

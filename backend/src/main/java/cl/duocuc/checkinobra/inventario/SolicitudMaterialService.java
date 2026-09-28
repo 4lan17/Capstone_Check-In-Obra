@@ -9,6 +9,8 @@ import cl.duocuc.checkinobra.obra.Obra;
 import cl.duocuc.checkinobra.obra.ObraService;
 import cl.duocuc.checkinobra.obra.Trabajador;
 import cl.duocuc.checkinobra.obra.TrabajadorService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,7 @@ public class SolicitudMaterialService {
     private final ObraService obraService;
     private final UsuarioRepository usuarioRepository;
     private final KardexMovimientoService kardexMovimientoService;
+    private final EntityManager entityManager;
 
     public SolicitudMaterialService(
             SolicitudMaterialRepository solicitudMaterialRepository,
@@ -38,17 +41,20 @@ public class SolicitudMaterialService {
             MaterialService materialService,
             ObraService obraService,
             UsuarioRepository usuarioRepository,
-            KardexMovimientoService kardexMovimientoService) {
+            KardexMovimientoService kardexMovimientoService,
+            EntityManager entityManager) {
         this.solicitudMaterialRepository = solicitudMaterialRepository;
         this.trabajadorService = trabajadorService;
         this.materialService = materialService;
         this.obraService = obraService;
         this.usuarioRepository = usuarioRepository;
         this.kardexMovimientoService = kardexMovimientoService;
+        this.entityManager = entityManager;
     }
 
-    public SolicitudMaterial crear(Long trabajadorId, Long materialId, Long obraId, double cantidad) {
-        Trabajador trabajador = trabajadorService.obtener(trabajadorId);
+    /** @param usuarioId quien pide; el controlador lo saca del token */
+    public SolicitudMaterial crear(Long usuarioId, Long materialId, Long obraId, double cantidad) {
+        Trabajador trabajador = trabajadorService.obtenerPorUsuario(usuarioId);
         Material material = materialService.obtener(materialId);
         Obra obra = obraService.obtener(obraId);
 
@@ -70,7 +76,7 @@ public class SolicitudMaterialService {
      * de despacho: no hay aprobación parcial automática).
      */
     public KardexMovimiento aprobar(Long solicitudId, Long aprobadorId, double cantidadAEntregar) {
-        SolicitudMaterial solicitud = obtener(solicitudId);
+        SolicitudMaterial solicitud = bloquear(solicitudId);
         Usuario aprobador = usuarioRepository.findById(aprobadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
@@ -92,12 +98,24 @@ public class SolicitudMaterialService {
 
     /** SolicitudMaterial.rechazar() del diagrama. */
     public SolicitudMaterial rechazar(Long solicitudId, Long rechazadorId, String motivo) {
-        SolicitudMaterial solicitud = obtener(solicitudId);
+        SolicitudMaterial solicitud = bloquear(solicitudId);
         Usuario rechazador = usuarioRepository.findById(rechazadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + rechazadorId));
         solicitud.rechazar(rechazador, motivo);
         return solicitudMaterialRepository.save(solicitud);
+    }
+
+    /**
+     * Dos aprobaciones simultáneas de la misma solicitud —un doble tap, o dos
+     * bodegueros con la cola abierta— la veían PENDIENTE las dos y generaban
+     * dos despachos. Con la fila bloqueada, la segunda espera y ve la solicitud
+     * ya resuelta.
+     */
+    private SolicitudMaterial bloquear(Long solicitudId) {
+        var solicitud = obtener(solicitudId);
+        entityManager.refresh(solicitud, LockModeType.PESSIMISTIC_WRITE);
+        return solicitud;
     }
 
     @Transactional(readOnly = true)

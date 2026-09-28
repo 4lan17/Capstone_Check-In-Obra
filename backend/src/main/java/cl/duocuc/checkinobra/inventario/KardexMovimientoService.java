@@ -3,6 +3,7 @@ package cl.duocuc.checkinobra.inventario;
 import cl.duocuc.checkinobra.obra.TrabajadorService;
 import cl.duocuc.checkinobra.obra.Trabajador;
 import cl.duocuc.checkinobra.config.AccesoEmpresa;
+import cl.duocuc.checkinobra.config.ConflictoException;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.cubicacion.Material;
@@ -40,9 +41,22 @@ public class KardexMovimientoService {
     }
 
     /**
+     * Holgura para comparar saldos: la cantidad es {@code double} y el saldo es
+     * una suma de muchas, así que 0,1 + 0,2 no da exactamente 0,3.
+     */
+    private static final double TOLERANCIA = 1e-6;
+
+    /**
      * KardexMovimiento.registrar() del diagrama, orquestado: valida que
      * un DESPACHO o CONSUMO no deje el stock de la obra en negativo — el
      * mismo bloqueo que ya anticipaba la pantalla de despacho.
+     *
+     * <p>La obra se bloquea <b>antes</b> de leer el saldo. Sin eso, dos despachos
+     * simultáneos del mismo material leían el mismo saldo, los dos pasaban la
+     * validación y el stock quedaba negativo.
+     *
+     * @param usuarioId quien registra; lo pone el controlador desde el token,
+     *     nunca desde el cuerpo de la petición
      */
     public KardexMovimiento registrarMovimiento(
             Long obraId,
@@ -51,7 +65,7 @@ public class KardexMovimientoService {
             Long trabajadorId,
             TipoMovimiento tipo,
             double cantidad) {
-        Obra obra = obraService.obtener(obraId);
+        Obra obra = obraService.obtenerAbiertaParaRegistrar(obraId);
         Material material = materialService.obtener(materialId);
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .filter(AccesoEmpresa::esPropio)
@@ -60,9 +74,9 @@ public class KardexMovimientoService {
         Trabajador receptor = resolverReceptor(tipo, trabajadorId);
 
         if (tipo != TipoMovimiento.RECEPCION) {
-            double stockActual = stockActual(obraId, materialId);
-            if (cantidad > stockActual) {
-                throw new IllegalStateException(
+            double stockActual = kardexMovimientoRepository.calcularStock(obraId, materialId);
+            if (cantidad > stockActual + TOLERANCIA) {
+                throw new ConflictoException(ConflictoException.STOCK_INSUFICIENTE,
                         "Stock insuficiente: quedan " + stockActual + " y se pidieron " + cantidad);
             }
         }
@@ -107,9 +121,7 @@ public class KardexMovimientoService {
     @Transactional(readOnly = true)
     public double stockActual(Long obraId, Long materialId) {
         obraService.obtener(obraId);
-        return kardexMovimientoRepository.findByObraIdAndMaterialId(obraId, materialId).stream()
-                .mapToDouble(m -> m.getCantidad() * m.signo())
-                .sum();
+        return kardexMovimientoRepository.calcularStock(obraId, materialId);
     }
 
     @Transactional(readOnly = true)
