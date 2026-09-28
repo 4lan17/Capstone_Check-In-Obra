@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/formato.dart';
 import '../../core/network/errores.dart';
+import '../../core/network/idempotencia.dart';
+import '../../data/api/auth_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/api/dominio_api.dart';
@@ -11,6 +13,7 @@ import '../../data/modelos/solicitud.dart';
 import '../../shared_widgets/campo_texto.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
+import '../../shared_widgets/presion.dart';
 import '../auth/sesion_controller.dart';
 import 'bodega_providers.dart';
 import 'pantalla_bodega.dart';
@@ -58,7 +61,7 @@ class FilaSolicitudMaterial extends ConsumerWidget {
               const SizedBox(width: 8),
               const ChipEstado(
                 texto: 'Material',
-                fondo: Color(0xFFF1F5F9),
+                fondo: AppColors.sunken,
                 textoColor: AppColors.textMuted,
               ),
               const Spacer(),
@@ -66,7 +69,7 @@ class FilaSolicitudMaterial extends ConsumerWidget {
                 Text(
                   Formato.antiguedad(fecha),
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: AppColors.secondary,
                   ),
                 ),
@@ -87,7 +90,7 @@ class FilaSolicitudMaterial extends ConsumerWidget {
             '${Formato.cantidad(solicitud.cantidad)} $unidad',
             style: const TextStyle(
               fontFamily: AppTheme.monoFamily,
-              fontSize: 11.5,
+              fontSize: 12.5,
               color: AppColors.secondary,
             ),
           ),
@@ -124,12 +127,12 @@ class FilaSolicitudMaterial extends ConsumerWidget {
               alRechazar: () => rechazarSolicitud(
                 context,
                 titulo: 'Rechazar ${solicitud.materialNombre}',
-                alConfirmar: (motivo, usuarioId) => ref
+                alConfirmar: (motivo, clave) => ref
                     .read(solicitudesApiProvider)
                     .rechazarMaterial(
                       solicitud.id,
-                      rechazadorId: usuarioId,
                       motivo: motivo,
+                      clave: clave,
                     ),
               ),
             ),
@@ -186,7 +189,7 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
               const SizedBox(width: 8),
               const ChipEstado(
                 texto: 'Herramienta',
-                fondo: Color(0xFFF1F5F9),
+                fondo: AppColors.sunken,
                 textoColor: AppColors.textMuted,
               ),
               const Spacer(),
@@ -194,7 +197,7 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
                 Text(
                   Formato.antiguedad(fecha),
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: AppColors.secondary,
                   ),
                 ),
@@ -216,7 +219,7 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
               '${Formato.pesos(herramienta.valorReposicion)}',
               style: const TextStyle(
                 fontFamily: AppTheme.monoFamily,
-                fontSize: 11.5,
+                fontSize: 12.5,
                 color: AppColors.secondary,
               ),
             ),
@@ -254,12 +257,12 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
               alRechazar: () => rechazarSolicitud(
                 context,
                 titulo: 'Rechazar ${solicitud.herramientaNombre}',
-                alConfirmar: (motivo, usuarioId) => ref
+                alConfirmar: (motivo, clave) => ref
                     .read(solicitudesApiProvider)
                     .rechazarHerramienta(
                       solicitud.id,
-                      rechazadorId: usuarioId,
                       motivo: motivo,
+                      clave: clave,
                     ),
               ),
             ),
@@ -307,7 +310,7 @@ Future<void> aprobarHerramienta(
 Future<void> rechazarSolicitud(
   BuildContext context, {
   required String titulo,
-  required Future<void> Function(String motivo, int usuarioId) alConfirmar,
+  required Future<void> Function(String motivo, String clave) alConfirmar,
 }) async {
   await showModalBottomSheet<void>(
     context: context,
@@ -332,9 +335,21 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
   );
   bool _enviando = false;
   String? _error;
+  final _intento = IntentoIdempotente();
+
+  @override
+  void initState() {
+    super.initState();
+    // "Saldo tras el despacho" tiene que seguir a lo que se escribe: es justo
+    // cuando alguien baja de 36 a 30 planchas que necesita verlo.
+    _cantidad.addListener(_alCambiarCantidad);
+  }
+
+  void _alCambiarCantidad() => setState(() {});
 
   @override
   void dispose() {
+    _cantidad.removeListener(_alCambiarCantidad);
     _cantidad.dispose();
     super.dispose();
   }
@@ -342,6 +357,7 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
   double get _valor => Formato.numero(_cantidad.text) ?? 0;
 
   Future<void> _aprobar() async {
+    if (_enviando) return;
     final sesion = ref.read(sesionProvider).valueOrNull;
     if (sesion == null) return;
 
@@ -360,12 +376,13 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
           .read(solicitudesApiProvider)
           .aprobarMaterial(
             widget.solicitud.id,
-            aprobadorId: sesion.usuarioId,
             cantidadAEntregar: _valor,
+            clave: _intento.clavePara([widget.solicitud.id, _valor]),
           );
 
       recargarBodega(ref);
       if (!mounted) return;
+      HapticFeedback.mediumImpact();
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -379,6 +396,8 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
     } catch (e) {
       // Un 409 acá es stock insuficiente: el backend no deja el saldo negativo
       // aunque la solicitud sea legítima.
+      if (!mounted) return;
+      if (_yaResuelta(context, ref, e)) return;
       setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
@@ -394,6 +413,7 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
 
     return _Hoja(
       titulo: 'Aprobar y despachar',
+      enviando: _enviando,
       children: [
         Text(
           widget.solicitud.materialNombre,
@@ -436,9 +456,11 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
           MensajeError(mensaje: _error!),
         ],
         const SizedBox(height: 20),
-        FilledButton(
-          onPressed: _enviando ? null : _aprobar,
-          child: Text(_enviando ? 'Despachando…' : 'Aprobar y despachar'),
+        BotonEnvio(
+          texto: 'Aprobar y despachar',
+          textoEnviando: 'Despachando…',
+          enviando: _enviando,
+          alPresionar: _aprobar,
         ),
       ],
     );
@@ -457,15 +479,13 @@ class _HojaAprobarHerramienta extends ConsumerStatefulWidget {
 
 class _HojaAprobarHerramientaState
     extends ConsumerState<_HojaAprobarHerramienta> {
-  // Fin del turno de hoy: es lo que pasa en la mayoría de los préstamos, así
-  // que el caso común no obliga a tocar nada.
-  late DateTime _devolucion = () {
-    final hoy = DateTime.now();
-    return DateTime(hoy.year, hoy.month, hoy.day, 18);
-  }();
+  // Fin del turno: es lo que pasa en la mayoría de los préstamos, así que el
+  // caso común no obliga a tocar nada.
+  late DateTime _devolucion = devolucionPorDefecto(DateTime.now());
 
   bool _enviando = false;
   String? _error;
+  final _intento = IntentoIdempotente();
 
   Future<void> _elegirFecha() async {
     final ahora = DateTime.now();
@@ -493,12 +513,24 @@ class _HojaAprobarHerramientaState
         hora?.hour ?? 18,
         hora?.minute ?? 0,
       );
+      _error = null;
     });
   }
 
   Future<void> _aprobar() async {
+    if (_enviando) return;
     final sesion = ref.read(sesionProvider).valueOrNull;
     if (sesion == null) return;
+
+    // Una devolución en el pasado haría nacer el préstamo vencido, con su
+    // alerta, antes de que la herramienta salga de bodega.
+    if (!_devolucion.isAfter(DateTime.now())) {
+      setState(
+        () => _error =
+            'La devolución esperada ya pasó. Elige una fecha y hora futuras.',
+      );
+      return;
+    }
 
     setState(() {
       _enviando = true;
@@ -510,12 +542,13 @@ class _HojaAprobarHerramientaState
           .read(solicitudesApiProvider)
           .aprobarHerramienta(
             widget.solicitud.id,
-            aprobadorId: sesion.usuarioId,
             fechaDevolEsperada: _devolucion,
+            clave: _intento.clavePara([widget.solicitud.id, _devolucion]),
           );
 
       recargarBodega(ref);
       if (!mounted) return;
+      HapticFeedback.mediumImpact();
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -526,6 +559,8 @@ class _HojaAprobarHerramientaState
         ),
       );
     } catch (e) {
+      if (!mounted) return;
+      if (_yaResuelta(context, ref, e)) return;
       setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
@@ -536,6 +571,7 @@ class _HojaAprobarHerramientaState
   Widget build(BuildContext context) {
     return _Hoja(
       titulo: 'Aprobar y prestar',
+      enviando: _enviando,
       children: [
         Text(
           widget.solicitud.herramientaNombre,
@@ -592,9 +628,11 @@ class _HojaAprobarHerramientaState
           MensajeError(mensaje: _error!),
         ],
         const SizedBox(height: 20),
-        FilledButton(
-          onPressed: _enviando ? null : _aprobar,
-          child: Text(_enviando ? 'Autorizando…' : 'Aprobar y prestar'),
+        BotonEnvio(
+          texto: 'Aprobar y prestar',
+          textoEnviando: 'Autorizando…',
+          enviando: _enviando,
+          alPresionar: _aprobar,
         ),
       ],
     );
@@ -605,7 +643,7 @@ class _HojaRechazo extends ConsumerStatefulWidget {
   const _HojaRechazo({required this.titulo, required this.alConfirmar});
 
   final String titulo;
-  final Future<void> Function(String motivo, int usuarioId) alConfirmar;
+  final Future<void> Function(String motivo, String clave) alConfirmar;
 
   @override
   ConsumerState<_HojaRechazo> createState() => _HojaRechazoState();
@@ -615,6 +653,7 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
   final _motivo = TextEditingController();
   bool _enviando = false;
   String? _error;
+  final _intento = IntentoIdempotente();
 
   /// Los motivos que se repiten en bodega. Tocarlos llena el campo, que se
   /// puede seguir editando: con guantes, escribir es lo último que uno quiere.
@@ -632,6 +671,7 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
   }
 
   Future<void> _rechazar() async {
+    if (_enviando) return;
     final sesion = ref.read(sesionProvider).valueOrNull;
     if (sesion == null) return;
 
@@ -650,13 +690,16 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
     });
 
     try {
-      await widget.alConfirmar(motivo, sesion.usuarioId);
+      await widget.alConfirmar(motivo, _intento.clavePara([motivo]));
       recargarBodega(ref);
       if (!mounted) return;
+      HapticFeedback.lightImpact();
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Solicitud rechazada')));
     } catch (e) {
+      if (!mounted) return;
+      if (_yaResuelta(context, ref, e)) return;
       setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
@@ -667,6 +710,7 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
   Widget build(BuildContext context) {
     return _Hoja(
       titulo: widget.titulo,
+      enviando: _enviando,
       children: [
         CampoConEtiqueta(
           etiqueta: 'Motivo del rechazo',
@@ -701,27 +745,71 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
           MensajeError(mensaje: _error!),
         ],
         const SizedBox(height: 20),
-        FilledButton(
-          onPressed: _enviando ? null : _rechazar,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.destructiveDark,
-          ),
-          child: Text(_enviando ? 'Rechazando…' : 'Rechazar solicitud'),
+        BotonEnvio(
+          texto: 'Rechazar solicitud',
+          textoEnviando: 'Rechazando…',
+          enviando: _enviando,
+          alPresionar: _rechazar,
+          color: AppColors.destructiveDark,
         ),
       ],
     );
   }
 }
 
+/// La devolución que se propone al aprobar: hoy a las 18:00, fin del turno.
+///
+/// Pasadas las 18:00 —un turno largo, una entrega de último minuto— eso ya es
+/// pasado y el préstamo nacería vencido, con alerta incluida. Ahí se propone
+/// mañana a la misma hora.
+DateTime devolucionPorDefecto(DateTime ahora) {
+  final hoy = DateTime(ahora.year, ahora.month, ahora.day, 18);
+  if (ahora.isBefore(hoy)) return hoy;
+  return DateTime(ahora.year, ahora.month, ahora.day + 1, 18);
+}
+
+/// Si el backend dice que la solicitud ya estaba resuelta, no es un error que
+/// el bodeguero tenga que corregir: otro se adelantó, o un reintento llegó
+/// después de un éxito cuya respuesta se perdió. Se cierra la hoja, se refresca
+/// la cola y se dice qué pasó.
+bool _yaResuelta(BuildContext context, WidgetRef ref, Object error) {
+  if (error is! ApiException || !error.yaEstabaHecho) return false;
+  recargarBodega(ref);
+  final mensajero = ScaffoldMessenger.of(context);
+  Navigator.of(context).pop();
+  mensajero.showSnackBar(
+    SnackBar(
+      content: Text(
+        '${error.mensaje.trim().replaceFirst(RegExp(r'\.$'), '')}. '
+        'La cola ya está al día.',
+      ),
+    ),
+  );
+  return true;
+}
+
 /// Envoltorio común de las tres hojas: respeta el teclado y el área segura.
+///
+/// Mientras se envía no se puede cerrar —ni con atrás ni arrastrando—: si la
+/// hoja desaparece con la petición en vuelo, el bodeguero no se entera de si el
+/// despacho quedó hecho y la tentación es volver a aprobar.
 class _Hoja extends StatelessWidget {
-  const _Hoja({required this.titulo, required this.children});
+  const _Hoja({
+    required this.titulo,
+    required this.children,
+    this.enviando = false,
+  });
 
   final String titulo;
   final List<Widget> children;
+  final bool enviando;
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(canPop: !enviando, child: _cuerpo(context));
+  }
+
+  Widget _cuerpo(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -763,20 +851,24 @@ class _Acciones extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton(
-            onPressed: alRechazar,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.destructiveDark,
-              side: const BorderSide(color: AppColors.destructive),
+          child: Presionable(
+            child: OutlinedButton(
+              onPressed: alRechazar,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.destructiveDark,
+                side: const BorderSide(color: AppColors.destructive),
+              ),
+              child: const Text('Rechazar'),
             ),
-            child: const Text('Rechazar'),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: FilledButton(
-            onPressed: alAprobar,
-            child: const Text('Aprobar'),
+          child: Presionable(
+            child: FilledButton(
+              onPressed: alAprobar,
+              child: const Text('Aprobar'),
+            ),
           ),
         ),
       ],
@@ -846,6 +938,7 @@ class _SaldoResultante extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: Panel(
+        animado: true,
         color: negativo ? AppColors.destructiveTint : AppColors.background,
         borderColor: negativo ? AppColors.destructive : AppColors.border,
         child: Row(
@@ -859,6 +952,7 @@ class _SaldoResultante extends StatelessWidget {
             Text(
               Formato.cantidad(saldo),
               style: TextStyle(
+                fontFeatures: AppTexto.tabulares,
                 fontFamily: AppTheme.monoFamily,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,

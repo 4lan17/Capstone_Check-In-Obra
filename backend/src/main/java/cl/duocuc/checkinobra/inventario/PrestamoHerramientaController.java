@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +34,7 @@ public class PrestamoHerramientaController {
     @ResponseStatus(HttpStatus.CREATED)
     public PrestamoHerramientaResponse prestarDirecto(@RequestBody PrestarDirectoRequest req) {
         return PrestamoHerramientaResponse.de(prestamoHerramientaService.prestarDirecto(
-                req.herramientaId(), req.trabajadorId(), req.obraId(), req.autorizadorId(), req.fechaDevolEsperada()));
+                req.herramientaId(), req.trabajadorId(), req.obraId(), SesionActual.usuarioId(), req.fechaDevolEsperada()));
     }
 
     @PutMapping("/{id}/devolucion")
@@ -44,11 +45,23 @@ public class PrestamoHerramientaController {
                 prestamoHerramientaService.registrarDevolucion(id, req.nuevoEstadoHerramienta()));
     }
 
+    /** Los propios, abiertos y cerrados, el más nuevo primero. Sale del token. */
+    @GetMapping("/mios")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public List<PrestamoHerramientaResponse> mios() {
+        return prestamoHerramientaService.listarMios().stream().map(PrestamoHerramientaResponse::de).toList();
+    }
+
+    /** Un trabajador solo obtiene los suyos; lo exige el servicio. */
     @GetMapping("/{id}")
     public PrestamoHerramientaResponse obtener(@PathVariable Long id) {
         return PrestamoHerramientaResponse.de(prestamoHerramientaService.obtener(id));
     }
 
+    /**
+     * Un trabajador solo puede listar por su propio {@code trabajadorId}; por
+     * obra o los vencidos vería los de sus compañeros. Lo exige el servicio.
+     */
     @GetMapping
     public List<PrestamoHerramientaResponse> listar(
             @RequestParam(required = false) Long obraId,
@@ -68,7 +81,7 @@ public class PrestamoHerramientaController {
     }
 
     public record PrestarDirectoRequest(
-            Long herramientaId, Long trabajadorId, Long obraId, Long autorizadorId, LocalDateTime fechaDevolEsperada) {
+            Long herramientaId, Long trabajadorId, Long obraId, LocalDateTime fechaDevolEsperada) {
     }
 
     public record RegistrarDevolucionRequest(EstadoHerramienta nuevoEstadoHerramienta) {

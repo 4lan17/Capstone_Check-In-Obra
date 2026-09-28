@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/errores.dart';
+import '../../core/network/idempotencia.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/importacion.dart';
 import '../../shared_widgets/estados.dart';
+import '../../shared_widgets/opcion.dart';
 import '../../shared_widgets/panel.dart';
 import '../bodega/bodega_providers.dart';
 
@@ -91,8 +93,16 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
   /// Cuántos registros quedaron guardados, cuando ya se importó.
   int? _importados;
 
+  /// La confirmación es la escritura: sube el mismo archivo y lo da de alta.
+  /// Si la respuesta se pierde y se vuelve a confirmar, sin clave el segundo
+  /// envío chocaría con los SKU que el primero ya creó y diría "error" sobre
+  /// una importación que salió bien.
+  final _intento = IntentoIdempotente();
+
   void _cambiarCatalogo(CatalogoImportable nuevo) {
-    if (nuevo == _catalogo) return;
+    // Con una subida en vuelo, su informe terminaría mostrado bajo el otro
+    // catálogo.
+    if (nuevo == _catalogo || _trabajando) return;
     // Las columnas cambian: la planilla elegida ya no sirve, y dejarla
     // seleccionada invitaría a subir el archivo de materiales como si fuera el
     // de herramientas.
@@ -107,6 +117,7 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
   }
 
   Future<void> _descargarPlantilla() async {
+    if (_trabajando) return;
     setState(() {
       _trabajando = true;
       _error = null;
@@ -132,7 +143,7 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
         ),
       );
     } catch (e) {
-      setState(() => _error = mensajeDeError(e));
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _trabajando = false);
     }
@@ -142,12 +153,13 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
   /// revisado no sirve de nada, y obligar a apretar "validar" después de
   /// elegirlo solo agrega un paso.
   Future<void> _elegirYValidar() async {
+    if (_trabajando) return;
     final archivo = await FilePicker.pickFile(
       dialogTitle: 'Planilla de ${_catalogo.titulo.toLowerCase()}',
       type: FileType.custom,
       allowedExtensions: const ['xlsx', 'xls'],
     );
-    if (archivo == null) return;
+    if (archivo == null || !mounted) return;
 
     setState(() {
       _trabajando = true;
@@ -168,6 +180,7 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
       if (!mounted) return;
       setState(() => _informe = informe);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = mensajeDeError(e);
         _contenido = null;
@@ -178,6 +191,7 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
   }
 
   Future<void> _importar() async {
+    if (_trabajando) return;
     final contenido = _contenido;
     final nombre = _nombreArchivo;
     if (contenido == null || nombre == null) return;
@@ -188,7 +202,14 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
     });
 
     try {
-      final informe = await _subir(contenido, nombre, confirmar: true);
+      final informe = await _subir(
+        contenido,
+        nombre,
+        confirmar: true,
+        // El mismo objeto de bytes es el mismo archivo: elegir otro lo
+        // reemplaza y con eso cambia la clave.
+        clave: _intento.clavePara([_catalogo, contenido, nombre]),
+      );
 
       // El catálogo cambió: la bodega, el presupuesto y el escáner lo leen de
       // los mismos providers.
@@ -202,7 +223,7 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
         _contenido = null;
       });
     } catch (e) {
-      setState(() => _error = mensajeDeError(e));
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _trabajando = false);
     }
@@ -212,6 +233,7 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
     Uint8List contenido,
     String nombre, {
     required bool confirmar,
+    String? clave,
   }) {
     final api = ref.read(importacionApiProvider);
     return switch (_catalogo) {
@@ -219,11 +241,13 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
         contenido: contenido,
         nombreArchivo: nombre,
         confirmar: confirmar,
+        clave: clave,
       ),
       CatalogoImportable.herramientas => api.herramientas(
         contenido: contenido,
         nombreArchivo: nombre,
         confirmar: confirmar,
+        clave: clave,
       ),
     };
   }
@@ -341,40 +365,12 @@ class _SelectorCatalogo extends StatelessWidget {
       children: [
         for (final c in CatalogoImportable.values) ...[
           Expanded(
-            child: Semantics(
-              button: true,
-              selected: c == catalogo,
-              label: 'Importar ${c.titulo}',
-              excludeSemantics: true,
-              child: Material(
-                color: c == catalogo ? AppColors.primary : AppColors.card,
-                child: InkWell(
-                  onTap: habilitado ? () => alCambiar(c) : null,
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      border: Border.fromBorderSide(
-                        BorderSide(
-                          color: c == catalogo
-                              ? AppColors.primary
-                              : AppColors.borderControl,
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      c.titulo,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: c == catalogo
-                            ? Colors.white
-                            : AppColors.textMuted,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            child: Opcion(
+              texto: c.titulo,
+              semanticLabel: 'Importar ${c.titulo}',
+              elegida: c == catalogo,
+              expandida: true,
+              alTocar: habilitado ? () => alCambiar(c) : null,
             ),
           ),
           if (c != CatalogoImportable.values.last) const SizedBox(width: 8),
@@ -442,7 +438,7 @@ class _Columnas extends StatelessWidget {
                       Text(
                         detalle,
                         style: const TextStyle(
-                          fontSize: 11.5,
+                          fontSize: 12.5,
                           height: 1.3,
                           color: AppColors.secondary,
                         ),

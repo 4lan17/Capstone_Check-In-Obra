@@ -212,6 +212,24 @@ public class MaterialService {
                 .orElseThrow(() -> new NoSuchElementException("Material no encontrado: " + id));
     }
 
+    /**
+     * Último costo y promedio de cada material de la empresa, por id. Los que no
+     * tienen ninguna recepción con costo no están en el mapa.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, CostoMaterial> costosPorMaterial(Long empresaId) {
+        AccesoEmpresa.exigirEmpresa(empresaId);
+        return materialRepository.costosPorEmpresa(empresaId).stream()
+                .collect(Collectors.toMap(CostoMaterial::getMaterialId, Function.identity()));
+    }
+
+    /** El costo de un material, o nulo si no tiene recepciones con costo. */
+    @Transactional(readOnly = true)
+    public CostoMaterial costoDe(Material material) {
+        // Recibe el material ya obtenido, y por lo tanto ya filtrado por empresa.
+        return materialRepository.costoDe(material.getId()).orElse(null);
+    }
+
     public Material actualizarPrecio(Long materialId, double nuevoPrecio) {
         Material material = obtener(materialId);
         material.setPrecioUnitario(nuevoPrecio);

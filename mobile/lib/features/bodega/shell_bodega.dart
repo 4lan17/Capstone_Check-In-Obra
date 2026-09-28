@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme.dart';
+import '../../shared_widgets/barra_pestanas.dart';
 import '../../shared_widgets/panel.dart';
 import '../auth/sesion_controller.dart';
 import '../obra/obra_activa.dart';
@@ -86,11 +88,9 @@ class _ShellBodegaState extends ConsumerState<ShellBodega> {
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: BarraDePestanas(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        backgroundColor: AppColors.card,
-        indicatorColor: AppColors.warningTint,
         destinations: [
           const NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -160,19 +160,14 @@ class _TituloObra extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    comoAdmin ? 'BODEGA · VISTA ADMIN' : 'OBRA',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
-                      color: AppColors.textOnDark,
-                    ),
+                    comoAdmin ? 'Bodega, vista de administrador' : 'Obra',
+                    style: AppTexto.dato.copyWith(color: AppColors.secondary),
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 4),
                   const Icon(
                     Icons.unfold_more,
-                    size: 13,
-                    color: AppColors.textOnDark,
+                    size: 14,
+                    color: AppColors.secondary,
                   ),
                 ],
               ),
@@ -180,10 +175,7 @@ class _TituloObra extends ConsumerWidget {
                 obra?.nombre ?? 'Sin obra',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTexto.titulo.copyWith(fontSize: 19),
               ),
             ],
           ),

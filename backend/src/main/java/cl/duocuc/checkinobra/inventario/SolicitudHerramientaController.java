@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +34,9 @@ public class SolicitudHerramientaController {
     @ResponseStatus(HttpStatus.CREATED)
     public SolicitudHerramientaResponse crear(@RequestBody CrearSolicitudRequest req) {
         return SolicitudHerramientaResponse.de(
-                solicitudHerramientaService.crear(req.trabajadorId(), req.herramientaId(), req.cantidad()));
+                solicitudHerramientaService.crear(
+                        // Se pide a nombre propio, igual que una solicitud de material.
+                        SesionActual.usuarioId(), req.herramientaId(), req.cantidad(), req.descripcion()));
     }
 
     /** Aprobar/rechazar es de BODEGUERO o ADMIN, según la matriz de permisos. */
@@ -42,21 +45,47 @@ public class SolicitudHerramientaController {
     public PrestamoHerramientaResponse aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
         // Aprobar una solicitud produce el préstamo, no la solicitud.
         return PrestamoHerramientaResponse.de(
-                solicitudHerramientaService.aprobar(id, req.aprobadorId(), req.fechaDevolEsperada()));
+                solicitudHerramientaService.aprobar(id, SesionActual.usuarioId(), req.fechaDevolEsperada()));
     }
 
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     public SolicitudHerramientaResponse rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
         return SolicitudHerramientaResponse.de(
-                solicitudHerramientaService.rechazar(id, req.rechazadorId(), req.motivo()));
+                solicitudHerramientaService.rechazar(id, SesionActual.usuarioId(), req.motivo()));
     }
 
+    /** El trabajador retira su propia solicitud mientras sigue pendiente. */
+    @PutMapping("/{id}/cancelar")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public SolicitudHerramientaResponse cancelar(@PathVariable Long id) {
+        return SolicitudHerramientaResponse.de(solicitudHerramientaService.cancelar(id));
+    }
+
+    /** El trabajador confirma que recibió la herramienta: APROBADA → ENTREGADA. */
+    @PutMapping("/{id}/confirmar-recepcion")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public SolicitudHerramientaResponse confirmarRecepcion(@PathVariable Long id) {
+        return SolicitudHerramientaResponse.de(solicitudHerramientaService.confirmarRecepcion(id));
+    }
+
+    /** Las propias, la más nueva primero. Sale del token: no recibe id. */
+    @GetMapping("/mias")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public List<SolicitudHerramientaResponse> mias() {
+        return solicitudHerramientaService.listarMias().stream().map(SolicitudHerramientaResponse::de).toList();
+    }
+
+    /** Un trabajador solo obtiene las suyas; lo exige el servicio. */
     @GetMapping("/{id}")
     public SolicitudHerramientaResponse obtener(@PathVariable Long id) {
         return SolicitudHerramientaResponse.de(solicitudHerramientaService.obtener(id));
     }
 
+    /**
+     * Un trabajador solo puede listar por su propio {@code trabajadorId}; por
+     * obra vería las de sus compañeros. Lo exige el servicio.
+     */
     @GetMapping
     public List<SolicitudHerramientaResponse> listar(
             @RequestParam(required = false) Long trabajadorId,
@@ -75,12 +104,13 @@ public class SolicitudHerramientaController {
         return solicitudes.stream().map(SolicitudHerramientaResponse::de).toList();
     }
 
-    public record CrearSolicitudRequest(Long trabajadorId, Long herramientaId, int cantidad) {
+    /** {@code cantidad} es opcional y, si viene, tiene que ser 1: cada herramienta tiene su QR. */
+    public record CrearSolicitudRequest(Long herramientaId, Integer cantidad, String descripcion) {
     }
 
-    public record AprobarRequest(Long aprobadorId, LocalDateTime fechaDevolEsperada) {
+    public record AprobarRequest(LocalDateTime fechaDevolEsperada) {
     }
 
-    public record RechazarRequest(Long rechazadorId, String motivo) {
+    public record RechazarRequest(String motivo) {
     }
 }

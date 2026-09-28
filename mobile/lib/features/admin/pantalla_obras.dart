@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/errores.dart';
+import '../../core/network/idempotencia.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/obra.dart';
 import '../../shared_widgets/campo_texto.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
+import '../../shared_widgets/presion.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/modelos/usuario.dart';
 import '../obra/obra_activa.dart';
@@ -50,7 +52,7 @@ class PantallaObras extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Etiqueta('Activas · ${activas.length}'),
+                Etiqueta('Activas (${activas.length})'),
                 const SizedBox(height: 8),
                 for (final o in activas) ...[
                   _FilaObra(obra: o),
@@ -58,7 +60,7 @@ class PantallaObras extends ConsumerWidget {
                 ],
                 if (cerradas.isNotEmpty) ...[
                   const SizedBox(height: 14),
-                  Etiqueta('Cerradas · ${cerradas.length}'),
+                  Etiqueta('Cerradas (${cerradas.length})'),
                   const SizedBox(height: 8),
                   for (final o in cerradas) ...[
                     _FilaObra(obra: o),
@@ -75,7 +77,6 @@ class PantallaObras extends ConsumerWidget {
         onPressed: () => _abrirFormulario(context),
         backgroundColor: AppColors.accentFill,
         foregroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         icon: const Icon(Icons.add),
         label: const Text('Nueva obra'),
       ),
@@ -98,6 +99,7 @@ class _FilaObra extends ConsumerStatefulWidget {
 
 class _FilaObraState extends ConsumerState<_FilaObra> {
   bool _enviando = false;
+  final _intentoCierre = IntentoIdempotente();
 
   /// Solo un jefe de terreno o un admin puede dirigir una obra: el backend
   /// rechaza cualquier otro rol, así que la lista se filtra acá en vez de
@@ -180,6 +182,14 @@ class _FilaObraState extends ConsumerState<_FilaObra> {
       await ref.read(obrasApiProvider).asignarJefe(obra.id, elegido.id);
       ref.invalidate(todasLasObrasProvider);
       ref.invalidate(obrasActivasProvider);
+      if (!context.mounted) return;
+      // Sin esto el cambio pasaba en silencio: la fila se refresca un momento
+      // después y no queda claro si el toque funcionó.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${elegido.nombre} queda a cargo de ${obra.nombre}'),
+        ),
+      );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
@@ -194,7 +204,6 @@ class _FilaObraState extends ConsumerState<_FilaObra> {
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         title: Text('¿Cerrar ${widget.obra.nombre}?'),
         content: const Text(
           'Después de cerrarla no se puede registrar más movimiento contra '
@@ -216,11 +225,16 @@ class _FilaObraState extends ConsumerState<_FilaObra> {
         ],
       ),
     );
-    if (confirmado != true) return;
+    if (confirmado != true || _enviando) return;
 
     setState(() => _enviando = true);
     try {
-      await ref.read(obrasApiProvider).cerrar(widget.obra.id);
+      await ref
+          .read(obrasApiProvider)
+          .cerrar(
+            widget.obra.id,
+            clave: _intentoCierre.clavePara([widget.obra.id]),
+          );
       ref.invalidate(todasLasObrasProvider);
       ref.invalidate(obrasActivasProvider);
     } catch (e) {
@@ -312,9 +326,6 @@ class _FilaObraState extends ConsumerState<_FilaObra> {
               label: Text(_enviando ? 'Cerrando…' : 'Cerrar obra'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(44),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
                 side: const BorderSide(color: AppColors.borderControl),
                 foregroundColor: AppColors.primary,
               ),
@@ -340,6 +351,7 @@ class _PantallaNuevaObraState extends ConsumerState<PantallaNuevaObra> {
   final _formKey = GlobalKey<FormState>();
   bool _enviando = false;
   String? _error;
+  final _intento = IntentoIdempotente();
 
   @override
   void dispose() {
@@ -350,19 +362,24 @@ class _PantallaNuevaObraState extends ConsumerState<PantallaNuevaObra> {
   }
 
   Future<void> _guardar() async {
+    if (_enviando) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
     setState(() {
       _enviando = true;
       _error = null;
     });
+    final nombre = _nombre.text.trim();
+    final cliente = _cliente.text.trim();
+    final ubicacion = _ubicacion.text.trim();
     try {
       await ref
           .read(obrasApiProvider)
           .crear(
-            nombre: _nombre.text.trim(),
-            cliente: _cliente.text.trim(),
-            ubicacion: _ubicacion.text.trim(),
+            nombre: nombre,
+            cliente: cliente,
+            ubicacion: ubicacion,
+            clave: _intento.clavePara([nombre, cliente, ubicacion]),
           );
       ref.invalidate(todasLasObrasProvider);
       ref.invalidate(obrasActivasProvider);
@@ -371,7 +388,7 @@ class _PantallaNuevaObraState extends ConsumerState<PantallaNuevaObra> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Obra creada')));
     } catch (e) {
-      setState(() => _error = mensajeDeError(e));
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
@@ -428,9 +445,11 @@ class _PantallaNuevaObraState extends ConsumerState<PantallaNuevaObra> {
                 MensajeError(mensaje: _error!),
               ],
               const SizedBox(height: 22),
-              FilledButton(
-                onPressed: _enviando ? null : _guardar,
-                child: Text(_enviando ? 'Creando…' : 'Crear obra'),
+              BotonEnvio(
+                texto: 'Crear obra',
+                textoEnviando: 'Creando…',
+                enviando: _enviando,
+                alPresionar: _guardar,
               ),
             ],
           ),

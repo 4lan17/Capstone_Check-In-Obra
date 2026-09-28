@@ -28,9 +28,11 @@ public class UsuarioService {
         // El RUT identifica a la persona en toda la cadena: quien recibe un
         // despacho, quien tiene una herramienta y quien dirige la obra se
         // muestran por nombre y RUT.
-        if (rut == null || rut.isBlank()) {
-            throw new IllegalArgumentException("El RUT es obligatorio");
-        }
+        //
+        // Se normaliza antes de comparar: "14109556-0" y "14.109.556-0" son la
+        // misma persona, y el UNIQUE de la columna solo lo ve si llegan escritos
+        // igual.
+        rut = Rut.normalizar(rut);
         if (usuarioRepository.existsByRut(rut)) {
             throw new IllegalStateException("Ya existe un usuario con ese RUT");
         }

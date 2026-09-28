@@ -1,7 +1,12 @@
 package cl.duocuc.checkinobra.importacion;
 
+import java.util.regex.Pattern;
+
 /** Lee números escritos como los escribe la gente en una planilla. */
 public final class Numeros {
+
+    /** "5.980", "-12.500.000"; no "0.750" ni "1234.567". */
+    private static final Pattern FORMA_DE_MILES = Pattern.compile("-?[1-9]\\d{0,2}(\\.\\d{3})+");
 
     private Numeros() {
     }
@@ -17,10 +22,17 @@ public final class Numeros {
      * <ul>
      *   <li>con coma y punto ("12.500,75"), el punto separa miles y la coma decimales;</li>
      *   <li>con coma sola ("12,5"), la coma es el decimal;</li>
-     *   <li>con punto solo, es separador de miles <b>si</b> deja exactamente tres
-     *       dígitos detrás ("5.980" → 5980) y decimal en cualquier otro caso
-     *       ("12.5" → 12,5).</li>
+     *   <li>con punto solo, es separador de miles <b>si</b> el número tiene
+     *       forma de miles: un primer grupo de uno a tres dígitos que no empieza
+     *       en cero, y después solo grupos de exactamente tres ("5.980" → 5980,
+     *       "12.500.000" → 12500000). En cualquier otro caso es decimal
+     *       ("12.5" → 12,5, "0.750" → 0,75, "1234.567" → 1234,567).</li>
      * </ul>
+     *
+     * <p>La condición del cero importa: "0.750" kilos es una cantidad normal en
+     * una planilla de materiales, y con solo mirar los tres dígitos se leía
+     * como setecientos cincuenta. La app aplica la misma regla al escribir
+     * cantidades; si una cambia, la otra también.
      *
      * <p>Queda un caso que se lee mal: "2.500" escrito con intención de dos coma
      * cinco. Es la ambigüedad del formato, no del lector, y se resuelve del lado
@@ -35,9 +47,7 @@ public final class Numeros {
         if (limpio.contains(",")) {
             limpio = limpio.replace(".", "").replace(",", ".");
         } else {
-            int ultimoPunto = limpio.lastIndexOf('.');
-            boolean separadorDeMiles = ultimoPunto > 0 && limpio.length() - ultimoPunto - 1 == 3;
-            if (separadorDeMiles) {
+            if (FORMA_DE_MILES.matcher(limpio).matches()) {
                 limpio = limpio.replace(".", "");
             }
         }

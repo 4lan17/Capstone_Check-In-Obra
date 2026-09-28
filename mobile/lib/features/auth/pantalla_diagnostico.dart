@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_forma.dart';
 import '../../core/theme/app_theme.dart';
 import 'diagnostico_conexion.dart';
 
@@ -93,7 +94,7 @@ class _AvisoSinEnv extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.5,
               height: 1.4,
-              color: Color(0xFF92400E),
+              color: AppColors.warningInk,
             ),
           ),
         ],
@@ -271,7 +272,7 @@ class _TarjetaResultado extends StatelessWidget {
               resultado.comoArreglarlo!,
               style: const TextStyle(
                 fontFamily: AppTheme.monoFamily,
-                fontSize: 11.5,
+                fontSize: 12.5,
                 height: 1.5,
                 color: AppColors.destructiveDark,
               ),
@@ -328,20 +329,12 @@ class _Etiqueta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      texto.toUpperCase(),
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.2,
-        color: AppColors.textMuted,
-      ),
-    );
+    return Text(texto, style: AppTexto.subtitulo.copyWith(fontSize: 15));
   }
 }
 
-/// Superficie base: rectángulo blanco con borde de 1 px, sin sombra ni
-/// esquinas redondeadas — el estilo *flat* del design system.
+/// Superficie base: tarjeta blanca con borde fino y el radio del sistema, sin
+/// sombra.
 class _Panel extends StatelessWidget {
   const _Panel({
     required this.child,
@@ -356,9 +349,10 @@ class _Panel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppEspacio.md),
       decoration: BoxDecoration(
         color: color,
+        borderRadius: AppForma.borde,
         border: Border.all(color: borderColor),
       ),
       child: child,

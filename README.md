@@ -325,6 +325,40 @@ Devuelve un JWT que se manda en las llamadas siguientes como
 > ⚠️ Ese PIN es solo para arrancar en local. Antes de cualquier despliegue real
 > hay que cambiarlo con `PUT /api/usuarios/{id}/pin`.
 
+### Cuentas de prueba (los cuatro roles)
+
+La `V2` solo trae al administrador. Las demás cuentas las crea un script que usa
+la API como admin:
+
+```bash
+python3 scripts/cuentas_de_prueba.py            # Windows: py scripts\cuentas_de_prueba.py
+```
+
+Se puede correr las veces que haga falta. Si la cuenta ya existe (la busca por
+correo) no la duplica, solo le fija el PIN de la tabla. En una base vacía crea
+además la obra **Los Almendros · Torre B** con una cuadrilla, y deja a los dos
+trabajadores en ella: un trabajador sin cuadrilla no aparece en ninguna obra y el
+bodeguero no puede despacharle nada.
+
+| Rol | Correo | PIN | Qué ve hoy en la app |
+|---|---|---|---|
+| Administrador | `admin@arauco-ltda.cl` | `0000` | Obras, materiales, usuarios, empresa y la vista de bodega |
+| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `1111` | Pantalla de rol pendiente (su flujo no está construido) |
+| Bodeguero | `jorge.reyes@arauco-ltda.cl` | `2222` | Inicio, bodega, herramientas y alertas de la obra que elija |
+| Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Pantalla de rol pendiente (su flujo no está construido) |
+| Trabajador | `javier.ortiz@arauco-ltda.cl` | `4444` | Idem |
+
+Los correos y PINs salen de `CUENTAS` en el script: si cambias uno allá, cámbialo
+acá.
+
+**Probar el escaneo de credencial sin la app del trabajador.** Como esa app
+todavía no existe, no hay QR que mostrar. Corre el script con
+`--renovar-credenciales`: imprime el código de cada trabajador (el anterior deja
+de valer), y el bodeguero lo escribe en el ingreso manual del escáner.
+
+> ⚠️ El script reemplaza PINs. Es solo para la base local: no lo corras contra un
+> servidor real.
+
 ### 3. App móvil
 
 ```bash
@@ -1223,7 +1257,7 @@ En `docs/`:
   su código de respuesta, los ciclos de vida y los requisitos no funcionales.
 - **`diagrams/`** — Diagrama de clases del MVP1. Es la fuente de verdad del
   modelo: entidades, enums y relaciones del backend salen de ahí.
-- **`design-system/`** — Paleta, tipografía (Fira Sans + Fira Code), estilo e
+- **`design-system/`** — Paleta, tipografía (Inter con cifras tabulares), estilo e
   íconos, con las reglas UX que aplican en terreno.
 - **`mockups/`** — Tres lienzos con las pantallas diseñadas. `design-movil/`
   es el más completo: 34 pantallas de teléfono organizadas por rol, más un mapa

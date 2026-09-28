@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -32,10 +34,13 @@ public class KardexMovimientoController {
         return KardexMovimientoResponse.de(kardexMovimientoService.registrarMovimiento(
                 req.obraId(),
                 req.materialId(),
-                req.usuarioId(),
+                // Quien registra es quien está autenticado. Venía en el cuerpo, y
+                // así cualquier bodeguero podía atribuirle un movimiento a otro.
+                SesionActual.usuarioId(),
                 req.trabajadorId(),
                 req.tipo(),
-                req.cantidad()));
+                req.cantidad(),
+                req.costoUnitario()));
     }
 
     /** El movimiento de bodega lo consulta quien lo administra o lo controla, no el trabajador. */
@@ -54,10 +59,11 @@ public class KardexMovimientoController {
     public record RegistrarMovimientoRequest(
             Long obraId,
             Long materialId,
-            Long usuarioId,
             /** A quién se le entrega. Obligatorio en un DESPACHO. */
             Long trabajadorId,
             TipoMovimiento tipo,
-            double cantidad) {
+            double cantidad,
+            /** Costo real por unidad según la factura. Opcional, y solo en una RECEPCION. */
+            BigDecimal costoUnitario) {
     }
 }

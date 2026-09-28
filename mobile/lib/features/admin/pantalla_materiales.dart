@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/formato.dart';
 import '../../core/network/errores.dart';
+import '../../core/network/idempotencia.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_forma.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/material.dart';
 import '../../shared_widgets/campo_texto.dart';
 import '../../shared_widgets/estados.dart';
+import '../../shared_widgets/opcion.dart';
 import '../../shared_widgets/panel.dart';
+import '../../shared_widgets/presion.dart';
 import '../bodega/bodega_providers.dart';
 import '../bodega/pantalla_bodega.dart';
 import '../bodega/pantalla_escaneo.dart';
@@ -77,17 +81,19 @@ class PantallaMateriales extends ConsumerWidget {
               porCategoria.putIfAbsent(m.categoria, () => []).add(m);
             }
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppEspacio.pantalla,
               children: [
                 for (final categoria in categorias)
                   if (porCategoria[categoria] case final materiales?) ...[
-                    Etiqueta('$categoria · ${materiales.length}'),
-                    const SizedBox(height: 8),
+                    Etiqueta(
+                      '${nombreDeCategoria(categoria)} (${materiales.length})',
+                    ),
+                    const SizedBox(height: AppEspacio.sm + 4),
                     for (final m in materiales) ...[
                       _FilaMaterial(material: m),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppEspacio.sm),
                     ],
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppEspacio.md),
                   ],
                 const SizedBox(height: 70),
               ],
@@ -99,7 +105,6 @@ class PantallaMateriales extends ConsumerWidget {
         onPressed: () => _nuevo(context),
         backgroundColor: AppColors.accentFill,
         foregroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         icon: const Icon(Icons.add),
         label: const Text('Nuevo material'),
       ),
@@ -146,7 +151,7 @@ class _FilaMaterial extends ConsumerWidget {
                   '${material.sku} · mín. ${Formato.cantidad(material.stockMinimo)} $unidad',
                   style: const TextStyle(
                     fontFamily: AppTheme.monoFamily,
-                    fontSize: 11.5,
+                    fontSize: 12.5,
                     color: AppColors.secondary,
                   ),
                 ),
@@ -157,6 +162,7 @@ class _FilaMaterial extends ConsumerWidget {
           Text(
             Formato.pesos(material.precioUnitario),
             style: const TextStyle(
+              fontFeatures: AppTexto.tabulares,
               fontFamily: AppTheme.monoFamily,
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -197,6 +203,7 @@ class _HojaEdicionState extends ConsumerState<_HojaEdicion> {
   }
 
   Future<void> _guardar() async {
+    if (_enviando) return;
     setState(() {
       _enviando = true;
       _error = null;
@@ -220,7 +227,7 @@ class _HojaEdicionState extends ConsumerState<_HojaEdicion> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Material actualizado')));
     } catch (e) {
-      setState(() => _error = mensajeDeError(e));
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
@@ -286,9 +293,11 @@ class _HojaEdicionState extends ConsumerState<_HojaEdicion> {
                 MensajeError(mensaje: _error!),
               ],
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _enviando ? null : _guardar,
-                child: Text(_enviando ? 'Guardando…' : 'Guardar cambios'),
+              BotonEnvio(
+                texto: 'Guardar cambios',
+                textoEnviando: 'Guardando…',
+                enviando: _enviando,
+                alPresionar: _guardar,
               ),
               const SizedBox(height: 8),
             ],
@@ -317,6 +326,7 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
   String _categoria = categorias.first;
   bool _enviando = false;
   String? _error;
+  final _intento = IntentoIdempotente();
 
   @override
   void dispose() {
@@ -338,24 +348,38 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
   }
 
   Future<void> _guardar() async {
+    if (_enviando) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
     setState(() {
       _enviando = true;
       _error = null;
     });
+    final sku = _sku.text.trim().toUpperCase();
+    final nombre = _nombre.text.trim();
+    final precio = double.parse(_precio.text.replaceAll('.', ''));
+    final minimo = Formato.numero(_minimo.text)!;
+    final codigo = _codigoBarra.text.trim().isEmpty
+        ? null
+        : _codigoBarra.text.trim();
     try {
       await ref
           .read(materialesApiProvider)
           .crear(
-            sku: _sku.text.trim().toUpperCase(),
-            nombre: _nombre.text.trim(),
+            sku: sku,
+            nombre: nombre,
             categoria: _categoria,
-            precioUnitario: double.parse(_precio.text.replaceAll('.', '')),
-            stockMinimo: Formato.numero(_minimo.text)!,
-            codigoBarra: _codigoBarra.text.trim().isEmpty
-                ? null
-                : _codigoBarra.text.trim(),
+            precioUnitario: precio,
+            stockMinimo: minimo,
+            codigoBarra: codigo,
+            clave: _intento.clavePara([
+              sku,
+              nombre,
+              _categoria,
+              precio,
+              minimo,
+              codigo,
+            ]),
           );
       ref.invalidate(catalogoProvider);
       if (!mounted) return;
@@ -363,7 +387,7 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Material agregado')));
     } catch (e) {
-      setState(() => _error = mensajeDeError(e));
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
@@ -488,9 +512,11 @@ class _PantallaNuevoMaterialState extends ConsumerState<PantallaNuevoMaterial> {
                 MensajeError(mensaje: _error!),
               ],
               const SizedBox(height: 22),
-              FilledButton(
-                onPressed: _enviando ? null : _guardar,
-                child: Text(_enviando ? 'Guardando…' : 'Agregar al catálogo'),
+              BotonEnvio(
+                texto: 'Agregar al catálogo',
+                textoEnviando: 'Guardando…',
+                enviando: _enviando,
+                alPresionar: _guardar,
               ),
             ],
           ),
@@ -513,35 +539,10 @@ class _ChipCategoria extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: activa,
-      label: categoria,
-      excludeSemantics: true,
-      child: Material(
-        color: activa ? AppColors.primary : AppColors.card,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            decoration: BoxDecoration(
-              border: Border.fromBorderSide(
-                BorderSide(
-                  color: activa ? AppColors.primary : AppColors.borderControl,
-                ),
-              ),
-            ),
-            child: Text(
-              categoria,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: activa ? Colors.white : AppColors.textMuted,
-              ),
-            ),
-          ),
-        ),
-      ),
+    return Opcion(
+      texto: nombreDeCategoria(categoria),
+      elegida: activa,
+      alTocar: onTap,
     );
   }
 }

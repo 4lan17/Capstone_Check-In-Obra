@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_forma.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/usuario.dart';
+import '../../shared_widgets/barra_pestanas.dart';
 import '../../shared_widgets/estados.dart';
+import '../../shared_widgets/fila_accion.dart';
 import '../../shared_widgets/panel.dart';
 import '../auth/sesion_controller.dart';
 import '../bodega/bodega_providers.dart';
@@ -45,19 +48,11 @@ class _ShellAdminState extends ConsumerState<ShellAdmin> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'ADMINISTRACIÓN',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
-                color: AppColors.textOnDark,
-              ),
-            ),
             Text(
-              _titulos[_tab],
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              'Administración',
+              style: AppTexto.dato.copyWith(color: AppColors.secondary),
             ),
+            Text(_titulos[_tab], style: AppTexto.titulo.copyWith(fontSize: 19)),
           ],
         ),
         actions: [
@@ -80,11 +75,9 @@ class _ShellAdminState extends ConsumerState<ShellAdmin> {
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: BarraDePestanas(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        backgroundColor: AppColors.card,
-        indicatorColor: AppColors.warningTint,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.domain_outlined),
@@ -135,30 +128,17 @@ class _PantallaEmpresa extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    e.nombre,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    e.rut,
-                    style: const TextStyle(
-                      fontFamily: AppTheme.monoFamily,
-                      fontSize: 12.5,
-                      color: AppColors.secondary,
-                    ),
-                  ),
+                  Text(e.nombre, style: AppTexto.titulo),
+                  const SizedBox(height: AppEspacio.xs),
+                  Text(e.rut, style: AppTexto.dato.copyWith(fontSize: 13.5)),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppEspacio.sm + 4),
           Panel(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Contador(
@@ -181,10 +161,15 @@ class _PantallaEmpresa extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppEspacio.lg),
           const Etiqueta('Operación'),
-          const SizedBox(height: 8),
-          PanelTocable(
+          const SizedBox(height: AppEspacio.sm + 4),
+          FilaAccion(
+            icono: Icons.inventory_2_outlined,
+            titulo: 'Vista de bodega',
+            detalle:
+                'Kardex, herramientas y alertas de una obra. Tu rol incluye '
+                'todo lo de bodega.',
             semanticLabel:
                 'Abrir la vista de bodega. El administrador puede registrar '
                 'movimientos y préstamos igual que un bodeguero',
@@ -193,99 +178,21 @@ class _PantallaEmpresa extends ConsumerWidget {
                 builder: (_) => const ShellBodega(comoAdmin: true),
               ),
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.inventory_2_outlined,
-                  size: 22,
-                  color: AppColors.accentFill,
-                ),
-                const SizedBox(width: 13),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Vista de bodega',
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'Kardex, herramientas y alertas de una obra. Tu rol '
-                        'incluye todo lo de bodega.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.35,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  size: 22,
-                  color: AppColors.accentFill,
-                ),
-              ],
-            ),
           ),
-          const SizedBox(height: 10),
-          PanelTocable(
-            semanticLabel:
-                'Importación masiva. Cargar materiales y herramientas desde '
-                'una planilla Excel',
+          const SizedBox(height: AppEspacio.sm + 2),
+          FilaAccion(
+            icono: Icons.table_view_outlined,
+            titulo: 'Importación masiva',
+            detalle:
+                'Cargar materiales y herramientas nuevos desde una planilla '
+                'Excel, en vez de uno por uno.',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const PantallaImportacion()),
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.table_view_outlined,
-                  size: 22,
-                  color: AppColors.accentFill,
-                ),
-                const SizedBox(width: 13),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Importación masiva',
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'Cargar materiales y herramientas nuevos desde una '
-                        'planilla Excel, en vez de uno por uno.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.35,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  size: 22,
-                  color: AppColors.accentFill,
-                ),
-              ],
-            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppEspacio.lg),
           const Etiqueta('Sesión'),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppEspacio.sm + 4),
           Panel(
             child: Row(
               children: [
@@ -297,11 +204,7 @@ class _PantallaEmpresa extends ConsumerWidget {
                     children: [
                       Text(
                         sesion?.nombre ?? '',
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
+                        style: AppTexto.subtitulo.copyWith(fontSize: 15),
                       ),
                       const SizedBox(height: 3),
                       Text(
