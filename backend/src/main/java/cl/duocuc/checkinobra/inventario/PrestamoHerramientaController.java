@@ -45,11 +45,23 @@ public class PrestamoHerramientaController {
                 prestamoHerramientaService.registrarDevolucion(id, req.nuevoEstadoHerramienta()));
     }
 
+    /** Los propios, abiertos y cerrados, el más nuevo primero. Sale del token. */
+    @GetMapping("/mios")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public List<PrestamoHerramientaResponse> mios() {
+        return prestamoHerramientaService.listarMios().stream().map(PrestamoHerramientaResponse::de).toList();
+    }
+
+    /** Un trabajador solo obtiene los suyos; lo exige el servicio. */
     @GetMapping("/{id}")
     public PrestamoHerramientaResponse obtener(@PathVariable Long id) {
         return PrestamoHerramientaResponse.de(prestamoHerramientaService.obtener(id));
     }
 
+    /**
+     * Un trabajador solo puede listar por su propio {@code trabajadorId}; por
+     * obra o los vencidos vería los de sus compañeros. Lo exige el servicio.
+     */
     @GetMapping
     public List<PrestamoHerramientaResponse> listar(
             @RequestParam(required = false) Long obraId,

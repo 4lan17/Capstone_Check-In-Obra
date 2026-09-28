@@ -15,6 +15,17 @@ public class ConflictoException extends IllegalStateException {
     public static final String YA_RESUELTA = "YA_RESUELTA";
     public static final String YA_DEVUELTO = "YA_DEVUELTO";
     public static final String OBRA_CERRADA = "OBRA_CERRADA";
+    /** El trabajador no está en ninguna cuadrilla, así que no tiene obra desde la cual pedir. */
+    public static final String SIN_CUADRILLA = "SIN_CUADRILLA";
+    /** El trabajador pidió para una obra que no es la de su cuadrilla. */
+    public static final String OBRA_NO_ASIGNADA = "OBRA_NO_ASIGNADA";
+    public static final String HERRAMIENTA_NO_DISPONIBLE = "HERRAMIENTA_NO_DISPONIBLE";
+    /** Ya hay una solicitud pendiente del mismo trabajador por la misma herramienta. */
+    public static final String SOLICITUD_DUPLICADA = "SOLICITUD_DUPLICADA";
+    /** Se quiso confirmar la recepción de algo que bodega todavía no entrega. */
+    public static final String NO_ENTREGADA = "NO_ENTREGADA";
+    /** El pedido especial no puede pasar a ese estado desde el que tiene. */
+    public static final String TRANSICION_INVALIDA = "TRANSICION_INVALIDA";
 
     private final String codigo;
 

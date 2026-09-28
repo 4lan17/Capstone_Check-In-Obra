@@ -1,7 +1,10 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.AccesoDenegadoException;
 import cl.duocuc.checkinobra.config.AccesoEmpresa;
+import cl.duocuc.checkinobra.config.ConflictoException;
 import cl.duocuc.checkinobra.config.RolUsuario;
+import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -81,5 +84,67 @@ public class TrabajadorService {
         Trabajador trabajador = obtener(trabajadorId);
         trabajador.setCredencialQr(UUID.randomUUID().toString());
         return trabajadorRepository.save(trabajador);
+    }
+
+    /**
+     * La ficha de quien llama, con su credencial lista para mostrarse.
+     *
+     * <p>Un trabajador creado antes de que la credencial se emitiera al darlo de
+     * alta puede no tener una. En vez de dejarlo sin QR hasta que un
+     * administrador lo note, se le emite al abrir su pantalla.
+     */
+    public Trabajador miFicha() {
+        Trabajador yo = obtenerPorUsuario(SesionActual.usuarioId());
+        if (yo.getCredencialQr() == null) {
+            yo.setCredencialQr(UUID.randomUUID().toString());
+            yo = trabajadorRepository.save(yo);
+        }
+        return yo;
+    }
+
+    /** El trabajador renueva su propia credencial, por ejemplo si le fotografiaron el QR. */
+    public Trabajador renovarMiCredencial() {
+        return renovarCredencial(obtenerPorUsuario(SesionActual.usuarioId()).getId());
+    }
+
+    /**
+     * Si quien llama es un trabajador, el dato tiene que ser suyo.
+     *
+     * <p>Para los demás roles no hace nada: el bodeguero y el jefe ven lo de
+     * toda la obra. Es 403 y no 404 porque el trabajador del que se pregunta es
+     * de la misma empresa —ya pasó el filtro de empresa—, así que no hay nada
+     * que enumerar: lo que falta es permiso, no existencia.
+     */
+    @Transactional(readOnly = true)
+    public void exigirQueSeaPropio(Long trabajadorId) {
+        if (!SesionActual.esTrabajador()) {
+            return;
+        }
+        if (!obtenerPorUsuario(SesionActual.usuarioId()).getId().equals(trabajadorId)) {
+            throw new AccesoDenegadoException("Un trabajador solo puede ver lo suyo");
+        }
+    }
+
+    /**
+     * Para los listados por obra: un trabajador no los usa, porque verían lo de
+     * sus compañeros. Lo suyo lo pide por su id o por las rutas "mías".
+     */
+    public static void exigirQueNoSeaTrabajador() {
+        if (SesionActual.esTrabajador()) {
+            throw new AccesoDenegadoException("Un trabajador solo puede ver lo suyo");
+        }
+    }
+
+    /**
+     * La obra desde la que un trabajador puede pedir: la de su cuadrilla. Sin
+     * cuadrilla no tiene ninguna, y una solicitud suya no tendría a qué bodega
+     * llegar.
+     */
+    public Obra obraAsignada(Trabajador trabajador) {
+        if (trabajador.getCuadrilla() == null) {
+            throw new ConflictoException(ConflictoException.SIN_CUADRILLA,
+                    "No estás asignado a ninguna cuadrilla: pídele a tu jefe de obra que te asigne una");
+        }
+        return trabajador.getCuadrilla().getObra();
     }
 }
