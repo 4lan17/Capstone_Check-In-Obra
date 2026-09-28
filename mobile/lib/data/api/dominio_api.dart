@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
+import '../../features/auth/sesion_controller.dart';
 import '../modelos/alerta.dart';
 import '../modelos/herramienta.dart';
 import '../modelos/importacion.dart';
@@ -30,24 +31,36 @@ class ObrasApi {
     required String cliente,
     required String ubicacion,
     int? jefeTerrenoId,
-  }) => _rest.crear('/api/obras', {
-    'nombre': nombre,
-    'cliente': cliente,
-    'ubicacion': ubicacion,
-    'jefeTerrenoId': jefeTerrenoId,
-  }, Obra.desdeJson);
+    String? clave,
+  }) => _rest.crear(
+    '/api/obras',
+    {
+      'nombre': nombre,
+      'cliente': cliente,
+      'ubicacion': ubicacion,
+      'jefeTerrenoId': jefeTerrenoId,
+    },
+    Obra.desdeJson,
+    clave: clave,
+  );
 
   /// Asigna o cambia el jefe a cargo. `null` la deja sin jefe.
-  Future<Obra> asignarJefe(int obraId, int? jefeTerrenoId) => _rest.actualizar(
-    '/api/obras/$obraId/jefe-terreno',
-    {'jefeTerrenoId': jefeTerrenoId},
-    Obra.desdeJson,
-  );
+  Future<Obra> asignarJefe(int obraId, int? jefeTerrenoId, {String? clave}) =>
+      _rest.actualizar(
+        '/api/obras/$obraId/jefe-terreno',
+        {'jefeTerrenoId': jefeTerrenoId},
+        Obra.desdeJson,
+        clave: clave,
+      );
 
   /// El backend valida antes de cerrar: sin herramientas fuera ni alertas
   /// pendientes. Si no se cumple, responde 409 con el motivo.
-  Future<Obra> cerrar(int id) =>
-      _rest.actualizar('/api/obras/$id/cerrar', const {}, Obra.desdeJson);
+  Future<Obra> cerrar(int id, {String? clave}) => _rest.actualizar(
+    '/api/obras/$id/cerrar',
+    const {},
+    Obra.desdeJson,
+    clave: clave,
+  );
 }
 
 class MaterialesApi {
@@ -79,24 +92,42 @@ class MaterialesApi {
     required double precioUnitario,
     required double stockMinimo,
     String? codigoBarra,
-  }) => _rest.crear('/api/materiales', {
-    'sku': sku,
-    'nombre': nombre,
-    'categoria': categoria,
-    'precioUnitario': precioUnitario,
-    'stockMinimo': stockMinimo,
-    'codigoBarra': codigoBarra,
-  }, MaterialObra.desdeJson);
+    String? clave,
+  }) => _rest.crear(
+    '/api/materiales',
+    {
+      'sku': sku,
+      'nombre': nombre,
+      'categoria': categoria,
+      'precioUnitario': precioUnitario,
+      'stockMinimo': stockMinimo,
+      'codigoBarra': codigoBarra,
+    },
+    MaterialObra.desdeJson,
+    clave: clave,
+  );
 
-  Future<MaterialObra> actualizarPrecio(int id, double nuevoPrecio) =>
-      _rest.actualizar('/api/materiales/$id/precio', {
-        'nuevoPrecio': nuevoPrecio,
-      }, MaterialObra.desdeJson);
+  Future<MaterialObra> actualizarPrecio(
+    int id,
+    double nuevoPrecio, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/materiales/$id/precio',
+    {'nuevoPrecio': nuevoPrecio},
+    MaterialObra.desdeJson,
+    clave: clave,
+  );
 
-  Future<ParametroMerma> definirMerma(int materialId, double porcentaje) =>
-      _rest.actualizar('/api/materiales/$materialId/merma', {
-        'porcentaje': porcentaje,
-      }, ParametroMerma.desdeJson);
+  Future<ParametroMerma> definirMerma(
+    int materialId,
+    double porcentaje, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/materiales/$materialId/merma',
+    {'porcentaje': porcentaje},
+    ParametroMerma.desdeJson,
+    clave: clave,
+  );
 }
 
 class KardexApi {
@@ -123,18 +154,22 @@ class KardexApi {
   Future<MovimientoKardex> registrar({
     required int obraId,
     required int materialId,
-    required int usuarioId,
     required String tipo,
     required double cantidad,
     int? trabajadorId,
-  }) => _rest.crear('/api/kardex', {
-    'obraId': obraId,
-    'materialId': materialId,
-    'usuarioId': usuarioId,
-    'trabajadorId': trabajadorId,
-    'tipo': tipo,
-    'cantidad': cantidad,
-  }, MovimientoKardex.desdeJson);
+    String? clave,
+  }) => _rest.crear(
+    '/api/kardex',
+    {
+      'obraId': obraId,
+      'materialId': materialId,
+      'trabajadorId': trabajadorId,
+      'tipo': tipo,
+      'cantidad': cantidad,
+    },
+    MovimientoKardex.desdeJson,
+    clave: clave,
+  );
 }
 
 class HerramientasApi {
@@ -159,12 +194,18 @@ class HerramientasApi {
     required String nombre,
     required String categoria,
     required double valorReposicion,
-  }) => _rest.crear('/api/herramientas', {
-    'codigoQr': codigoQr,
-    'nombre': nombre,
-    'categoria': categoria,
-    'valorReposicion': valorReposicion,
-  }, Herramienta.desdeJson);
+    String? clave,
+  }) => _rest.crear(
+    '/api/herramientas',
+    {
+      'codigoQr': codigoQr,
+      'nombre': nombre,
+      'categoria': categoria,
+      'valorReposicion': valorReposicion,
+    },
+    Herramienta.desdeJson,
+    clave: clave,
+  );
 }
 
 class PrestamosApi {
@@ -189,22 +230,30 @@ class PrestamosApi {
     required int herramientaId,
     required int trabajadorId,
     required int obraId,
-    required int autorizadorId,
     required DateTime fechaDevolEsperada,
-  }) => _rest.crear('/api/prestamos-herramienta', {
-    'herramientaId': herramientaId,
-    'trabajadorId': trabajadorId,
-    'obraId': obraId,
-    'autorizadorId': autorizadorId,
-    'fechaDevolEsperada': fechaDevolEsperada.toIso8601String(),
-  }, Prestamo.desdeJson);
+    String? clave,
+  }) => _rest.crear(
+    '/api/prestamos-herramienta',
+    {
+      'herramientaId': herramientaId,
+      'trabajadorId': trabajadorId,
+      'obraId': obraId,
+      'fechaDevolEsperada': fechaDevolEsperada.toIso8601String(),
+    },
+    Prestamo.desdeJson,
+    clave: clave,
+  );
 
   Future<Prestamo> registrarDevolucion(
     int prestamoId, {
     required String nuevoEstadoHerramienta,
-  }) => _rest.actualizar('/api/prestamos-herramienta/$prestamoId/devolucion', {
-    'nuevoEstadoHerramienta': nuevoEstadoHerramienta,
-  }, Prestamo.desdeJson);
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/prestamos-herramienta/$prestamoId/devolucion',
+    {'nuevoEstadoHerramienta': nuevoEstadoHerramienta},
+    Prestamo.desdeJson,
+    clave: clave,
+  );
 }
 
 class AlertasApi {
@@ -219,10 +268,11 @@ class AlertasApi {
         params: {'obraId': obraId, 'soloSinResolver': soloSinResolver},
       );
 
-  Future<Alerta> resolver(int alertaId) => _rest.actualizar(
+  Future<Alerta> resolver(int alertaId, {String? clave}) => _rest.actualizar(
     '/api/alertas/$alertaId/resolver',
     const {},
     Alerta.desdeJson,
+    clave: clave,
   );
 
   /// Barre la obra y crea las alertas que correspondan. Se dispara al abrir
@@ -239,11 +289,16 @@ class AlertasApi {
     Alerta.desdeJson,
   );
 
-  Future<Alerta> cerrarTurno({required int obraId, required String mensaje}) =>
-      _rest.crear('/api/alertas/cierre-turno', {
-        'obraId': obraId,
-        'mensaje': mensaje,
-      }, Alerta.desdeJson);
+  Future<Alerta> cerrarTurno({
+    required int obraId,
+    required String mensaje,
+    String? clave,
+  }) => _rest.crear(
+    '/api/alertas/cierre-turno',
+    {'obraId': obraId, 'mensaje': mensaje},
+    Alerta.desdeJson,
+    clave: clave,
+  );
 }
 
 class UsuariosApi {
@@ -260,18 +315,30 @@ class UsuariosApi {
     required String rut,
     required String rol,
     required String pinInicial,
-  }) => _rest.crear('/api/usuarios', {
-    'nombre': nombre,
-    'email': email,
-    'rut': rut,
-    'rol': rol,
-    'pinInicial': pinInicial,
-  }, UsuarioEmpresa.desdeJson);
+    String? clave,
+  }) => _rest.crear(
+    '/api/usuarios',
+    {
+      'nombre': nombre,
+      'email': email,
+      'rut': rut,
+      'rol': rol,
+      'pinInicial': pinInicial,
+    },
+    UsuarioEmpresa.desdeJson,
+    clave: clave,
+  );
 
-  Future<UsuarioEmpresa> redefinirPin(int usuarioId, String nuevoPin) =>
-      _rest.actualizar('/api/usuarios/$usuarioId/pin', {
-        'nuevoPin': nuevoPin,
-      }, UsuarioEmpresa.desdeJson);
+  Future<UsuarioEmpresa> redefinirPin(
+    int usuarioId,
+    String nuevoPin, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/usuarios/$usuarioId/pin',
+    {'nuevoPin': nuevoPin},
+    UsuarioEmpresa.desdeJson,
+    clave: clave,
+  );
 }
 
 class TrabajadoresApi {
@@ -294,6 +361,11 @@ class TrabajadoresApi {
 }
 
 /// Las solicitudes que el trabajador levanta y el bodeguero resuelve.
+///
+/// Quién aprueba o rechaza no viaja en el cuerpo: el backend lo toma del
+/// token. Antes se mandaba como `aprobadorId`/`rechazadorId` y el servidor lo
+/// creía, así que cualquier bodeguero podía resolver a nombre de otro. Lo
+/// mismo vale para `usuarioId` en el kardex y `autorizadorId` en el préstamo.
 ///
 /// Aprobar no devuelve la solicitud: devuelve lo que la solicitud produjo —un
 /// movimiento de kardex si era material, un préstamo si era herramienta—.
@@ -327,21 +399,25 @@ class SolicitudesApi {
   /// el saldo negativo.
   Future<MovimientoKardex> aprobarMaterial(
     int solicitudId, {
-    required int aprobadorId,
     required double cantidadAEntregar,
-  }) => _rest.actualizar('/api/solicitudes-material/$solicitudId/aprobar', {
-    'aprobadorId': aprobadorId,
-    'cantidadAEntregar': cantidadAEntregar,
-  }, MovimientoKardex.desdeJson);
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-material/$solicitudId/aprobar',
+    {'cantidadAEntregar': cantidadAEntregar},
+    MovimientoKardex.desdeJson,
+    clave: clave,
+  );
 
   Future<SolicitudMaterial> rechazarMaterial(
     int solicitudId, {
-    required int rechazadorId,
     required String motivo,
-  }) => _rest.actualizar('/api/solicitudes-material/$solicitudId/rechazar', {
-    'rechazadorId': rechazadorId,
-    'motivo': motivo,
-  }, SolicitudMaterial.desdeJson);
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-material/$solicitudId/rechazar',
+    {'motivo': motivo},
+    SolicitudMaterial.desdeJson,
+    clave: clave,
+  );
 
   Future<List<SolicitudHerramienta>> herramientasPorObra(
     int obraId, {
@@ -364,21 +440,25 @@ class SolicitudesApi {
   /// obligatoria: es la que después vence y dispara la alerta.
   Future<Prestamo> aprobarHerramienta(
     int solicitudId, {
-    required int aprobadorId,
     required DateTime fechaDevolEsperada,
-  }) => _rest.actualizar('/api/solicitudes-herramienta/$solicitudId/aprobar', {
-    'aprobadorId': aprobadorId,
-    'fechaDevolEsperada': fechaDevolEsperada.toIso8601String(),
-  }, Prestamo.desdeJson);
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-herramienta/$solicitudId/aprobar',
+    {'fechaDevolEsperada': fechaDevolEsperada.toIso8601String()},
+    Prestamo.desdeJson,
+    clave: clave,
+  );
 
   Future<SolicitudHerramienta> rechazarHerramienta(
     int solicitudId, {
-    required int rechazadorId,
     required String motivo,
-  }) => _rest.actualizar('/api/solicitudes-herramienta/$solicitudId/rechazar', {
-    'rechazadorId': rechazadorId,
-    'motivo': motivo,
-  }, SolicitudHerramienta.desdeJson);
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-herramienta/$solicitudId/rechazar',
+    {'motivo': motivo},
+    SolicitudHerramienta.desdeJson,
+    clave: clave,
+  );
 }
 
 /// Alta masiva de catálogo desde una planilla Excel.
@@ -395,24 +475,28 @@ class ImportacionApi {
     required Uint8List contenido,
     required String nombreArchivo,
     bool confirmar = false,
+    String? clave,
   }) => _rest.subir(
     '/api/materiales/importar',
     ResultadoImportacion.desdeJson,
     contenido: contenido,
     nombreArchivo: nombreArchivo,
     params: {'confirmar': confirmar},
+    clave: clave,
   );
 
   Future<ResultadoImportacion> herramientas({
     required Uint8List contenido,
     required String nombreArchivo,
     bool confirmar = false,
+    String? clave,
   }) => _rest.subir(
     '/api/herramientas/importar',
     ResultadoImportacion.desdeJson,
     contenido: contenido,
     nombreArchivo: nombreArchivo,
     params: {'confirmar': confirmar},
+    clave: clave,
   );
 
   /// La planilla vacía con las columnas en el orden que espera el servidor.
@@ -435,9 +519,19 @@ class EmpresaApi {
 
 // --- Providers ---------------------------------------------------------------
 
-final clienteRestProvider = Provider<ClienteRest>(
-  (ref) => ClienteRest(ref.watch(apiClientProvider)),
-);
+/// Depende de **quién** entró, no solo del cliente HTTP. Todos los datos de la
+/// app cuelgan de acá —catálogo, obras, usuarios, préstamos—, así que cuando
+/// cambia la persona se reconstruye la cadena entera. Sin esto, quien entra
+/// después en el mismo teléfono veía en caché el catálogo y el padrón del
+/// anterior, aunque fuera de otra empresa, hasta tirar para refrescar.
+final clienteRestProvider = Provider<ClienteRest>((ref) {
+  ref.watch(
+    sesionProvider.select(
+      (s) => (s.valueOrNull?.usuarioId, s.valueOrNull?.token),
+    ),
+  );
+  return ClienteRest(ref.watch(apiClientProvider));
+});
 
 final obrasApiProvider = Provider(
   (ref) => ObrasApi(ref.watch(clienteRestProvider)),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'core/navegacion.dart';
 import 'core/network/app_config.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
@@ -30,6 +31,8 @@ class CheckInObraApp extends StatelessWidget {
     return MaterialApp(
       title: 'Check-In-Obra',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navegadorRaiz,
+      scaffoldMessengerKey: mensajeroRaiz,
       theme: AppTheme.light,
       // Decisión explícita, no un descuido: ver la nota en AppTheme.
       themeMode: ThemeMode.light,

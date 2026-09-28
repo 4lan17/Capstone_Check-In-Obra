@@ -39,10 +39,21 @@ class SesionUsuario {
 /// Se lanza cuando el servidor respondió pero rechazó la petición
 /// (por ejemplo, credenciales incorrectas).
 class ApiException implements Exception {
-  const ApiException(this.statusCode, this.mensaje);
+  const ApiException(this.statusCode, this.mensaje, {this.codigo});
 
   final int statusCode;
   final String mensaje;
+
+  /// El `codigo` del cuerpo de error del backend (`STOCK_INSUFICIENTE`,
+  /// `YA_RESUELTA`…), cuando lo trae. Permite decidir sin comparar textos: un
+  /// 409 puede ser "no alcanza el stock" o "otro bodeguero ya la aprobó", y
+  /// esos dos casos se le muestran distinto a quien está en bodega.
+  final String? codigo;
+
+  /// La operación ya estaba hecha: otro bodeguero se adelantó o el reintento
+  /// llegó después de un éxito cuya respuesta se perdió. No es un error que
+  /// haya que corregir, es un estado que hay que refrescar.
+  bool get yaEstabaHecho => codigo == 'YA_RESUELTA' || codigo == 'YA_DEVUELTO';
 
   @override
   String toString() => 'ApiException($statusCode): $mensaje';

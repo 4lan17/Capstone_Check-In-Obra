@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/navegacion.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/storage/sesion_storage.dart';
@@ -24,8 +27,10 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
     state = await AsyncValue.guard(() async {
       final sesion = await _api.login(email: email.trim(), pin: pin);
       await _storage.guardar(sesion);
+      _recordar();
       return sesion;
     });
+    _salirDelAcceso();
   }
 
   Future<void> entrarConPin({
@@ -36,15 +41,54 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
     state = await AsyncValue.guard(() async {
       final sesion = await _api.loginPorPin(usuarioId: usuarioId, pin: pin);
       await _storage.guardar(sesion);
+      _recordar();
       return sesion;
     });
+    _salirDelAcceso();
   }
+
+  /// Tras entrar, la app del rol reemplaza a la raíz, pero lo que estaba
+  /// apilado encima sigue ahí. Con el PIN se notaba: la pantalla del teclado
+  /// quedaba tapando la app con los cuatro puntos llenos, y había que apretar
+  /// "atrás" para llegar al inicio.
+  void _salirDelAcceso() {
+    if (state.valueOrNull != null) {
+      navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
+    }
+  }
+
+  /// El login guarda a quien entró como "recordado", pero el provider que lo
+  /// lee queda en caché. Sin esta invalidación, tras "No soy Jorge" quedaba en
+  /// `null`: el siguiente login guardaba a la persona nueva, la pantalla de
+  /// acceso seguía leyendo el `null` viejo y al cerrar sesión mostraba el
+  /// formulario de correo en vez de "Hola de nuevo". Solo se arreglaba al
+  /// reiniciar la app, por eso parecía intermitente.
+  void _recordar() => ref.invalidate(usuarioRecordadoProvider);
 
   /// Cierra la sesión pero recuerda al usuario, para que pueda volver a
   /// entrar solo con su PIN.
   Future<void> salir() async {
+    navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
     await _storage.cerrarSesion();
     state = const AsyncValue.data(null);
+  }
+
+  /// El servidor rechazó el token guardado: venció o lo revocaron.
+  ///
+  /// Se saca a la persona de donde esté —puede estar tres pantallas adentro— y
+  /// se la deja en el acceso por PIN, que la recuerda. Varias peticiones en
+  /// vuelo pueden recibir el 401 a la vez; solo la primera actúa.
+  Future<void> expirar() async {
+    if (state.valueOrNull == null) return;
+    navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
+    await salir();
+    mensajeroRaiz.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Tu sesión expiró. Vuelve a entrar con tu PIN.'),
+        ),
+      );
   }
 
   /// Olvida también al usuario recordado — el "Cambiar" de la pantalla de PIN.
@@ -60,6 +104,9 @@ final sesionProvider = AsyncNotifierProvider<SesionController, SesionUsuario?>(
 );
 
 /// Último usuario que entró en este teléfono, si lo hay.
+///
+/// Se lee del almacenamiento y queda en caché, así que quien lo escribe tiene
+/// que invalidarlo: el login (ver `_recordar`) y "No soy…".
 final usuarioRecordadoProvider = FutureProvider<UsuarioRecordado?>(
   (ref) => ref.watch(sesionStorageProvider).leerUsuarioRecordado(),
 );

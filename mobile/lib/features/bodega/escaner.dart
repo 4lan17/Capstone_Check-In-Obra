@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_forma.dart';
 import '../../shared_widgets/campo_texto.dart';
 
 /// La cámara leyendo códigos, con todo lo que en obra hace falta alrededor.
@@ -78,6 +80,9 @@ class _LectorDeCodigoState extends State<LectorDeCodigo> {
     final limpio = codigo.trim();
     if (_ocupado || limpio.isEmpty) return;
 
+    // Confirma en la mano que la cámara leyó: con guantes y a pleno sol, el
+    // cambio de texto en pantalla no siempre se ve.
+    HapticFeedback.selectionClick();
     setState(() {
       _ocupado = true;
       _error = null;
@@ -199,7 +204,10 @@ class _LectorDeCodigoState extends State<LectorDeCodigo> {
                     horizontal: 14,
                     vertical: 11,
                   ),
-                  color: AppColors.surfaceDark.withValues(alpha: 0.88),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceDark.withValues(alpha: 0.88),
+                    borderRadius: AppForma.borde,
+                  ),
                   child: Row(
                     children: [
                       if (_ocupado) ...[
@@ -243,17 +251,23 @@ class _MarcoDeEscaneo extends CustomPainter {
 
   @override
   void paint(Canvas lienzo, Size tamano) {
+    // La ventana lleva el radio del sistema: es la única forma de la
+    // pantalla, y recta se veía ajena al resto de la app.
+    final ventanaRedonda = RRect.fromRectAndRadius(
+      ventana,
+      const Radius.circular(AppForma.radio),
+    );
     final fuera = Path()
       ..addRect(Rect.fromLTWH(0, 0, tamano.width, tamano.height))
-      ..addRect(ventana)
+      ..addRRect(ventanaRedonda)
       ..fillType = PathFillType.evenOdd;
     lienzo.drawPath(
       fuera,
       Paint()..color = Colors.black.withValues(alpha: 0.55),
     );
 
-    lienzo.drawRect(
-      ventana,
+    lienzo.drawRRect(
+      ventanaRedonda,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2

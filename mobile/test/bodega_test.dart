@@ -52,6 +52,21 @@ void main() {
       expect(Formato.numero('12.5'), 12.5);
     });
 
+    test('un punto tras un cero es decimal aunque deje tres dígitos', () {
+      // "0.750" es tres cuartos de metro, no setecientos cincuenta: la regla
+      // anterior solo contaba los dígitos detrás del punto y multiplicaba por
+      // mil.
+      expect(Formato.numero('0.750'), 0.75);
+      expect(Formato.numero('0.125'), 0.125);
+    });
+
+    test('un punto que no tiene forma de miles no se adivina', () {
+      // "1.5.000" no es ni miles ni decimal: rechazarlo es mejor que registrar
+      // una cantidad inventada.
+      expect(Formato.numero('1.5.000'), isNull);
+      expect(Formato.numero('12.34.567'), isNull);
+    });
+
     test('lo que no es número no se convierte en cero', () {
       // Devolver 0 ante basura haría que un formulario inválido pase como una
       // cantidad válida de cero.
@@ -187,6 +202,49 @@ void main() {
 
     test('los pesos van sin decimales', () {
       expect(Formato.pesos(5980), r'$5.980');
+    });
+  });
+
+  group('RUT', () {
+    // Misma regla que el backend: avisar en el formulario lo que el servidor
+    // rechazaría con 400.
+    test('acepta un RUT válido en cualquier formato', () {
+      for (final rut in [
+        '12.345.678-5',
+        '123456785',
+        ' 12345678-5 ',
+        '5.126.663-3',
+      ]) {
+        expect(Formato.errorDeRut(rut), isNull, reason: rut);
+      }
+    });
+
+    test('acepta la K minúscula y la deja en mayúscula', () {
+      expect(Formato.errorDeRut('10000013-k'), isNull);
+      expect(Formato.rutCanonico('10000013-k'), '10.000.013-K');
+    });
+
+    test('rechaza el dígito verificador equivocado', () {
+      // Los que había en la base de desarrollo, creados antes de validar.
+      expect(
+        Formato.errorDeRut('14.109.556-2'),
+        contains('dígito verificador'),
+      );
+      expect(
+        Formato.errorDeRut('76.412.330-9'),
+        contains('dígito verificador'),
+      );
+    });
+
+    test('rechaza lo que no tiene forma de RUT y lo vacío', () {
+      expect(Formato.errorDeRut(''), 'El RUT es obligatorio');
+      expect(Formato.errorDeRut('abc'), isNotNull);
+      expect(Formato.errorDeRut('123456789012'), isNotNull);
+    });
+
+    test('queda en el formato canónico del backend', () {
+      expect(Formato.rutCanonico('141095560'), '14.109.556-0');
+      expect(Formato.rutCanonico('5126663-3'), '5.126.663-3');
     });
   });
 }

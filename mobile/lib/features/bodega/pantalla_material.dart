@@ -79,11 +79,12 @@ class PantallaMaterial extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      ChipEstado.neutro(m.categoria),
+                      ChipEstado.neutro(nombreDeCategoria(m.categoria)),
                       const SizedBox(width: 8),
                       Text(
                         '${Formato.pesos(m.precioUnitario)} / $unidad',
                         style: const TextStyle(
+                          fontFeatures: AppTexto.tabulares,
                           fontSize: 12.5,
                           color: AppColors.textMuted,
                         ),
@@ -110,6 +111,7 @@ class PantallaMaterial extends ConsumerWidget {
                       Text(
                         Formato.cantidad(actual.stock),
                         style: TextStyle(
+                          fontFeatures: AppTexto.tabulares,
                           fontFamily: AppTheme.monoFamily,
                           fontSize: 38,
                           fontWeight: FontWeight.w600,
@@ -247,12 +249,11 @@ class _FilaKardex extends StatelessWidget {
                     'RECEPCION' => 'Recepción',
                     'DESPACHO' => 'Despacho',
                     _ => 'Consumo',
-                  }.toUpperCase(),
+                  },
                   style: const TextStyle(
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.8,
-                    color: AppColors.secondary,
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -278,7 +279,7 @@ class _FilaKardex extends StatelessWidget {
                 Text(
                   'Registró ${movimiento.usuarioNombre}',
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12.5,
                     color: AppColors.secondary,
                   ),
                 ),
@@ -292,6 +293,7 @@ class _FilaKardex extends StatelessWidget {
               Text(
                 Formato.cantidadConSigno(movimiento.cantidadConSigno),
                 style: TextStyle(
+                  fontFeatures: AppTexto.tabulares,
                   fontFamily: AppTheme.monoFamily,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -304,8 +306,9 @@ class _FilaKardex extends StatelessWidget {
               Text(
                 '${Formato.cantidad(saldoDespues)} $unidad',
                 style: const TextStyle(
+                  fontFeatures: AppTexto.tabulares,
                   fontFamily: AppTheme.monoFamily,
-                  fontSize: 11.5,
+                  fontSize: 12.5,
                   color: AppColors.secondary,
                 ),
               ),

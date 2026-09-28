@@ -16,7 +16,7 @@ Map<String, dynamic> _jsonMaterial({
   'motivoRechazo': motivo,
   'trabajadorId': 5,
   'trabajadorNombre': 'Marcelo Sepúlveda',
-  'trabajadorRut': '17.930.556-4',
+  'trabajadorRut': '17.930.556-9',
   'materialId': 2,
   'materialSku': 'VOL-ST-10',
   'materialNombre': 'Volcanita ST 10 mm',
@@ -36,7 +36,7 @@ Map<String, dynamic> _jsonHerramienta({
   'motivoRechazo': null,
   'trabajadorId': 5,
   'trabajadorNombre': 'Marcelo Sepúlveda',
-  'trabajadorRut': '17.930.556-4',
+  'trabajadorRut': '17.930.556-9',
   'herramientaId': 8,
   'herramientaNombre': 'Taladro percutor 800 W',
   'resueltoPorId': null,
@@ -84,7 +84,7 @@ void main() {
       final s = SolicitudMaterial.desdeJson(_jsonMaterial());
 
       expect(s.trabajadorNombre, 'Marcelo Sepúlveda');
-      expect(s.trabajadorRut, '17.930.556-4');
+      expect(s.trabajadorRut, '17.930.556-9');
     });
   });
 
