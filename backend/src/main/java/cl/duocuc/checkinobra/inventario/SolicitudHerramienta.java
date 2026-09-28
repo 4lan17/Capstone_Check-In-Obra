@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.inventario;
 
+import cl.duocuc.checkinobra.config.ConflictoException;
 import cl.duocuc.checkinobra.config.PerteneceAEmpresa;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.obra.Trabajador;
@@ -94,7 +95,10 @@ public class SolicitudHerramienta implements PerteneceAEmpresa {
 
     private void exigirPendiente() {
         if (this.estado != EstadoSolicitud.PENDIENTE) {
-            throw new IllegalStateException("La solicitud ya fue resuelta (estado actual: " + estado + ")");
+            // "Ya fue aprobada", no un error genérico: si llega acá por un
+            // reintento, la app lo trata como "ya estaba hecho".
+            throw new ConflictoException(ConflictoException.YA_RESUELTA,
+                    "La solicitud ya fue " + estado.name().toLowerCase());
         }
     }
 

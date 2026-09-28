@@ -50,6 +50,14 @@ public class TrabajadorService {
                 .orElseThrow(() -> new NoSuchElementException("Trabajador no encontrado: " + id));
     }
 
+    /** La ficha de trabajador de un usuario: la de quien está pidiendo algo. */
+    @Transactional(readOnly = true)
+    public Trabajador obtenerPorUsuario(Long usuarioId) {
+        return trabajadorRepository.findByUsuarioId(usuarioId)
+                .filter(AccesoEmpresa::esPropio)
+                .orElseThrow(() -> new NoSuchElementException("El usuario " + usuarioId + " no tiene ficha de trabajador"));
+    }
+
     @Transactional(readOnly = true)
     public Trabajador buscarPorCredencialQr(String credencialQr) {
         // Un QR de otra empresa no se resuelve, aunque el código sea válido.

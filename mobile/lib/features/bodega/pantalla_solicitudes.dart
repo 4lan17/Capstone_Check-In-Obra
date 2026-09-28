@@ -93,7 +93,7 @@ class PantallaSolicitudesObra extends ConsumerWidget {
                     const SizedBox(height: 14),
                   ],
                   if (pendientesMaterial.isNotEmpty) ...[
-                    Etiqueta('Material · ${pendientesMaterial.length}'),
+                    Etiqueta('Material (${pendientesMaterial.length})'),
                     const SizedBox(height: 8),
                     for (final s in pendientesMaterial) ...[
                       FilaSolicitudMaterial(solicitud: s),
@@ -102,7 +102,7 @@ class PantallaSolicitudesObra extends ConsumerWidget {
                     const SizedBox(height: 10),
                   ],
                   if (pendientesHerramienta.isNotEmpty) ...[
-                    Etiqueta('Herramientas · ${pendientesHerramienta.length}'),
+                    Etiqueta('Herramientas (${pendientesHerramienta.length})'),
                     const SizedBox(height: 8),
                     for (final s in pendientesHerramienta) ...[
                       FilaSolicitudHerramienta(solicitud: s),
@@ -169,8 +169,8 @@ class PantallaSolicitudesTrabajador extends ConsumerWidget {
                 else ...[
                   if (datos.materialesPendientes.isNotEmpty) ...[
                     Etiqueta(
-                      'Material pendiente · '
-                      '${datos.materialesPendientes.length}',
+                      'Material pendiente '
+                      '(${datos.materialesPendientes.length})',
                     ),
                     const SizedBox(height: 8),
                     for (final s in datos.materialesPendientes) ...[
@@ -184,8 +184,8 @@ class PantallaSolicitudesTrabajador extends ConsumerWidget {
                   ],
                   if (datos.herramientasPendientes.isNotEmpty) ...[
                     Etiqueta(
-                      'Herramientas pendientes · '
-                      '${datos.herramientasPendientes.length}',
+                      'Herramientas pendientes '
+                      '(${datos.herramientasPendientes.length})',
                     ),
                     const SizedBox(height: 8),
                     for (final s in datos.herramientasPendientes) ...[
