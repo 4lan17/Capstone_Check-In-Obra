@@ -13,6 +13,7 @@ import cl.duocuc.checkinobra.obra.ObraService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -65,6 +66,23 @@ public class KardexMovimientoService {
             Long trabajadorId,
             TipoMovimiento tipo,
             double cantidad) {
+        return registrarMovimiento(obraId, materialId, usuarioId, trabajadorId, tipo, cantidad, null);
+    }
+
+    /**
+     * Igual que el anterior, con el costo real de compra.
+     *
+     * @param costoUnitario lo que se pagó por unidad según la factura; solo en
+     *     una RECEPCION, y opcional también ahí
+     */
+    public KardexMovimiento registrarMovimiento(
+            Long obraId,
+            Long materialId,
+            Long usuarioId,
+            Long trabajadorId,
+            TipoMovimiento tipo,
+            double cantidad,
+            BigDecimal costoUnitario) {
         Obra obra = obraService.obtenerAbiertaParaRegistrar(obraId);
         Material material = materialService.obtener(materialId);
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -88,6 +106,7 @@ public class KardexMovimientoService {
                 .trabajador(receptor)
                 .tipoMovimiento(tipo)
                 .cantidad(cantidad)
+                .costoUnitario(costoUnitario)
                 .fecha(LocalDateTime.now())
                 .build();
         movimiento.registrar();

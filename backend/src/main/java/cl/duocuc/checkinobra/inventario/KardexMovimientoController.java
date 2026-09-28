@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -38,7 +39,8 @@ public class KardexMovimientoController {
                 SesionActual.usuarioId(),
                 req.trabajadorId(),
                 req.tipo(),
-                req.cantidad()));
+                req.cantidad(),
+                req.costoUnitario()));
     }
 
     /** El movimiento de bodega lo consulta quien lo administra o lo controla, no el trabajador. */
@@ -60,6 +62,8 @@ public class KardexMovimientoController {
             /** A quién se le entrega. Obligatorio en un DESPACHO. */
             Long trabajadorId,
             TipoMovimiento tipo,
-            double cantidad) {
+            double cantidad,
+            /** Costo real por unidad según la factura. Opcional, y solo en una RECEPCION. */
+            BigDecimal costoUnitario) {
     }
 }

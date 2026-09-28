@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/materiales")
@@ -95,12 +96,13 @@ public class MaterialController {
         List<Material> materiales = categoria == null
                 ? materialService.listarPorEmpresa(empresaId)
                 : materialService.listarPorEmpresaYCategoria(empresaId, categoria);
-        return materiales.stream().map(MaterialResponse::de).toList();
+        Map<Long, CostoMaterial> costos = materialService.costosPorMaterial(empresaId);
+        return materiales.stream().map(m -> MaterialResponse.de(m, costos.get(m.getId()))).toList();
     }
 
     @GetMapping("/{id}")
     public MaterialResponse obtener(@PathVariable Long id) {
-        return MaterialResponse.de(materialService.obtener(id));
+        return conCosto(materialService.obtener(id));
     }
 
     /**
@@ -110,13 +112,17 @@ public class MaterialController {
      */
     @GetMapping("/por-codigo/{codigo}")
     public MaterialResponse buscarPorCodigo(@PathVariable String codigo) {
-        return MaterialResponse.de(materialService.buscarPorCodigo(SesionActual.empresaId(), codigo));
+        return conCosto(materialService.buscarPorCodigo(SesionActual.empresaId(), codigo));
     }
 
     @PutMapping("/{id}/precio")
     @PreAuthorize("hasRole('ADMIN')")
     public MaterialResponse actualizarPrecio(@PathVariable Long id, @RequestBody ActualizarPrecioRequest req) {
-        return MaterialResponse.de(materialService.actualizarPrecio(id, req.nuevoPrecio()));
+        return conCosto(materialService.actualizarPrecio(id, req.nuevoPrecio()));
+    }
+
+    private MaterialResponse conCosto(Material material) {
+        return MaterialResponse.de(material, materialService.costoDe(material));
     }
 
     public record CrearMaterialRequest(
