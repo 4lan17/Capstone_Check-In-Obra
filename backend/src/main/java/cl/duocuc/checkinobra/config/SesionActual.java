@@ -29,4 +29,13 @@ public final class SesionActual {
     public static Long usuarioId() {
         return usuario().usuarioId();
     }
+
+    /**
+     * ¿Quien llama es un trabajador? Es el único rol cuyo acceso depende además
+     * de <em>de quién</em> es el dato: un bodeguero ve las solicitudes de la
+     * obra entera, un trabajador solo las suyas.
+     */
+    public static boolean esTrabajador() {
+        return usuario().rol() == RolUsuario.TRABAJADOR;
+    }
 }

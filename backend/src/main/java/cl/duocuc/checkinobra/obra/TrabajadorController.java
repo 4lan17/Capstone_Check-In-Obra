@@ -75,7 +75,30 @@ public class TrabajadorController {
         throw new IllegalArgumentException("Se requiere cuadrillaId u obraId");
     }
 
+    /**
+     * La ficha propia, con la credencial para dibujar el QR. Sale del token: no
+     * recibe id, así que no hay forma de pedir la de otro.
+     */
+    @GetMapping("/yo")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public PerfilTrabajadorResponse yo() {
+        return PerfilTrabajadorResponse.de(trabajadorService.miFicha());
+    }
+
+    @PutMapping("/yo/credencial")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public PerfilTrabajadorResponse renovarMiCredencial() {
+        return PerfilTrabajadorResponse.de(trabajadorService.renovarMiCredencial());
+    }
+
+    /**
+     * Renovar la credencial de cualquier trabajador es de ADMIN. Estaba abierta
+     * a todo usuario autenticado, y como la respuesta trae el código nuevo,
+     * cualquiera podía quedarse con la credencial —portadora, RN-27— de un
+     * compañero. El trabajador renueva la suya por {@code /yo/credencial}.
+     */
     @PutMapping("/{id}/credencial")
+    @PreAuthorize("hasRole('ADMIN')")
     public TrabajadorCredencialResponse renovarCredencial(@PathVariable Long id) {
         // Renovar sin devolver el código nuevo dejaría al trabajador sin
         // credencial: acá sí tiene que viajar.

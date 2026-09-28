@@ -1,10 +1,14 @@
 package cl.duocuc.checkinobra.inventario;
 
 import cl.duocuc.checkinobra.config.AccesoEmpresa;
+import cl.duocuc.checkinobra.config.ConflictoException;
+import cl.duocuc.checkinobra.config.SesionActual;
+import cl.duocuc.checkinobra.config.Texto;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.cubicacion.Material;
 import cl.duocuc.checkinobra.cubicacion.MaterialService;
+import cl.duocuc.checkinobra.obra.EstadoObra;
 import cl.duocuc.checkinobra.obra.Obra;
 import cl.duocuc.checkinobra.obra.ObraService;
 import cl.duocuc.checkinobra.obra.Trabajador;
@@ -52,17 +56,39 @@ public class SolicitudMaterialService {
         this.entityManager = entityManager;
     }
 
-    /** @param usuarioId quien pide; el controlador lo saca del token */
-    public SolicitudMaterial crear(Long usuarioId, Long materialId, Long obraId, double cantidad) {
+    /**
+     * @param usuarioId quien pide; el controlador lo saca del token
+     * @param obraId opcional: si no viene, la obra de su cuadrilla, que es la
+     *     única desde la que puede pedir
+     * @param descripcion para qué lo pide; obligatoria
+     */
+    public SolicitudMaterial crear(
+            Long usuarioId, Long materialId, Long obraId, double cantidad, String descripcion) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad pedida debe ser mayor a 0");
+        }
+        String paraQue = Texto.obligatorio(descripcion, "Para qué lo necesitas", 3, 300);
         Trabajador trabajador = trabajadorService.obtenerPorUsuario(usuarioId);
+        Obra asignada = trabajadorService.obraAsignada(trabajador);
+        // Pedir para otra obra sería sacar material de una bodega donde el
+        // trabajador no está, y que el bodeguero de allá no lo conoce.
+        if (obraId != null && !obraId.equals(asignada.getId())) {
+            throw new ConflictoException(ConflictoException.OBRA_NO_ASIGNADA,
+                    "Solo puedes pedir material para tu obra, " + asignada.getNombre());
+        }
+        Obra obra = obraService.obtener(asignada.getId());
+        if (obra.getEstado() == EstadoObra.CERRADA) {
+            throw new ConflictoException(ConflictoException.OBRA_CERRADA,
+                    "La obra " + obra.getNombre() + " está cerrada: ya no se despacha material");
+        }
         Material material = materialService.obtener(materialId);
-        Obra obra = obraService.obtener(obraId);
 
         SolicitudMaterial solicitud = SolicitudMaterial.builder()
                 .trabajador(trabajador)
                 .material(material)
                 .obra(obra)
                 .cantidad(cantidad)
+                .descripcion(paraQue)
                 .estado(EstadoSolicitud.PENDIENTE)
                 .fechaSolicitud(LocalDateTime.now())
                 .build();
@@ -106,6 +132,22 @@ public class SolicitudMaterialService {
         return solicitudMaterialRepository.save(solicitud);
     }
 
+    /** El trabajador retira su propia solicitud mientras sigue pendiente. */
+    public SolicitudMaterial cancelar(Long solicitudId) {
+        // obtener() ya exige que sea suya cuando quien llama es trabajador.
+        SolicitudMaterial solicitud = bloquear(solicitudId);
+        solicitud.cancelar();
+        return solicitudMaterialRepository.save(solicitud);
+    }
+
+    /** El trabajador confirma que recibió lo que bodega aprobó. */
+    public SolicitudMaterial confirmarRecepcion(Long solicitudId) {
+        // obtener() ya exige que sea suya cuando quien llama es trabajador.
+        SolicitudMaterial solicitud = bloquear(solicitudId);
+        solicitud.confirmarRecepcion();
+        return solicitudMaterialRepository.save(solicitud);
+    }
+
     /**
      * Dos aprobaciones simultáneas de la misma solicitud —un doble tap, o dos
      * bodegueros con la cola abierta— la veían PENDIENTE las dos y generaban
@@ -118,27 +160,40 @@ public class SolicitudMaterialService {
         return solicitud;
     }
 
+    /** Si quien llama es trabajador, además tiene que ser suya. */
     @Transactional(readOnly = true)
     public SolicitudMaterial obtener(Long id) {
-        return solicitudMaterialRepository.findById(id)
+        SolicitudMaterial solicitud = solicitudMaterialRepository.findById(id)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada: " + id));
+        trabajadorService.exigirQueSeaPropio(solicitud.getTrabajador().getId());
+        return solicitud;
     }
 
     @Transactional(readOnly = true)
     public List<SolicitudMaterial> listarPorTrabajador(Long trabajadorId) {
         trabajadorService.obtener(trabajadorId);
+        trabajadorService.exigirQueSeaPropio(trabajadorId);
         return solicitudMaterialRepository.findByTrabajadorId(trabajadorId);
+    }
+
+    /** Las de quien llama, la más nueva primero. */
+    @Transactional(readOnly = true)
+    public List<SolicitudMaterial> listarMias() {
+        Trabajador yo = trabajadorService.obtenerPorUsuario(SesionActual.usuarioId());
+        return solicitudMaterialRepository.findByTrabajadorIdOrderByFechaSolicitudDescIdDesc(yo.getId());
     }
 
     @Transactional(readOnly = true)
     public List<SolicitudMaterial> listarPorObra(Long obraId) {
+        TrabajadorService.exigirQueNoSeaTrabajador();
         obraService.obtener(obraId);
         return solicitudMaterialRepository.findByObraId(obraId);
     }
 
     @Transactional(readOnly = true)
     public List<SolicitudMaterial> listarPendientesPorObra(Long obraId) {
+        TrabajadorService.exigirQueNoSeaTrabajador();
         obraService.obtener(obraId);
         return solicitudMaterialRepository.findByObraIdAndEstado(obraId, EstadoSolicitud.PENDIENTE);
     }

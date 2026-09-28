@@ -1,6 +1,7 @@
 package cl.duocuc.checkinobra.inventario;
 
 import cl.duocuc.checkinobra.config.AccesoEmpresa;
+import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
 import cl.duocuc.checkinobra.obra.Obra;
@@ -107,15 +108,19 @@ public class PrestamoHerramientaService {
         return prestamoHerramientaRepository.save(prestamo);
     }
 
+    /** Si quien llama es trabajador, además tiene que ser suyo. */
     @Transactional(readOnly = true)
     public PrestamoHerramienta obtener(Long id) {
-        return prestamoHerramientaRepository.findById(id)
+        PrestamoHerramienta prestamo = prestamoHerramientaRepository.findById(id)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Préstamo no encontrado: " + id));
+        trabajadorService.exigirQueSeaPropio(prestamo.getTrabajador().getId());
+        return prestamo;
     }
 
     @Transactional(readOnly = true)
     public List<PrestamoHerramienta> listarPorObra(Long obraId) {
+        TrabajadorService.exigirQueNoSeaTrabajador();
         obraService.obtener(obraId);
         return prestamoHerramientaRepository.findByObraId(obraId);
     }
@@ -123,16 +128,25 @@ public class PrestamoHerramientaService {
     @Transactional(readOnly = true)
     public List<PrestamoHerramienta> listarPorTrabajador(Long trabajadorId) {
         trabajadorService.obtener(trabajadorId);
+        trabajadorService.exigirQueSeaPropio(trabajadorId);
         return prestamoHerramientaRepository.findByTrabajadorId(trabajadorId);
+    }
+
+    /** Los de quien llama, abiertos y cerrados, el más nuevo primero. */
+    @Transactional(readOnly = true)
+    public List<PrestamoHerramienta> listarMios() {
+        Trabajador yo = trabajadorService.obtenerPorUsuario(SesionActual.usuarioId());
+        return prestamoHerramientaRepository.findByTrabajadorIdOrderByFechaPrestamoDescIdDesc(yo.getId());
     }
 
     @Transactional(readOnly = true)
     public List<PrestamoHerramienta> listarVencidos() {
+        TrabajadorService.exigirQueNoSeaTrabajador();
         // Esta consulta no lleva obra ni empresa: barría los préstamos vencidos de
         // todas las constructoras del sistema. Acá se filtra, no se rechaza:
         // pedir "los vencidos" es legítimo, lo que no corresponde es ver los
         // ajenos.
-        Long empresa = cl.duocuc.checkinobra.config.SesionActual.empresaId();
+        Long empresa = SesionActual.empresaId();
         return prestamoHerramientaRepository
                 .findByFechaDevolRealIsNullAndFechaDevolEsperadaBefore(LocalDateTime.now()).stream()
                 .filter(p -> empresa.equals(p.empresaId()))

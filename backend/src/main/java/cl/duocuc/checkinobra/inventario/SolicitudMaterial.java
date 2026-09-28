@@ -53,6 +53,14 @@ public class SolicitudMaterial implements PerteneceAEmpresa {
     private LocalDateTime fechaSolicitud;
 
     /** Ver nota en SolicitudHerramienta.motivoRechazo — no está en el diagrama. */
+    /** Para qué lo pide. Nulo solo en las solicitudes anteriores a V9. */
+    @Column(length = 300)
+    private String descripcion;
+
+    /** Cuándo el trabajador confirmó que lo recibió. */
+    @Column(name = "fecha_recepcion")
+    private LocalDateTime fechaRecepcion;
+
     @Column(name = "motivo_rechazo")
     private String motivoRechazo;
 
@@ -86,6 +94,30 @@ public class SolicitudMaterial implements PerteneceAEmpresa {
         this.estado = EstadoSolicitud.RECHAZADA;
         this.resueltoPor = rechazador;
         this.motivoRechazo = motivo;
+    }
+
+    /**
+     * La retira quien la pidió, antes de que bodega la resuelva. No lleva
+     * {@code resueltoPor}: nadie de bodega la tocó.
+     */
+    public void cancelar() {
+        exigirPendiente();
+        this.estado = EstadoSolicitud.CANCELADA;
+    }
+
+    /**
+     * El trabajador confirma que tiene en la mano lo que bodega aprobó. APROBADA
+     * ya significa que bodega lo despachó o prestó en el mesón; esto cierra el
+     * ciclo con la palabra de quien lo recibió.
+     */
+    public void confirmarRecepcion() {
+        if (this.estado != EstadoSolicitud.APROBADA) {
+            throw new ConflictoException(ConflictoException.NO_ENTREGADA,
+                    "Solo se confirma lo que bodega ya entregó, y esta solicitud está "
+                            + estado.name().toLowerCase());
+        }
+        this.estado = EstadoSolicitud.ENTREGADA;
+        this.fechaRecepcion = LocalDateTime.now();
     }
 
     private void exigirPendiente() {
