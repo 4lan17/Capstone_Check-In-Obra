@@ -40,6 +40,7 @@ class SolicitudMaterial {
     required this.resueltoPorNombre,
     this.descripcion,
     this.fechaRecepcion,
+    this.cantidadEntregada,
   });
 
   final int id;
@@ -63,10 +64,19 @@ class SolicitudMaterial {
   /// Cuándo el trabajador confirmó que lo recibió. Nula hasta entonces.
   final DateTime? fechaRecepcion;
 
+  /// Lo que bodega entregó al aprobar. Puede ser menos de lo pedido: si no
+  /// alcanza el stock, el bodeguero aprueba con lo que hay. Nula mientras
+  /// no se aprueba, y en las aprobadas antes de que se registrara.
+  final double? cantidadEntregada;
+
   bool get pendiente => estado == estadoPendiente;
 
   /// Bodega ya lo entregó y falta que el trabajador lo confirme.
   bool get porConfirmar => estado == 'APROBADA';
+
+  /// Le entregaron menos de lo que pidió.
+  bool get entregaParcial =>
+      cantidadEntregada != null && cantidadEntregada! < cantidad;
 
   factory SolicitudMaterial.desdeJson(Map<String, dynamic> j) =>
       SolicitudMaterial(
@@ -87,6 +97,7 @@ class SolicitudMaterial {
         resueltoPorNombre: j['resueltoPorNombre'] as String?,
         descripcion: j['descripcion'] as String?,
         fechaRecepcion: _fecha(j['fechaRecepcion']),
+        cantidadEntregada: (j['cantidadEntregada'] as num?)?.toDouble(),
       );
 }
 
