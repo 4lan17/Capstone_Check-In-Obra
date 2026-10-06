@@ -8,6 +8,9 @@ class MaterialObra {
     required this.categoria,
     required this.precioUnitario,
     required this.stockMinimo,
+    this.ultimoCostoUnitario,
+    this.fechaUltimoCosto,
+    this.costoPromedio,
   });
 
   final int id;
@@ -25,6 +28,28 @@ class MaterialObra {
   final double precioUnitario;
   final double stockMinimo;
 
+  /// Lo que se pagó por unidad en la última recepción que trajo costo. Nulo
+  /// mientras ninguna recepción lo haya registrado: ahí solo existe el precio
+  /// de catálogo, que es una estimación y no lo que costó.
+  final double? ultimoCostoUnitario;
+  final DateTime? fechaUltimoCosto;
+
+  /// Promedio ponderado por cantidad de las recepciones con costo.
+  final double? costoPromedio;
+
+  bool get tieneCostoReal => ultimoCostoUnitario != null;
+
+  /// El costo con que se valoriza el stock: el real si existe, el de catálogo
+  /// si no.
+  double get costoVigente => ultimoCostoUnitario ?? precioUnitario;
+
+  /// Cuánto se alejó la última compra del precio de catálogo, en proporción.
+  /// Positivo: se pagó más caro de lo presupuestado.
+  double? get variacionCosto =>
+      ultimoCostoUnitario == null || precioUnitario == 0
+      ? null
+      : (ultimoCostoUnitario! - precioUnitario) / precioUnitario;
+
   factory MaterialObra.desdeJson(Map<String, dynamic> j) => MaterialObra(
     id: j['id'] as int,
     sku: j['sku'] as String,
@@ -33,6 +58,11 @@ class MaterialObra {
     categoria: j['categoria'] as String,
     precioUnitario: (j['precioUnitario'] as num).toDouble(),
     stockMinimo: (j['stockMinimo'] as num).toDouble(),
+    ultimoCostoUnitario: (j['ultimoCostoUnitario'] as num?)?.toDouble(),
+    fechaUltimoCosto: j['fechaUltimoCosto'] == null
+        ? null
+        : DateTime.parse(j['fechaUltimoCosto'] as String),
+    costoPromedio: (j['costoPromedio'] as num?)?.toDouble(),
   );
 }
 

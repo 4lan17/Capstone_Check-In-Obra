@@ -17,6 +17,7 @@ import '../obra/obra_activa.dart';
 import 'pantalla_importacion.dart';
 import 'pantalla_materiales.dart';
 import 'pantalla_obras.dart';
+import 'pantalla_solicitudes_admin.dart';
 import 'pantalla_usuarios.dart';
 
 final empresaProvider = FutureProvider<Empresa>(
@@ -39,10 +40,25 @@ class ShellAdmin extends ConsumerStatefulWidget {
 class _ShellAdminState extends ConsumerState<ShellAdmin> {
   int _tab = 0;
 
-  static const _titulos = ['Obras', 'Materiales', 'Usuarios', 'Empresa'];
+  static const _titulos = [
+    'Obras',
+    'Materiales',
+    'Solicitudes',
+    'Usuarios',
+    'Empresa',
+  ];
 
   @override
   Widget build(BuildContext context) {
+    // Pedidos especiales que esperan algo de bodega o del administrador.
+    final porAtender =
+        ref
+            .watch(pedidosEspecialesEmpresaProvider)
+            .valueOrNull
+            ?.where((p) => p.siguientePaso != null)
+            .length ??
+        0;
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -70,6 +86,7 @@ class _ShellAdminState extends ConsumerState<ShellAdmin> {
           children: const [
             PantallaObras(),
             PantallaMateriales(),
+            PantallaSolicitudesAdmin(),
             PantallaUsuarios(),
             _PantallaEmpresa(),
           ],
@@ -78,23 +95,32 @@ class _ShellAdminState extends ConsumerState<ShellAdmin> {
       bottomNavigationBar: BarraDePestanas(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.domain_outlined),
             selectedIcon: Icon(Icons.domain),
             label: 'Obras',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.category_outlined),
             selectedIcon: Icon(Icons.category),
             label: 'Materiales',
           ),
           NavigationDestination(
+            icon: Badge(
+              isLabelVisible: porAtender > 0,
+              label: Text('$porAtender'),
+              child: const Icon(Icons.inbox_outlined),
+            ),
+            selectedIcon: const Icon(Icons.inbox),
+            label: 'Solicitudes',
+          ),
+          const NavigationDestination(
             icon: Icon(Icons.people_outline),
             selectedIcon: Icon(Icons.people),
             label: 'Usuarios',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.business_outlined),
             selectedIcon: Icon(Icons.business),
             label: 'Empresa',

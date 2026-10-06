@@ -81,12 +81,18 @@ class PantallaMaterial extends ConsumerWidget {
                     children: [
                       ChipEstado.neutro(nombreDeCategoria(m.categoria)),
                       const SizedBox(width: 8),
-                      Text(
-                        '${Formato.pesos(m.precioUnitario)} / $unidad',
-                        style: const TextStyle(
-                          fontFeatures: AppTexto.tabulares,
-                          fontSize: 12.5,
-                          color: AppColors.textMuted,
+                      Flexible(
+                        child: Text(
+                          // Dice de dónde sale la cifra: lo que se pagó en la
+                          // última recepción, o el precio estimado del catálogo.
+                          m.tieneCostoReal
+                              ? 'Costó ${Formato.pesos(m.ultimoCostoUnitario!)} / $unidad'
+                              : '${Formato.pesos(m.precioUnitario)} / $unidad · catálogo',
+                          style: const TextStyle(
+                            fontFeatures: AppTexto.tabulares,
+                            fontSize: 12.5,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ),
                     ],

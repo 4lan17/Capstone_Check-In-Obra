@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/api/auth_api.dart';
+import '../../data/modelos/perfil_trabajador.dart';
 
 /// Guarda la sesión en el almacenamiento cifrado del dispositivo
 /// (Keystore en Android). Nunca en SharedPreferences: ahí el JWT quedaría
@@ -22,6 +23,7 @@ class SesionStorage {
   static const _claveSesion = 'sesion_actual';
   static const _claveUsuarioRecordado = 'usuario_recordado';
   static const _claveObraActiva = 'obra_activa';
+  static const _clavePerfilTrabajador = 'perfil_trabajador';
 
   Future<void> guardar(SesionUsuario sesion) async {
     await _storage.write(key: _claveSesion, value: jsonEncode(sesion.aJson()));
@@ -49,14 +51,20 @@ class SesionStorage {
     }
   }
 
-  /// Solo borra la sesión; deja al usuario recordado para el acceso por PIN.
-  Future<void> cerrarSesion() => _storage.delete(key: _claveSesion);
+  /// Borra la sesión y la credencial guardada; deja al usuario recordado
+  /// para el acceso por PIN. Sin sesión la credencial no se puede mostrar, y
+  /// así no queda en un teléfono que se presta o se entrega.
+  Future<void> cerrarSesion() async {
+    await _storage.delete(key: _claveSesion);
+    await _storage.delete(key: _clavePerfilTrabajador);
+  }
 
   /// Olvida también al usuario — "Cambiar" en la pantalla de PIN.
   Future<void> olvidarTodo() async {
     await _storage.delete(key: _claveSesion);
     await _storage.delete(key: _claveUsuarioRecordado);
     await _storage.delete(key: _claveObraActiva);
+    await _storage.delete(key: _clavePerfilTrabajador);
   }
 
   Future<UsuarioRecordado?> leerUsuarioRecordado() async {
@@ -92,6 +100,33 @@ class SesionStorage {
   }
 
   Future<void> olvidarObraActiva() => _storage.delete(key: _claveObraActiva);
+
+  /// Última copia del perfil del trabajador, para mostrar su credencial sin
+  /// conexión. Ver la nota en [PerfilTrabajador].
+  Future<void> guardarPerfilTrabajador(PerfilTrabajador perfil) =>
+      _storage.write(
+        key: _clavePerfilTrabajador,
+        value: jsonEncode({
+          ...perfil.aJson(),
+          'guardadoEl': DateTime.now().toIso8601String(),
+        }),
+      );
+
+  /// La copia guardada, solo si es de [usuarioId]: en un teléfono compartido
+  /// nadie ve la credencial de otro.
+  Future<PerfilTrabajador?> leerPerfilTrabajador(int usuarioId) async {
+    final crudo = await _storage.read(key: _clavePerfilTrabajador);
+    if (crudo == null) return null;
+    try {
+      final perfil = PerfilTrabajador.desdeJson(
+        jsonDecode(crudo) as Map<String, dynamic>,
+      );
+      return perfil.usuarioId == usuarioId ? perfil : null;
+    } catch (_) {
+      await _storage.delete(key: _clavePerfilTrabajador);
+      return null;
+    }
+  }
 }
 
 /// Datos mínimos del último usuario que entró en este teléfono, para

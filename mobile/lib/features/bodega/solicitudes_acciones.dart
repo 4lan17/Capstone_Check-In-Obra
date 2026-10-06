@@ -12,6 +12,7 @@ import '../../data/api/dominio_api.dart';
 import '../../data/modelos/solicitud.dart';
 import '../../shared_widgets/campo_texto.dart';
 import '../../shared_widgets/estados.dart';
+import '../../shared_widgets/globo_texto.dart';
 import '../../shared_widgets/panel.dart';
 import '../../shared_widgets/presion.dart';
 import '../auth/sesion_controller.dart';
@@ -100,6 +101,11 @@ class FilaSolicitudMaterial extends ConsumerWidget {
               nombre: solicitud.trabajadorNombre,
               rut: solicitud.trabajadorRut,
             ),
+          ],
+          // Para qué lo pidió: es lo que permite decidir sin ir a preguntar.
+          if (solicitud.descripcion case final para? when para.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            GloboTexto(texto: para),
           ],
           if (stock != null && solicitud.pendiente) ...[
             const SizedBox(height: 8),
@@ -230,6 +236,11 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
               nombre: solicitud.trabajadorNombre,
               rut: solicitud.trabajadorRut,
             ),
+          ],
+          // Para qué lo pidió: es lo que permite decidir sin ir a preguntar.
+          if (solicitud.descripcion case final para? when para.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            GloboTexto(texto: para),
           ],
           if (solicitud.pendiente && !disponible) ...[
             const SizedBox(height: 8),
@@ -992,7 +1003,13 @@ class _ChipDeEstado extends StatelessWidget {
   @override
   Widget build(BuildContext context) => switch (estado) {
     'PENDIENTE' => ChipEstado.aviso('Pendiente'),
-    'APROBADA' => ChipEstado.exito('Aprobada', conPunto: false),
-    _ => ChipEstado.critico('Rechazada', conPunto: false),
+    // Aprobada = bodega ya la entregó; Entregada = el trabajador confirmó.
+    'APROBADA' => ChipEstado.exito('Entregada, sin confirmar', conPunto: false),
+    'ENTREGADA' => ChipEstado.exito('Recibida', conPunto: false),
+    'RECHAZADA' => ChipEstado.critico('Rechazada', conPunto: false),
+    // Cancelada por el propio trabajador, u otro estado que el backend sume
+    // después: gris, no rojo. Antes todo lo que no era pendiente ni aprobada
+    // se pintaba como rechazada.
+    _ => ChipEstado.neutro(nombreDeEstadoSolicitud(estado)),
   };
 }

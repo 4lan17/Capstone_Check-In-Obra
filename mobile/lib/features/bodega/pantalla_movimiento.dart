@@ -39,6 +39,10 @@ class PantallaMovimiento extends ConsumerStatefulWidget {
 
 class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
   final _cantidad = TextEditingController();
+
+  /// Lo que se pagó por unidad, según la factura o la guía. Opcional: si quien
+  /// recibe no la tiene a mano, la recepción se registra igual.
+  final _costo = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String _tipo = 'RECEPCION';
   Trabajador? _receptor;
@@ -61,6 +65,7 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
   void dispose() {
     _cantidad.removeListener(_alCambiarCantidad);
     _cantidad.dispose();
+    _costo.dispose();
     super.dispose();
   }
 
@@ -102,6 +107,8 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
     });
 
     final receptorId = _pideReceptor ? _receptor?.id : null;
+    // El backend rechaza el costo fuera de una recepción: se manda solo ahí.
+    final costo = _entra ? Formato.numero(_costo.text) : null;
     try {
       await ref
           .read(kardexApiProvider)
@@ -111,12 +118,14 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
             trabajadorId: receptorId,
             tipo: _tipo,
             cantidad: _valor,
+            costoUnitario: costo,
             clave: _intento.clavePara([
               obra.id,
               widget.item.material.id,
               receptorId,
               _tipo,
               _valor,
+              costo,
             ]),
           );
 
@@ -258,6 +267,47 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
                     alEnviar: (_) => _registrar(),
                   ),
                 ),
+                if (_entra) ...[
+                  const SizedBox(height: 18),
+                  CampoConEtiqueta(
+                    etiqueta: 'Costo unitario pagado (opcional)',
+                    campo: CampoTexto(
+                      controlador: _costo,
+                      hint: Formato.pesos(m.costoVigente).substring(1),
+                      icono: Icons.attach_money,
+                      mono: true,
+                      teclado: TextInputType.number,
+                      formatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                      ],
+                      habilitado: !_enviando,
+                      sufijo: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Text(
+                          '/ $unidad',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                      ),
+                      validador: (v) {
+                        if (v == null || v.trim().isEmpty) return null;
+                        final n = Formato.numero(v);
+                        if (n == null || n <= 0) {
+                          return 'Escribe un costo mayor a cero, o déjalo vacío';
+                        }
+                        return null;
+                      },
+                    ),
+                    ayuda: m.tieneCostoReal
+                        ? 'El de la factura o guía. La última compra fue a '
+                              '${Formato.pesos(m.ultimoCostoUnitario!)}; el catálogo '
+                              'dice ${Formato.pesos(m.precioUnitario)}.'
+                        : 'El de la factura o guía. Es lo que muestra el '
+                              'catálogo como costo real del material.',
+                  ),
+                ],
                 const SizedBox(height: 16),
                 _Saldo(
                   saldo: _saldoResultante,
