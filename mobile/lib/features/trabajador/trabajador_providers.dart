@@ -1,19 +1,38 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/formato.dart';
+import '../../core/network/api_client.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/herramienta.dart';
 import '../../data/modelos/material.dart';
 import '../../data/modelos/pedido_especial.dart';
 import '../../data/modelos/perfil_trabajador.dart';
 import '../../data/modelos/solicitud.dart';
+import '../auth/sesion_controller.dart';
 import '../bodega/pantalla_bodega.dart';
 
 /// El trabajador que entró. Todo lo demás de su app cuelga de acá: sin saber
 /// su obra no hay a qué bodega pedirle nada.
-final perfilTrabajadorProvider = FutureProvider<PerfilTrabajador>(
-  (ref) => ref.watch(trabajadoresApiProvider).yo(),
-);
+///
+/// Sin señal se muestra la última copia guardada, para que la credencial
+/// sirva igual en el mesón. Solo ante un fallo de red: si el servidor
+/// respondió —un 404 de ficha sin crear, un 401—, esa respuesta manda.
+final perfilTrabajadorProvider = FutureProvider<PerfilTrabajador>((ref) async {
+  final storage = ref.watch(sesionStorageProvider);
+  try {
+    final perfil = await ref.watch(trabajadoresApiProvider).yo();
+    await storage.guardarPerfilTrabajador(perfil);
+    return perfil;
+  } on DioException {
+    final usuarioId = ref.read(sesionProvider).valueOrNull?.usuarioId;
+    final guardado = usuarioId == null
+        ? null
+        : await storage.leerPerfilTrabajador(usuarioId);
+    if (guardado == null) rethrow;
+    return guardado;
+  }
+});
 
 /// Sus préstamos, abiertos y cerrados, del más reciente al más antiguo.
 final misPrestamosProvider = FutureProvider<List<Prestamo>>((ref) async {

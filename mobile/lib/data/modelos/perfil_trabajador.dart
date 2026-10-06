@@ -4,8 +4,10 @@
 /// Es la única respuesta en la que la credencial viaja sin que alguien la
 /// acabe de emitir, y es porque se la pide su dueño para mostrarla. El código
 /// es portador —quien lo tiene se presenta como este trabajador en el mesón
-/// de bodega— así que no se guarda en el teléfono: se pide al abrir la
-/// pantalla y vive solo en memoria.
+/// de bodega—, pero tiene que verse sin señal (RF-B9): en obra el mesón suele
+/// estar donde no llega. Por eso la última copia se guarda en el
+/// almacenamiento cifrado, junto al token y con la misma protección, y se
+/// borra al cerrar sesión. Si se pierde el teléfono, renovar la anula.
 class PerfilTrabajador {
   const PerfilTrabajador({
     required this.id,
@@ -18,6 +20,7 @@ class PerfilTrabajador {
     required this.obraNombre,
     required this.obraEstado,
     required this.credencialQr,
+    this.guardadoEl,
   });
 
   final int id;
@@ -36,6 +39,13 @@ class PerfilTrabajador {
   final String? obraEstado;
 
   final String? credencialQr;
+
+  /// Cuándo se guardó la copia que se está mostrando. Nulo si viene recién
+  /// del servidor; con fecha, el teléfono estaba sin conexión y puede que la
+  /// credencial ya no sea la vigente.
+  final DateTime? guardadoEl;
+
+  bool get sinConexion => guardadoEl != null;
 
   bool get tieneObra => obraId != null;
 
@@ -59,5 +69,22 @@ class PerfilTrabajador {
         obraNombre: j['obraNombre'] as String?,
         obraEstado: j['obraEstado'] as String?,
         credencialQr: j['credencialQr'] as String?,
+        guardadoEl: j['guardadoEl'] == null
+            ? null
+            : DateTime.tryParse(j['guardadoEl'] as String),
       );
+
+  /// Para guardar la copia sin conexión. `guardadoEl` lo pone quien guarda.
+  Map<String, dynamic> aJson() => {
+    'id': id,
+    'usuarioId': usuarioId,
+    'nombre': nombre,
+    'rut': rut,
+    'cuadrillaId': cuadrillaId,
+    'cuadrillaNombre': cuadrillaNombre,
+    'obraId': obraId,
+    'obraNombre': obraNombre,
+    'obraEstado': obraEstado,
+    'credencialQr': credencialQr,
+  };
 }

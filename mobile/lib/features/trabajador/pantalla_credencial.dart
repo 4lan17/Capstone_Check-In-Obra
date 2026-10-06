@@ -1,10 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../core/formato.dart';
 import '../../core/network/errores.dart';
 import '../../core/network/idempotencia.dart';
+import '../../core/pantalla.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_forma.dart';
 import '../../core/theme/app_theme.dart';
@@ -42,17 +46,34 @@ class PantallaCredencial extends ConsumerWidget {
             constructor: (p) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (p.sinConexion) ...[
+                  _SinConexion(guardadoEl: p.guardadoEl!),
+                  const SizedBox(height: AppEspacio.md),
+                ],
                 _Tarjeta(perfil: p),
+                if (p.credencialQr != null) ...[
+                  const SizedBox(height: AppEspacio.md),
+                  FilledButton.icon(
+                    onPressed: () => mostrarCredencialCompleta(context, p),
+                    icon: const Icon(Icons.fullscreen),
+                    label: const Text('Mostrar en bodega'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: AppEspacio.md),
                 Text(
                   'Muéstrala en bodega para retirar lo que pediste o para que '
-                  'te presten una herramienta. Si no la lee, sube el brillo '
-                  'de la pantalla.',
+                  'te presten una herramienta. Se abre a pantalla completa y '
+                  'con el brillo al máximo, para que el lector la tome al '
+                  'primer intento.',
                   textAlign: TextAlign.center,
                   style: AppTexto.cuerpoChico,
                 ),
                 const SizedBox(height: AppEspacio.xl),
-                _Renovar(perfil: p),
+                // Renovar necesita al servidor: sin conexión solo confundiría.
+                if (!p.sinConexion) _Renovar(perfil: p),
               ],
             ),
           ),
@@ -79,36 +100,15 @@ class _Tarjeta extends StatelessWidget {
           if (codigo == null)
             const _SinCredencial()
           else
-            Semantics(
-              image: true,
-              label: 'Código QR de tu credencial',
+            GestureDetector(
+              onTap: () => mostrarCredencialCompleta(context, p),
               child: LayoutBuilder(
-                builder: (context, c) {
-                  // Topado a 300: más grande no se lee mejor y empuja el
-                  // nombre fuera de la pantalla en un teléfono chico.
-                  final lado = c.maxWidth.clamp(180.0, 300.0);
-                  return Container(
-                    color: Colors.white,
-                    child: QrImageView(
-                      data: codigo,
-                      size: lado,
-                      // El margen blanco alrededor es parte del código: sin
-                      // él, el escáner confunde el borde de la tarjeta con
-                      // un módulo.
-                      padding: const EdgeInsets.all(12),
-                      backgroundColor: Colors.white,
-                      eyeStyle: const QrEyeStyle(
-                        eyeShape: QrEyeShape.square,
-                        color: Color(0xFF0F172A),
-                      ),
-                      dataModuleStyle: const QrDataModuleStyle(
-                        dataModuleShape: QrDataModuleShape.square,
-                        color: Color(0xFF0F172A),
-                      ),
-                      errorCorrectionLevel: QrErrorCorrectLevel.M,
-                    ),
-                  );
-                },
+                // Topado a 300: más grande no se lee mejor y empuja el nombre
+                // fuera de la pantalla en un teléfono chico.
+                builder: (context, c) => _CodigoQr(
+                  codigo: codigo,
+                  lado: c.maxWidth.clamp(180.0, 300.0),
+                ),
               ),
             ),
           const SizedBox(height: AppEspacio.md),
@@ -252,6 +252,161 @@ class _RenovarState extends ConsumerState<_Renovar> {
             : const Icon(Icons.autorenew, size: 18),
         label: Text(_enviando ? 'Renovando…' : 'Perdí el teléfono: renovar'),
         style: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
+      ),
+    );
+  }
+}
+
+/// El QR sobre blanco puro con su margen de silencio: lo mismo en la tarjeta
+/// y a pantalla completa.
+class _CodigoQr extends StatelessWidget {
+  const _CodigoQr({required this.codigo, required this.lado});
+
+  final String codigo;
+  final double lado;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      image: true,
+      label: 'Código QR de tu credencial',
+      child: Container(
+        color: Colors.white,
+        child: QrImageView(
+          data: codigo,
+          size: lado,
+          // El margen blanco alrededor es parte del código: sin él, el
+          // escáner confunde el borde de la tarjeta con un módulo.
+          padding: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          eyeStyle: const QrEyeStyle(
+            eyeShape: QrEyeShape.square,
+            color: Color(0xFF0F172A),
+          ),
+          dataModuleStyle: const QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: Color(0xFF0F172A),
+          ),
+          errorCorrectionLevel: QrErrorCorrectLevel.M,
+        ),
+      ),
+    );
+  }
+}
+
+/// Sin señal se muestra la última copia guardada. Se dice de cuándo es: si
+/// el trabajador la renovó desde otro teléfono, esta ya no sirve.
+class _SinConexion extends StatelessWidget {
+  const _SinConexion({required this.guardadoEl});
+
+  final DateTime guardadoEl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Panel(
+      borderIzquierdo: AppColors.warning,
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off, size: 20, color: AppColors.secondary),
+          const SizedBox(width: AppEspacio.sm + 4),
+          Expanded(
+            child: Text(
+              'Sin conexión. Es la credencial guardada '
+              '${Formato.relativa(guardadoEl)}; sirve igual en bodega.',
+              style: AppTexto.cuerpoChico,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Abre la credencial a pantalla completa.
+Future<void> mostrarCredencialCompleta(
+  BuildContext context,
+  PerfilTrabajador perfil,
+) => Navigator.of(context).push(
+  MaterialPageRoute<void>(
+    fullscreenDialog: true,
+    builder: (_) => PantallaCredencialCompleta(perfil: perfil),
+  ),
+);
+
+/// La credencial como la ve el bodeguero: solo el código, el nombre y el RUT,
+/// sobre blanco, sin barras del sistema y con el brillo al máximo. Se cierra
+/// con un toque en cualquier parte: el trabajador tiene guantes.
+class PantallaCredencialCompleta extends StatefulWidget {
+  const PantallaCredencialCompleta({super.key, required this.perfil});
+
+  final PerfilTrabajador perfil;
+
+  @override
+  State<PantallaCredencialCompleta> createState() =>
+      _PantallaCredencialCompletaState();
+}
+
+class _PantallaCredencialCompletaState
+    extends State<PantallaCredencialCompleta> {
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    Pantalla.brilloMaximo();
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    Pantalla.brilloNormal();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = widget.perfil;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => Navigator.of(context).pop(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, c) {
+              // Lo más grande que quepa dejando sitio al nombre debajo. Sin
+              // bajar de 180: más chico el lector ya no lo toma.
+              final lado = math.max(
+                180.0,
+                math.min(c.maxWidth - 32, c.maxHeight - 200),
+              );
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _CodigoQr(codigo: p.credencialQr!, lado: lado),
+                  const SizedBox(height: AppEspacio.lg),
+                  Text(
+                    p.nombre,
+                    textAlign: TextAlign.center,
+                    style: AppTexto.titulo.copyWith(fontSize: 26),
+                  ),
+                  if (p.rut != null)
+                    Text(
+                      p.rut!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFeatures: AppTexto.tabulares,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  const SizedBox(height: AppEspacio.xl),
+                  Text('Toca para cerrar', style: AppTexto.cuerpoChico),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
