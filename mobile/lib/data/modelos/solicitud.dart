@@ -9,6 +9,19 @@ library;
 /// Estados de `EstadoSolicitud` en el backend.
 const estadoPendiente = 'PENDIENTE';
 
+/// Nombre legible de cada `EstadoSolicitud`. CANCELADA es la que retiró el
+/// propio trabajador antes de que la atendieran.
+String nombreDeEstadoSolicitud(String estado) => switch (estado) {
+  'PENDIENTE' => 'Pendiente',
+  'APROBADA' => 'Aprobada',
+  'ENTREGADA' => 'Entregada',
+  'RECHAZADA' => 'Rechazada',
+  'CANCELADA' => 'Cancelada',
+  _ => estado,
+};
+
+DateTime? _fecha(Object? v) => v == null ? null : DateTime.parse(v as String);
+
 /// Refleja `SolicitudMaterialResponse`.
 class SolicitudMaterial {
   const SolicitudMaterial({
@@ -25,6 +38,8 @@ class SolicitudMaterial {
     required this.materialNombre,
     required this.obraId,
     required this.resueltoPorNombre,
+    this.descripcion,
+    this.fechaRecepcion,
   });
 
   final int id;
@@ -41,7 +56,17 @@ class SolicitudMaterial {
   final int obraId;
   final String? resueltoPorNombre;
 
+  /// Para qué lo necesita, en palabras de quien pidió. Nula en las anteriores
+  /// a que se exigiera.
+  final String? descripcion;
+
+  /// Cuándo el trabajador confirmó que lo recibió. Nula hasta entonces.
+  final DateTime? fechaRecepcion;
+
   bool get pendiente => estado == estadoPendiente;
+
+  /// Bodega ya lo entregó y falta que el trabajador lo confirme.
+  bool get porConfirmar => estado == 'APROBADA';
 
   factory SolicitudMaterial.desdeJson(Map<String, dynamic> j) =>
       SolicitudMaterial(
@@ -60,6 +85,8 @@ class SolicitudMaterial {
         materialNombre: j['materialNombre'] as String,
         obraId: j['obraId'] as int,
         resueltoPorNombre: j['resueltoPorNombre'] as String?,
+        descripcion: j['descripcion'] as String?,
+        fechaRecepcion: _fecha(j['fechaRecepcion']),
       );
 }
 
@@ -77,6 +104,8 @@ class SolicitudHerramienta {
     required this.herramientaId,
     required this.herramientaNombre,
     required this.resueltoPorNombre,
+    this.descripcion,
+    this.fechaRecepcion,
   });
 
   final int id;
@@ -91,7 +120,17 @@ class SolicitudHerramienta {
   final String herramientaNombre;
   final String? resueltoPorNombre;
 
+  /// Para qué lo necesita, en palabras de quien pidió. Nula en las anteriores
+  /// a que se exigiera.
+  final String? descripcion;
+
+  /// Cuándo el trabajador confirmó que lo recibió. Nula hasta entonces.
+  final DateTime? fechaRecepcion;
+
   bool get pendiente => estado == estadoPendiente;
+
+  /// Bodega ya lo entregó y falta que el trabajador lo confirme.
+  bool get porConfirmar => estado == 'APROBADA';
 
   factory SolicitudHerramienta.desdeJson(Map<String, dynamic> j) =>
       SolicitudHerramienta(
@@ -108,5 +147,7 @@ class SolicitudHerramienta {
         herramientaId: j['herramientaId'] as int,
         herramientaNombre: j['herramientaNombre'] as String,
         resueltoPorNombre: j['resueltoPorNombre'] as String?,
+        descripcion: j['descripcion'] as String?,
+        fechaRecepcion: _fecha(j['fechaRecepcion']),
       );
 }

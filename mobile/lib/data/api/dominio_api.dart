@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/api_client.dart';
 import '../../features/auth/sesion_controller.dart';
 import '../modelos/alerta.dart';
+import '../modelos/detalle_obra.dart';
 import '../modelos/herramienta.dart';
 import '../modelos/importacion.dart';
 import '../modelos/kardex.dart';
 import '../modelos/material.dart';
 import '../modelos/obra.dart';
+import '../modelos/pedido_especial.dart';
+import '../modelos/perfil_trabajador.dart';
 import '../modelos/solicitud.dart';
 import '../modelos/trabajador.dart';
 import '../modelos/usuario.dart';
@@ -25,6 +28,11 @@ class ObrasApi {
   Future<List<Obra>> listar() => _rest.lista('/api/obras', Obra.desdeJson);
 
   Future<Obra> obtener(int id) => _rest.uno('/api/obras/$id', Obra.desdeJson);
+
+  /// Todo de una obra en una respuesta: jefe, trabajadores, stock valorizado y
+  /// herramientas prestadas en ella.
+  Future<DetalleObra> detalle(int id) =>
+      _rest.uno('/api/obras/$id/detalle', DetalleObra.desdeJson);
 
   Future<Obra> crear({
     required String nombre,
@@ -76,6 +84,12 @@ class MaterialesApi {
 
   Future<MaterialObra> obtener(int id) =>
       _rest.uno('/api/materiales/$id', MaterialObra.desdeJson);
+
+  /// Lo que se está agotando en las obras activas, crítico primero. Solo
+  /// cuenta pares obra-material con movimiento: un material que nunca entró a
+  /// una obra no "falta" en ella.
+  Future<List<MaterialFaltante>> faltantes() =>
+      _rest.lista('/api/materiales/faltantes', MaterialFaltante.desdeJson);
 
   /// Lo que resuelve el escáner de código de barras: el backend prueba el
   /// código impreso de fábrica y después el SKU, porque quien apunta la cámara
@@ -150,13 +164,15 @@ class KardexApi {
 
   /// Devuelve 409 si un DESPACHO o CONSUMO dejaría el saldo negativo.
   /// `trabajadorId` es obligatorio en un DESPACHO —hay que saber a quién se le
-  /// entregó— y el backend lo rechaza en una RECEPCION.
+  /// entregó— y el backend lo rechaza en una RECEPCION. Con `costoUnitario`
+  /// pasa al revés: solo lo acepta en una RECEPCION.
   Future<MovimientoKardex> registrar({
     required int obraId,
     required int materialId,
     required String tipo,
     required double cantidad,
     int? trabajadorId,
+    double? costoUnitario,
     String? clave,
   }) => _rest.crear(
     '/api/kardex',
@@ -166,6 +182,7 @@ class KardexApi {
       'trabajadorId': trabajadorId,
       'tipo': tipo,
       'cantidad': cantidad,
+      'costoUnitario': costoUnitario,
     },
     MovimientoKardex.desdeJson,
     clave: clave,
@@ -218,6 +235,11 @@ class PrestamosApi {
     Prestamo.desdeJson,
     params: {'obraId': obraId},
   );
+
+  /// Los préstamos de quien entró, abiertos y cerrados. El backend lo saca del
+  /// token: un trabajador no puede pedir los de otro.
+  Future<List<Prestamo>> mios() =>
+      _rest.lista('/api/prestamos-herramienta/mios', Prestamo.desdeJson);
 
   Future<List<Prestamo>> vencidos() => _rest.lista(
     '/api/prestamos-herramienta',
@@ -354,6 +376,20 @@ class TrabajadoresApi {
     params: {'obraId': obraId},
   );
 
+  /// El trabajador que entró, con su obra y su credencial QR.
+  Future<PerfilTrabajador> yo() =>
+      _rest.uno('/api/trabajadores/yo', PerfilTrabajador.desdeJson);
+
+  /// Emite una credencial nueva y anula la anterior. Es lo que se hace si se
+  /// pierde el teléfono o alguien fotografió el código.
+  Future<PerfilTrabajador> renovarMiCredencial({String? clave}) =>
+      _rest.actualizar(
+        '/api/trabajadores/yo/credencial',
+        const {},
+        PerfilTrabajador.desdeJson,
+        clave: clave,
+      );
+
   Future<Trabajador> porCredencial(String credencialQr) => _rest.uno(
     '/api/trabajadores/por-credencial/${Uri.encodeComponent(credencialQr)}',
     Trabajador.desdeJson,
@@ -375,6 +411,101 @@ class SolicitudesApi {
   const SolicitudesApi(this._rest);
 
   final ClienteRest _rest;
+
+  // --- Del trabajador ---------------------------------------------------------
+  //
+  // Quién pide no viaja: el backend lo toma del token, igual que al aprobar.
+
+  Future<List<SolicitudMaterial>> misMateriales() => _rest.lista(
+    '/api/solicitudes-material/mias',
+    SolicitudMaterial.desdeJson,
+  );
+
+  Future<List<SolicitudHerramienta>> misHerramientas() => _rest.lista(
+    '/api/solicitudes-herramienta/mias',
+    SolicitudHerramienta.desdeJson,
+  );
+
+  /// Sin `obraId` el backend usa la de su cuadrilla. Rechaza con 409 si no
+  /// tiene cuadrilla, si la obra no es la suya o si está cerrada.
+  ///
+  /// `descripcion` es para qué lo necesita: 3 a 300 caracteres.
+  Future<SolicitudMaterial> pedirMaterial({
+    required int materialId,
+    int? obraId,
+    required double cantidad,
+    required String descripcion,
+    String? clave,
+  }) => _rest.crear(
+    '/api/solicitudes-material',
+    {
+      'materialId': materialId,
+      'obraId': obraId,
+      'cantidad': cantidad,
+      'descripcion': descripcion,
+    },
+    SolicitudMaterial.desdeJson,
+    clave: clave,
+  );
+
+  /// Siempre una: cada herramienta es una unidad con su propio QR. El backend
+  /// rechaza con 409 si no está disponible o si ya la tiene pedida.
+  Future<SolicitudHerramienta> pedirHerramienta({
+    required int herramientaId,
+    required String descripcion,
+    String? clave,
+  }) => _rest.crear(
+    '/api/solicitudes-herramienta',
+    {'herramientaId': herramientaId, 'cantidad': 1, 'descripcion': descripcion},
+    SolicitudHerramienta.desdeJson,
+    clave: clave,
+  );
+
+  /// Solo una pendiente y propia. 409 si el bodeguero ya la resolvió.
+  Future<SolicitudMaterial> cancelarMaterial(
+    int solicitudId, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-material/$solicitudId/cancelar',
+    const {},
+    SolicitudMaterial.desdeJson,
+    clave: clave,
+  );
+
+  Future<SolicitudHerramienta> cancelarHerramienta(
+    int solicitudId, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-herramienta/$solicitudId/cancelar',
+    const {},
+    SolicitudHerramienta.desdeJson,
+    clave: clave,
+  );
+
+  /// El trabajador confirma que recibió lo que bodega le aprobó. 409
+  /// NO_ENTREGADA si no estaba aprobada — incluida una repetición, que la app
+  /// trata como "ya estaba".
+  Future<SolicitudMaterial> confirmarRecepcionMaterial(
+    int solicitudId, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-material/$solicitudId/confirmar-recepcion',
+    const {},
+    SolicitudMaterial.desdeJson,
+    clave: clave,
+  );
+
+  Future<SolicitudHerramienta> confirmarRecepcionHerramienta(
+    int solicitudId, {
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/solicitudes-herramienta/$solicitudId/confirmar-recepcion',
+    const {},
+    SolicitudHerramienta.desdeJson,
+    clave: clave,
+  );
+
+  // --- De bodega ---------------------------------------------------------------
 
   Future<List<SolicitudMaterial>> materialesPorObra(
     int obraId, {
@@ -459,6 +590,94 @@ class SolicitudesApi {
     SolicitudHerramienta.desdeJson,
     clave: clave,
   );
+}
+
+/// Lo que hay que conseguir: pedidos fuera del catálogo o sin stock.
+///
+/// No tocan el kardex. Lo que llega entra por la recepción normal y sale con
+/// el despacho de siempre; el pedido solo sigue en qué va.
+class PedidosEspecialesApi {
+  const PedidosEspecialesApi(this._rest);
+
+  final ClienteRest _rest;
+
+  /// `materialId` o `herramientaId` —nunca los dos— cuando lo pedido existe en
+  /// el catálogo pero no había.
+  Future<PedidoEspecial> crear({
+    required String tipo,
+    required String nombre,
+    required double cantidad,
+    String? unidad,
+    required String descripcion,
+    int? materialId,
+    int? herramientaId,
+    String? clave,
+  }) => _rest.crear(
+    '/api/pedidos-especiales',
+    {
+      'tipo': tipo,
+      'nombre': nombre,
+      'cantidad': cantidad,
+      'unidad': unidad,
+      'descripcion': descripcion,
+      'materialId': materialId,
+      'herramientaId': herramientaId,
+    },
+    PedidoEspecial.desdeJson,
+    clave: clave,
+  );
+
+  Future<List<PedidoEspecial>> mios() =>
+      _rest.lista('/api/pedidos-especiales/mios', PedidoEspecial.desdeJson);
+
+  /// Sin `obraId`, los de toda la empresa: es la vista del administrador.
+  Future<List<PedidoEspecial>> listar({
+    int? obraId,
+    bool soloAbiertos = true,
+  }) => _rest.lista(
+    '/api/pedidos-especiales',
+    PedidoEspecial.desdeJson,
+    params: {'obraId': ?obraId, 'soloAbiertos': soloAbiertos},
+  );
+
+  /// Avanza un paso. 409 TRANSICION_INVALIDA si otro de bodega ya lo movió.
+  Future<PedidoEspecial> avanzar(
+    int id,
+    PasoPedido paso, {
+    String? nota,
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/pedidos-especiales/$id/${paso.ruta}',
+    {if (nota != null && nota.trim().isNotEmpty) 'nota': nota.trim()},
+    PedidoEspecial.desdeJson,
+    clave: clave,
+  );
+
+  Future<PedidoEspecial> rechazar(
+    int id, {
+    required String motivo,
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/pedidos-especiales/$id/rechazar',
+    {'motivo': motivo},
+    PedidoEspecial.desdeJson,
+    clave: clave,
+  );
+
+  Future<PedidoEspecial> cancelar(int id, {String? clave}) => _rest.actualizar(
+    '/api/pedidos-especiales/$id/cancelar',
+    const {},
+    PedidoEspecial.desdeJson,
+    clave: clave,
+  );
+
+  Future<PedidoEspecial> confirmarRecepcion(int id, {String? clave}) =>
+      _rest.actualizar(
+        '/api/pedidos-especiales/$id/confirmar-recepcion',
+        const {},
+        PedidoEspecial.desdeJson,
+        clave: clave,
+      );
 }
 
 /// Alta masiva de catálogo desde una planilla Excel.
@@ -562,6 +781,9 @@ final empresaApiProvider = Provider(
 );
 final solicitudesApiProvider = Provider(
   (ref) => SolicitudesApi(ref.watch(clienteRestProvider)),
+);
+final pedidosEspecialesApiProvider = Provider(
+  (ref) => PedidosEspecialesApi(ref.watch(clienteRestProvider)),
 );
 final importacionApiProvider = Provider(
   (ref) => ImportacionApi(ref.watch(clienteRestProvider)),

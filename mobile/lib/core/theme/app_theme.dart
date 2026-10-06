@@ -155,7 +155,13 @@ abstract final class AppTheme {
 
     // Los rasgos se aplican a cada estilo del tema; los `TextStyle` que las
     // pantallas escriben a mano los heredan del `DefaultTextStyle`.
+    //
+    // La familia se repite acá porque los `AppTexto` que reemplazan a los del
+    // tema no la declaran: sin esto el `DefaultTextStyle` salía sin familia y
+    // todo texto que no la pusiera a mano se dibujaba en la fuente del
+    // sistema (Roboto en Android), no en Inter.
     TextStyle? conRasgos(TextStyle? t) => t?.copyWith(
+      fontFamily: AppTexto.familia,
       fontFeatures: AppTexto.rasgos,
       letterSpacing: t.letterSpacing ?? -0.1,
     );
