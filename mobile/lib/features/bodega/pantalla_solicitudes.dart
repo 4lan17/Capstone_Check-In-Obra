@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/errores.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/modelos/pedido_especial.dart';
 import '../../data/modelos/solicitud.dart';
 import '../../data/modelos/trabajador.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
 import 'bodega_providers.dart';
 import 'pantalla_escaneo.dart';
+import 'pedidos_especiales.dart';
 import 'solicitudes_acciones.dart';
 
 /// La cola de la obra: todo lo que espera respuesta del bodeguero.
@@ -25,6 +27,7 @@ class PantallaSolicitudesObra extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final materiales = ref.watch(solicitudesMaterialProvider);
     final herramientas = ref.watch(solicitudesHerramientaProvider);
+    final especiales = ref.watch(pedidosEspecialesObraProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,10 +64,21 @@ class PantallaSolicitudesObra extends ConsumerWidget {
               final pendientesHerramienta = pedidosHerramienta
                   .where((s) => s.pendiente)
                   .toList();
+              // Lo que le toca a bodega primero; lo entregado que el
+              // trabajador no confirma, al final.
+              final pedidos =
+                  [...especiales.valueOrNull ?? const <PedidoEspecial>[]]..sort(
+                    (a, b) => (a.siguientePaso == null ? 1 : 0).compareTo(
+                      b.siguientePaso == null ? 1 : 0,
+                    ),
+                  );
+              final falloEspeciales = especiales is AsyncError;
 
               if (pendientesMaterial.isEmpty &&
                   pendientesHerramienta.isEmpty &&
-                  !falloHerramientas) {
+                  pedidos.isEmpty &&
+                  !falloHerramientas &&
+                  !falloEspeciales) {
                 return ListView(
                   children: const [
                     Vacio(
@@ -108,6 +122,30 @@ class PantallaSolicitudesObra extends ConsumerWidget {
                       FilaSolicitudHerramienta(solicitud: s),
                       const SizedBox(height: 10),
                     ],
+                    const SizedBox(height: 10),
+                  ],
+                  if (falloEspeciales) ...[
+                    MensajeError(
+                      mensaje:
+                          'No se pudieron traer los pedidos especiales: '
+                          '${mensajeDeError((especiales as AsyncError).error)}',
+                      alReintentar: () =>
+                          ref.invalidate(pedidosEspecialesObraProvider),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  if (pedidos.isNotEmpty) ...[
+                    Etiqueta('Por conseguir (${pedidos.length})'),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Lo que no está en el catálogo o no había en bodega.',
+                      style: AppTexto.cuerpoChico,
+                    ),
+                    const SizedBox(height: 8),
+                    for (final p in pedidos) ...[
+                      FilaPedidoEspecial(pedido: p),
+                      const SizedBox(height: 10),
+                    ],
                   ],
                 ],
               );
@@ -134,6 +172,14 @@ class PantallaSolicitudesTrabajador extends ConsumerWidget {
     final solicitudes = ref.watch(
       solicitudesDeTrabajadorProvider(trabajador.id),
     );
+    // Sus pedidos especiales en esta obra que bodega todavía tiene que
+    // mover. Con él enfrente, lo que está listo se le entrega acá mismo.
+    final suyos = [
+      for (final p
+          in ref.watch(pedidosEspecialesObraProvider).valueOrNull ??
+              const <PedidoEspecial>[])
+        if (p.trabajadorId == trabajador.id && p.siguientePaso != null) p,
+    ];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Credencial escaneada')),
@@ -155,7 +201,16 @@ class PantallaSolicitudesTrabajador extends ConsumerWidget {
                   pendientes: datos.cuantasPendientes,
                 ),
                 const SizedBox(height: 20),
-                if (datos.cuantasPendientes == 0)
+                if (suyos.isNotEmpty) ...[
+                  Etiqueta('Por conseguir (${suyos.length})'),
+                  const SizedBox(height: 8),
+                  for (final p in suyos) ...[
+                    FilaPedidoEspecial(pedido: p),
+                    const SizedBox(height: 10),
+                  ],
+                  const SizedBox(height: 10),
+                ],
+                if (datos.cuantasPendientes == 0 && suyos.isEmpty)
                   Vacio(
                     icono: Icons.check_circle_outline,
                     titulo: 'No tiene nada pendiente',

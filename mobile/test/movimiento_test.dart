@@ -39,6 +39,7 @@ class _KardexLento implements KardexApi {
     required String tipo,
     required double cantidad,
     int? trabajadorId,
+    double? costoUnitario,
     String? clave,
   }) {
     envios.add(clave);
@@ -123,7 +124,8 @@ void main() {
       tester.element(find.byType(PantallaMovimiento)),
     );
     await tester.runAsync(() => contenedor.read(sesionProvider.future));
-    await tester.enterText(find.byType(TextField).last, '12');
+    // En una recepción la cantidad es el primer campo: debajo va el costo.
+    await tester.enterText(find.byType(TextField).first, '12');
     await tester.pump();
 
     final boton = find.text('Registrar recepción');

@@ -45,6 +45,7 @@ dependencies:
   # Elegir la planilla .xlsx de la importación masiva desde el explorador
   # de archivos de Android.
   file_picker: ^12.2.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

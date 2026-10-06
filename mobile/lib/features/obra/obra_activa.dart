@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
 import '../../data/api/dominio_api.dart';
+import '../../data/modelos/detalle_obra.dart';
 import '../../data/modelos/obra.dart';
 
 /// Obras activas de la empresa. Las cerradas no se ofrecen: no se puede
@@ -14,6 +15,12 @@ final obrasActivasProvider = FutureProvider<List<Obra>>((ref) async {
 /// Todas las obras, incluidas las cerradas — la vista de admin.
 final todasLasObrasProvider = FutureProvider<List<Obra>>(
   (ref) => ref.watch(obrasApiProvider).listar(),
+);
+
+/// El detalle completo de una obra, para su ficha y para el resumen de su fila
+/// en la lista. Es por id y no por la obra activa: el admin mira cualquiera.
+final detalleObraProvider = FutureProvider.family<DetalleObra, int>(
+  (ref, obraId) => ref.watch(obrasApiProvider).detalle(obraId),
 );
 
 /// La obra en la que se está trabajando.

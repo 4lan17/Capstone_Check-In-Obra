@@ -12,6 +12,7 @@ import 'features/auth/pantalla_acceso.dart';
 import 'features/auth/sesion_controller.dart';
 import 'features/bodega/shell_bodega.dart';
 import 'features/inicio/pantalla_rol_pendiente.dart';
+import 'features/trabajador/shell_trabajador.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,8 @@ class CheckInObraApp extends StatelessWidget {
 Widget _paraElRol(SesionUsuario sesion) => switch (sesion.rol) {
   'BODEGUERO' => const ShellBodega(),
   'ADMIN' => const ShellAdmin(),
-  // Jefe de terreno y trabajador: su flujo está pendiente.
+  'TRABAJADOR' => const ShellTrabajador(),
+  // Jefe de terreno: su flujo está pendiente.
   _ => PantallaRolPendiente(sesion: sesion),
 };
 

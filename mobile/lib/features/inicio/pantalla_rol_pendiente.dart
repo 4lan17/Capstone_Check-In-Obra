@@ -10,8 +10,8 @@ import '../auth/sesion_controller.dart';
 
 /// Lo que ve un rol cuyo flujo todavía no está construido.
 ///
-/// Hoy son el jefe de terreno y el trabajador. Bodeguero y administrador
-/// tienen su propio shell (`ShellBodega`, `ShellAdmin`), y el enrutado de
+/// Hoy es el jefe de terreno. Bodeguero, administrador y trabajador tienen su
+/// propio shell (`ShellBodega`, `ShellAdmin`, `ShellTrabajador`), y el enrutado de
 /// `main.dart` los manda ahí; quien caiga acá es porque su flujo está
 /// pendiente.
 ///
