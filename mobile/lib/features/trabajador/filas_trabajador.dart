@@ -192,6 +192,14 @@ class _FilaMiSolicitudState extends ConsumerState<FilaMiSolicitud> {
               ),
             ],
           ),
+          if (s.entregado case final entregado?) ...[
+            const SizedBox(height: AppEspacio.sm),
+            _Entregado(
+              entregado: entregado,
+              pedido: s.cantidad,
+              parcial: s.entregaParcial,
+            ),
+          ],
           if (s.descripcion case final para? when para.isNotEmpty) ...[
             const SizedBox(height: AppEspacio.sm),
             GloboTexto(texto: para),
@@ -257,6 +265,47 @@ class _FilaMiSolicitudState extends ConsumerState<FilaMiSolicitud> {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Cuánto le entregó bodega. Si fue menos de lo pedido se dice junto a lo
+/// que pidió, para que no confirme "lo recibí" creyendo que llegó todo.
+class _Entregado extends StatelessWidget {
+  const _Entregado({
+    required this.entregado,
+    required this.pedido,
+    required this.parcial,
+  });
+
+  final String entregado;
+  final String pedido;
+  final bool parcial;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = parcial ? AppColors.warningDark : AppColors.successDark;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          parcial ? Icons.info_outline : Icons.check_circle_outline,
+          size: 18,
+          color: color,
+        ),
+        const SizedBox(width: AppEspacio.sm),
+        Expanded(
+          child: Text(
+            parcial
+                ? 'Te entregaron $entregado de $pedido que pediste.'
+                : 'Te entregaron $entregado.',
+            style: AppTexto.cuerpoChico.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

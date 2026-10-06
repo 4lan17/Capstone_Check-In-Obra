@@ -78,6 +78,8 @@ class MiSolicitud {
     required this.resueltoPorNombre,
     this.descripcion,
     this.notaBodega,
+    this.entregado,
+    this.entregaParcial = false,
     this.esHerramientaEspecial = false,
   });
 
@@ -95,6 +97,10 @@ class MiSolicitud {
     motivoRechazo: s.motivoRechazo,
     resueltoPorNombre: s.resueltoPorNombre,
     descripcion: s.descripcion,
+    entregado: s.cantidadEntregada == null
+        ? null
+        : '${Formato.cantidad(s.cantidadEntregada!)} $unidad',
+    entregaParcial: s.entregaParcial,
   );
 
   factory MiSolicitud.deHerramienta(SolicitudHerramienta s) => MiSolicitud(
@@ -108,6 +114,11 @@ class MiSolicitud {
     motivoRechazo: s.motivoRechazo,
     resueltoPorNombre: s.resueltoPorNombre,
     descripcion: s.descripcion,
+    // Una herramienta se presta entera: si la aprobaron, le entregaron lo
+    // que pidió.
+    entregado: const {'APROBADA', 'ENTREGADA'}.contains(s.estado)
+        ? (s.cantidad == 1 ? '1 unidad' : '${s.cantidad} unidades')
+        : null,
   );
 
   factory MiSolicitud.dePedido(PedidoEspecial p) => MiSolicitud(
@@ -147,6 +158,13 @@ class MiSolicitud {
 
   /// Lo que bodega le avisó mientras lo conseguía.
   final String? notaBodega;
+
+  /// Lo que bodega le entregó, con su unidad. Nulo mientras no se aprueba y
+  /// en los pedidos especiales, que no registran cantidad entregada.
+  final String? entregado;
+
+  /// Le entregaron menos de lo que pidió.
+  final bool entregaParcial;
   final bool esHerramientaEspecial;
 
   bool get esEspecial => origen == OrigenSolicitud.especial;
