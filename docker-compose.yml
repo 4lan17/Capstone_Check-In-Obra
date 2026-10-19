@@ -15,6 +15,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/checkinobra
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      # Hora de Chile, la misma de la app y de ./mvnw test. La API recibe y
+      # devuelve fechas sin zona; en UTC, "hoy 18:00" llegaba como pasada.
+      TZ: America/Santiago
     depends_on:
       db:
         condition: service_healthy
