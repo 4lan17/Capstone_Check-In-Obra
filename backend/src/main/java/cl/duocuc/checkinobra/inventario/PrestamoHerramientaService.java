@@ -1,6 +1,7 @@
 package cl.duocuc.checkinobra.inventario;
 
 import cl.duocuc.checkinobra.config.AccesoEmpresa;
+import cl.duocuc.checkinobra.config.ConflictoException;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.config.Usuario;
 import cl.duocuc.checkinobra.config.UsuarioRepository;
@@ -66,7 +67,8 @@ public class PrestamoHerramientaService {
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
         entityManager.refresh(herramienta, LockModeType.PESSIMISTIC_WRITE);
         if (herramienta.getEstado() != EstadoHerramienta.DISPONIBLE) {
-            throw new IllegalStateException("La herramienta no está DISPONIBLE (estado actual: " + herramienta.getEstado() + ")");
+            throw new ConflictoException(ConflictoException.HERRAMIENTA_NO_DISPONIBLE,
+                    "La herramienta no está DISPONIBLE (estado actual: " + herramienta.getEstado() + ")");
         }
         Trabajador trabajador = trabajadorService.obtener(trabajadorId);
         Obra obra = obraService.obtenerAbiertaParaRegistrar(obraId);

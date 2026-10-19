@@ -119,8 +119,8 @@ class PantallaInicioBodega extends ConsumerWidget {
                 Expanded(
                   child: _AccesoRapido(
                     icono: Icons.qr_code_scanner,
-                    titulo: 'Credencial',
-                    detalle: 'Ver y aprobar lo que pidió el trabajador',
+                    titulo: 'Credencial o pedido',
+                    detalle: 'Aprobar lo que pidió o entregar su pedido QR',
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const PantallaEscaneoCredencial(),

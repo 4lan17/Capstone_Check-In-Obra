@@ -60,7 +60,7 @@ class _ShellBodegaState extends ConsumerState<ShellBodega> {
           // inicio: es la acción que se dispara con el trabajador enfrente, y
           // puede pasar estando en cualquier pestaña.
           IconButton(
-            tooltip: 'Escanear la credencial de un trabajador',
+            tooltip: 'Escanear la credencial o el pedido de un trabajador',
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(

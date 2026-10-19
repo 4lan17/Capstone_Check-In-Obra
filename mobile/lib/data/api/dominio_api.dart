@@ -12,6 +12,7 @@ import '../modelos/kardex.dart';
 import '../modelos/material.dart';
 import '../modelos/obra.dart';
 import '../modelos/pedido_especial.dart';
+import '../modelos/pedido_herramienta.dart';
 import '../modelos/perfil_trabajador.dart';
 import '../modelos/solicitud.dart';
 import '../modelos/trabajador.dart';
@@ -680,6 +681,65 @@ class PedidosEspecialesApi {
       );
 }
 
+/// Varias herramientas pedidas de una vez y retiradas con un QR.
+///
+/// Crear es todo o nada: si una de las herramientas ya no está disponible, el
+/// backend responde 409 y no queda ninguna pedida. Así el trabajador no llega
+/// al mesón con un QR que cubre la mitad de lo que necesitaba.
+class PedidosHerramientaApi {
+  const PedidosHerramientaApi(this._rest);
+
+  final ClienteRest _rest;
+
+  // --- Del trabajador ---------------------------------------------------------
+
+  Future<PedidoHerramienta> crear({
+    required List<int> herramientaIds,
+    required String descripcion,
+    String? clave,
+  }) => _rest.crear(
+    '/api/pedidos-herramienta',
+    {'herramientaIds': herramientaIds, 'descripcion': descripcion},
+    PedidoHerramienta.desdeJson,
+    clave: clave,
+  );
+
+  /// Los suyos, primero los que esperan retiro.
+  Future<List<PedidoHerramienta>> mios() =>
+      _rest.lista('/api/pedidos-herramienta/mios', PedidoHerramienta.desdeJson);
+
+  Future<PedidoHerramienta> cancelar(int id, {String? clave}) =>
+      _rest.actualizar(
+        '/api/pedidos-herramienta/$id/cancelar',
+        const {},
+        PedidoHerramienta.desdeJson,
+        clave: clave,
+      );
+
+  // --- De bodega ---------------------------------------------------------------
+  //
+  // Reciben el UUID sin el prefijo `PEDIDO:` del QR. Un código desconocido o
+  // de otra empresa da 404, igual que la credencial.
+
+  Future<PedidoHerramienta> porQr(String codigoQr) => _rest.uno(
+    '/api/pedidos-herramienta/qr/${Uri.encodeComponent(codigoQr)}',
+    PedidoHerramienta.desdeJson,
+  );
+
+  /// Entrega todas las herramientas del pedido con la misma devolución
+  /// esperada. 409 YA_RESUELTA si ya se había entregado.
+  Future<EntregaPedido> entregar(
+    String codigoQr, {
+    required DateTime fechaDevolEsperada,
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/pedidos-herramienta/qr/${Uri.encodeComponent(codigoQr)}/entregar',
+    {'fechaDevolEsperada': fechaDevolEsperada.toIso8601String()},
+    EntregaPedido.desdeJson,
+    clave: clave,
+  );
+}
+
 /// Alta masiva de catálogo desde una planilla Excel.
 ///
 /// Se llama dos veces con el mismo archivo: primero sin confirmar —para ver el
@@ -784,6 +844,9 @@ final solicitudesApiProvider = Provider(
 );
 final pedidosEspecialesApiProvider = Provider(
   (ref) => PedidosEspecialesApi(ref.watch(clienteRestProvider)),
+);
+final pedidosHerramientaApiProvider = Provider(
+  (ref) => PedidosHerramientaApi(ref.watch(clienteRestProvider)),
 );
 final importacionApiProvider = Provider(
   (ref) => ImportacionApi(ref.watch(clienteRestProvider)),

@@ -151,6 +151,7 @@ Future<void> _montar(
         perfilTrabajadorProvider.overrideWith((ref) async => _perfil),
         misPrestamosProvider.overrideWith((ref) async => _prestamos),
         misSolicitudesProvider.overrideWith((ref) async => _solicitudes),
+        misPedidosHerramientaProvider.overrideWith((ref) async => const []),
         ...overrides,
       ],
       child: MaterialApp(

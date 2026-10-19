@@ -10,9 +10,11 @@ import '../../data/api/auth_api.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/herramienta.dart';
 import '../../data/modelos/material.dart';
+import '../../data/modelos/pedido_herramienta.dart';
 import '../../shared_widgets/panel.dart';
 import 'bodega_providers.dart';
 import 'escaner.dart';
+import 'pantalla_entrega_pedido.dart';
 import 'pantalla_herramientas.dart';
 import 'pantalla_movimiento.dart';
 import 'pantalla_prestamo.dart';
@@ -29,25 +31,33 @@ import 'pantalla_solicitudes.dart';
 ///
 /// El código no autoriza por sí solo: quien aprueba sigue siendo el bodeguero
 /// autenticado, y así queda en el kardex.
+///
+/// El mismo escáner lee el QR de un pedido de herramientas (`PEDIDO:<uuid>`).
+/// Los dos los muestra el trabajador en su teléfono, en el mismo mesón: pedirle
+/// al bodeguero que elija antes cuál de los dos le van a mostrar sería un paso
+/// de más, y el prefijo ya dice cuál es.
 class PantallaEscaneoCredencial extends ConsumerWidget {
   const PantallaEscaneoCredencial({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return LectorDeCodigo(
-      titulo: 'Escanear credencial',
+      titulo: 'Escanear credencial o pedido',
       instruccion:
-          'Apunta al QR de la credencial que el trabajador tiene en su '
-          'teléfono.',
+          'Apunta al QR de la credencial o del pedido que el trabajador '
+          'tiene en su teléfono.',
       // Solo QR: la credencial es un UUID y no cabe en un código de barras
       // lineal. Aceptar otros formatos acá solo haría que el escáner reaccione
       // a la etiqueta de una caja que pasó por delante.
       formatos: const [BarcodeFormat.qrCode],
-      etiquetaManual: 'Código de la credencial',
+      etiquetaManual: 'Código de la credencial o del pedido',
       ayudaManual:
-          'Está bajo el QR en la pantalla del trabajador. Sirve si la '
-          'credencial no se deja escanear.',
+          'Está bajo el QR en la pantalla del trabajador. Sirve si el código '
+          'no se deja escanear.',
       alLeer: (codigo) async {
+        if (PedidoHerramienta.codigoDesdeQr(codigo) case final uuid?) {
+          return _abrirPedido(context, ref, uuid);
+        }
         try {
           final trabajador = await ref
               .read(trabajadoresApiProvider)
@@ -76,6 +86,32 @@ class PantallaEscaneoCredencial extends ConsumerWidget {
         }
       },
     );
+  }
+
+  Future<String?> _abrirPedido(
+    BuildContext context,
+    WidgetRef ref,
+    String uuid,
+  ) async {
+    try {
+      final pedido = await ref.read(pedidosHerramientaApiProvider).porQr(uuid);
+      if (!context.mounted) return null;
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => PantallaEntregaPedido(pedido: pedido),
+        ),
+      );
+      return null;
+    } on ApiException catch (e) {
+      // Igual que con la credencial: un código inventado y uno de otra
+      // empresa dan el mismo 404.
+      return e.statusCode == 404
+          ? 'Ese pedido no existe en tu empresa. Pídele al trabajador que '
+                'abra de nuevo el QR desde su Inicio.'
+          : e.mensaje;
+    } catch (e) {
+      return mensajeDeError(e);
+    }
   }
 }
 
@@ -129,6 +165,13 @@ class PantallaEscaneoCodigo extends ConsumerWidget {
     WidgetRef ref,
     String codigo,
   ) async {
+    // El QR de un pedido también es un QR: se dice cuál escáner lo lee antes
+    // de buscarlo en dos catálogos donde no va a estar.
+    if (PedidoHerramienta.codigoDesdeQr(codigo) != null) {
+      return 'Eso es el QR de un pedido de herramientas. Léelo desde '
+          '"Escanear credencial o pedido": este escáner busca materiales y '
+          'herramientas.';
+    }
     try {
       final material = await ref.read(materialesApiProvider).porCodigo(codigo);
 
@@ -176,7 +219,7 @@ class PantallaEscaneoCodigo extends ConsumerWidget {
       // Decir cuál es el correcto ahorra el "no funciona".
       return _pareceCredencial(codigo)
           ? 'Eso parece la credencial de un trabajador. Léela desde '
-                '"Escanear credencial": este escáner busca materiales y '
+                '"Escanear credencial o pedido": este escáner busca materiales y '
                 'herramientas.'
           : 'El código $codigo no está en el catálogo de tu empresa. '
                 'Si el material es nuevo, hay que darlo de alta primero.';

@@ -105,7 +105,7 @@ class _Tarjeta extends StatelessWidget {
               child: LayoutBuilder(
                 // Topado a 300: más grande no se lee mejor y empuja el nombre
                 // fuera de la pantalla en un teléfono chico.
-                builder: (context, c) => _CodigoQr(
+                builder: (context, c) => CodigoQr(
                   codigo: codigo,
                   lado: c.maxWidth.clamp(180.0, 300.0),
                 ),
@@ -257,19 +257,27 @@ class _RenovarState extends ConsumerState<_Renovar> {
   }
 }
 
-/// El QR sobre blanco puro con su margen de silencio: lo mismo en la tarjeta
-/// y a pantalla completa.
-class _CodigoQr extends StatelessWidget {
-  const _CodigoQr({required this.codigo, required this.lado});
+/// El QR sobre blanco puro con su margen de silencio: lo mismo en la tarjeta,
+/// a pantalla completa y en el pedido de herramientas.
+class CodigoQr extends StatelessWidget {
+  const CodigoQr({
+    super.key,
+    required this.codigo,
+    required this.lado,
+    this.etiqueta = 'Código QR de tu credencial',
+  });
 
   final String codigo;
   final double lado;
+
+  /// Qué es, para el lector de pantalla.
+  final String etiqueta;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       image: true,
-      label: 'Código QR de tu credencial',
+      label: etiqueta,
       child: Container(
         color: Colors.white,
         child: QrImageView(
@@ -382,7 +390,7 @@ class _PantallaCredencialCompletaState
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _CodigoQr(codigo: p.credencialQr!, lado: lado),
+                  CodigoQr(codigo: p.credencialQr!, lado: lado),
                   const SizedBox(height: AppEspacio.lg),
                   Text(
                     p.nombre,

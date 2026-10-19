@@ -8,7 +8,15 @@ import '../../data/api/auth_api.dart';
 /// Las causas reales en esta app son siempre las mismas pocas, así que se
 /// nombran directamente.
 String mensajeDeError(Object error) {
-  if (error is ApiException) return error.mensaje;
+  if (error is ApiException) {
+    // Una solicitud que va en un pedido con QR no se resuelve sola. El backend
+    // lo explica, pero en términos del modelo; esto dice qué hacer.
+    if (error.codigo == 'EN_PEDIDO') {
+      return 'Esta herramienta va en un pedido con QR: se entrega o se '
+          'cancela el pedido completo.';
+    }
+    return error.mensaje;
+  }
 
   if (error is DioException) {
     return switch (error.type) {

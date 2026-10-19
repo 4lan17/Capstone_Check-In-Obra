@@ -7,6 +7,7 @@ import '../../data/api/dominio_api.dart';
 import '../../data/modelos/herramienta.dart';
 import '../../data/modelos/material.dart';
 import '../../data/modelos/pedido_especial.dart';
+import '../../data/modelos/pedido_herramienta.dart';
 import '../../data/modelos/perfil_trabajador.dart';
 import '../../data/modelos/solicitud.dart';
 import '../auth/sesion_controller.dart';
@@ -81,6 +82,7 @@ class MiSolicitud {
     this.entregado,
     this.entregaParcial = false,
     this.esHerramientaEspecial = false,
+    this.pedidoId,
   });
 
   factory MiSolicitud.deMaterial(
@@ -119,6 +121,7 @@ class MiSolicitud {
     entregado: const {'APROBADA', 'ENTREGADA'}.contains(s.estado)
         ? (s.cantidad == 1 ? '1 unidad' : '${s.cantidad} unidades')
         : null,
+    pedidoId: s.pedidoId,
   );
 
   factory MiSolicitud.dePedido(PedidoEspecial p) => MiSolicitud(
@@ -167,6 +170,10 @@ class MiSolicitud {
   final bool entregaParcial;
   final bool esHerramientaEspecial;
 
+  /// El pedido con QR del que forma parte, si es una herramienta pedida junto
+  /// con otras.
+  final int? pedidoId;
+
   bool get esEspecial => origen == OrigenSolicitud.especial;
 
   bool get esHerramienta =>
@@ -181,9 +188,13 @@ class MiSolicitud {
   bool get pendiente => enEspera;
 
   /// Todavía la puede retirar: nadie la atendió ni la consiguió.
+  ///
+  /// Una herramienta de un pedido con QR no se retira sola: se cancela el
+  /// pedido entero desde su QR. Si no, el código que muestra en bodega
+  /// cubriría un pedido a medias.
   bool get cancelable => esEspecial
       ? estado == 'PENDIENTE' || estado == 'EN_GESTION'
-      : estado == estadoPendiente;
+      : estado == estadoPendiente && pedidoId == null;
 
   /// Bodega ya se la pasó y falta que él confirme que la recibió.
   bool get porConfirmar =>
@@ -256,10 +267,32 @@ final herramientasParaPedirProvider = FutureProvider<List<Herramienta>>((
   return todas..sort((a, b) => a.nombre.compareTo(b.nombre));
 });
 
+/// Sus pedidos de varias herramientas con QR.
+///
+/// Van aparte de `misSolicitudesProvider`: cada herramienta del pedido ya
+/// aparece ahí como su propia solicitud, y lo que agrega el pedido es el
+/// código para retirarlas. Si este endpoint falla, la lista de solicitudes no
+/// tiene por qué quedar en error.
+final misPedidosHerramientaProvider = FutureProvider<List<PedidoHerramienta>>(
+  (ref) => ref.watch(pedidosHerramientaApiProvider).mios(),
+);
+
+/// Los que esperan retiro: son los que tienen un QR que mostrar en bodega.
+final pedidosPorRetirarProvider = Provider<List<PedidoHerramienta>>(
+  (ref) =>
+      ref
+          .watch(misPedidosHerramientaProvider)
+          .valueOrNull
+          ?.where((p) => p.pendiente)
+          .toList() ??
+      const [],
+);
+
 /// Recarga lo del trabajador tras pedir algo: cambian sus pendientes y, si
 /// era herramienta, lo que queda disponible.
 void recargarTrabajador(WidgetRef ref) {
   ref.invalidate(misSolicitudesProvider);
+  ref.invalidate(misPedidosHerramientaProvider);
   ref.invalidate(misPrestamosProvider);
   ref.invalidate(herramientasParaPedirProvider);
 }

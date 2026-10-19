@@ -34,7 +34,7 @@ class PantallaSolicitudesObra extends ConsumerWidget {
         title: const Text('Solicitudes pendientes'),
         actions: [
           IconButton(
-            tooltip: 'Escanear la credencial de un trabajador',
+            tooltip: 'Escanear la credencial o el pedido de un trabajador',
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
