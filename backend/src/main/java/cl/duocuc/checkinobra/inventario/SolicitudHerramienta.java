@@ -83,6 +83,14 @@ public class SolicitudHerramienta implements PerteneceAEmpresa {
     private Usuario resueltoPor;
 
     /**
+     * El pedido con QR que la trajo. Nulo si se pidió sola, o antes de V10.
+     * LAZY porque la respuesta solo lleva su id, que el proxy ya conoce.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pedido_id")
+    private PedidoHerramientas pedido;
+
+    /**
      * SolicitudHerramienta.aprobar(): PrestamoHerramienta del diagrama.
      * Transición pura de estado; el PrestamoHerramienta lo construye y
      * persiste el servicio inmediatamente después.

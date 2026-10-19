@@ -62,10 +62,17 @@ public class SolicitudHerramientaService {
                     "Cada solicitud es por una herramienta: cada una tiene su propio código QR");
         }
         String paraQue = Texto.obligatorio(descripcion, "Para qué la necesitas", 3, 300);
+        Trabajador trabajador = trabajadorQuePide(usuarioId);
+        return solicitudHerramientaRepository.save(nueva(trabajador, herramientaId, paraQue));
+    }
+
+    /**
+     * Quien pide, bloqueado para que dos solicitudes simultáneas del mismo
+     * trabajador —con claves de idempotencia distintas— no pasen las dos el
+     * control de duplicado. También lo usa el pedido con QR.
+     */
+    Trabajador trabajadorQuePide(Long usuarioId) {
         Trabajador trabajador = trabajadorService.obtenerPorUsuario(usuarioId);
-        // Bloqueado para que dos solicitudes simultáneas del mismo trabajador
-        // —con claves de idempotencia distintas— no pasen las dos el control de
-        // duplicado.
         entityManager.refresh(trabajador, LockModeType.PESSIMISTIC_WRITE);
 
         // Sin cuadrilla, al aprobar no habría obra a la cual cargar el préstamo.
@@ -74,7 +81,14 @@ public class SolicitudHerramientaService {
             throw new ConflictoException(ConflictoException.OBRA_CERRADA,
                     "La obra " + obra.getNombre() + " está cerrada: ya no se prestan herramientas");
         }
+        return trabajador;
+    }
 
+    /**
+     * La solicitud armada y validada, sin guardar: la herramienta es de la
+     * empresa, está disponible y el trabajador no la tiene ya pedida.
+     */
+    SolicitudHerramienta nueva(Trabajador trabajador, Long herramientaId, String paraQue) {
         Herramienta herramienta = herramientaRepository.findById(herramientaId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
@@ -88,7 +102,7 @@ public class SolicitudHerramientaService {
                     "Ya pediste " + herramienta.getNombre() + " y tu solicitud sigue pendiente");
         }
 
-        SolicitudHerramienta solicitud = SolicitudHerramienta.builder()
+        return SolicitudHerramienta.builder()
                 .trabajador(trabajador)
                 .herramienta(herramienta)
                 .cantidad(1)
@@ -96,7 +110,6 @@ public class SolicitudHerramientaService {
                 .estado(EstadoSolicitud.PENDIENTE)
                 .fechaSolicitud(LocalDateTime.now())
                 .build();
-        return solicitudHerramientaRepository.save(solicitud);
     }
 
     /** SolicitudHerramienta.aprobar(): PrestamoHerramienta del diagrama. */
