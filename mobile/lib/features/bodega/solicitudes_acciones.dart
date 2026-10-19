@@ -261,7 +261,16 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
               ),
             ),
           ],
-          if (solicitud.pendiente) ...[
+          // La que va en un pedido con QR se entrega junto con las demás al
+          // escanear el código: aprobarla o rechazarla sola da 409 EN_PEDIDO.
+          if (solicitud.pendiente && solicitud.pedidoId != null) ...[
+            const SizedBox(height: 8),
+            const _Aviso(
+              mensaje:
+                  'Va en un pedido con QR. Se entrega junto con las demás '
+                  'cuando el trabajador muestre el código en el mesón.',
+            ),
+          ] else if (solicitud.pendiente) ...[
             const SizedBox(height: 12),
             _Acciones(
               alAprobar: () => aprobarHerramienta(context, solicitud),
@@ -498,36 +507,6 @@ class _HojaAprobarHerramientaState
   String? _error;
   final _intento = IntentoIdempotente();
 
-  Future<void> _elegirFecha() async {
-    final ahora = DateTime.now();
-    final fecha = await showDatePicker(
-      context: context,
-      initialDate: _devolucion,
-      firstDate: DateTime(ahora.year, ahora.month, ahora.day),
-      lastDate: ahora.add(const Duration(days: 90)),
-      helpText: 'Devolución esperada',
-    );
-    if (fecha == null || !mounted) return;
-
-    final hora = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_devolucion),
-      helpText: 'Hora de devolución',
-    );
-    if (!mounted) return;
-
-    setState(() {
-      _devolucion = DateTime(
-        fecha.year,
-        fecha.month,
-        fecha.day,
-        hora?.hour ?? 18,
-        hora?.minute ?? 0,
-      );
-      _error = null;
-    });
-  }
-
   Future<void> _aprobar() async {
     if (_enviando) return;
     final sesion = ref.read(sesionProvider).valueOrNull;
@@ -598,41 +577,13 @@ class _HojaAprobarHerramientaState
           style: const TextStyle(fontSize: 12.5, color: AppColors.secondary),
         ),
         const SizedBox(height: 18),
-        CampoConEtiqueta(
-          etiqueta: 'Devolución esperada',
-          campo: PanelTocable(
-            semanticLabel:
-                'Devolución esperada ${Formato.fechaHora(_devolucion)}. '
-                'Tocar para cambiar',
-            onTap: _enviando ? null : _elegirFecha,
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.event_outlined,
-                  size: 22,
-                  color: AppColors.secondary,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    Formato.fechaHora(_devolucion),
-                    style: const TextStyle(
-                      fontFamily: AppTheme.monoFamily,
-                      fontSize: 14,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const Text(
-                  'Cambiar',
-                  style: TextStyle(fontSize: 12.5, color: AppColors.accentFill),
-                ),
-              ],
-            ),
-          ),
-          ayuda:
-              'Pasada esta hora la herramienta aparece como vencida y se genera '
-              'una alerta.',
+        CampoDevolucion(
+          valor: _devolucion,
+          habilitado: !_enviando,
+          alCambiar: (d) => setState(() {
+            _devolucion = d;
+            _error = null;
+          }),
         ),
         if (_error != null) ...[
           const SizedBox(height: 14),
@@ -764,6 +715,92 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
           color: AppColors.destructiveDark,
         ),
       ],
+    );
+  }
+}
+
+/// La devolución esperada de un préstamo, con su selector de fecha y hora.
+///
+/// La usan aprobar una solicitud y entregar un pedido por QR: las dos crean
+/// préstamos y la fecha se elige igual.
+class CampoDevolucion extends StatelessWidget {
+  const CampoDevolucion({
+    super.key,
+    required this.valor,
+    required this.alCambiar,
+    this.habilitado = true,
+  });
+
+  final DateTime valor;
+  final ValueChanged<DateTime> alCambiar;
+  final bool habilitado;
+
+  Future<void> _elegir(BuildContext context) async {
+    final ahora = DateTime.now();
+    final fecha = await showDatePicker(
+      context: context,
+      initialDate: valor,
+      firstDate: DateTime(ahora.year, ahora.month, ahora.day),
+      lastDate: ahora.add(const Duration(days: 90)),
+      helpText: 'Devolución esperada',
+    );
+    if (fecha == null || !context.mounted) return;
+
+    final hora = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(valor),
+      helpText: 'Hora de devolución',
+    );
+    if (!context.mounted) return;
+
+    alCambiar(
+      DateTime(
+        fecha.year,
+        fecha.month,
+        fecha.day,
+        hora?.hour ?? 18,
+        hora?.minute ?? 0,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CampoConEtiqueta(
+      etiqueta: 'Devolución esperada',
+      campo: PanelTocable(
+        semanticLabel:
+            'Devolución esperada ${Formato.fechaHora(valor)}. '
+            'Tocar para cambiar',
+        onTap: habilitado ? () => _elegir(context) : null,
+        child: Row(
+          children: [
+            const Icon(
+              Icons.event_outlined,
+              size: 22,
+              color: AppColors.secondary,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                Formato.fechaHora(valor),
+                style: const TextStyle(
+                  fontFamily: AppTheme.monoFamily,
+                  fontSize: 14,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const Text(
+              'Cambiar',
+              style: TextStyle(fontSize: 12.5, color: AppColors.accentFill),
+            ),
+          ],
+        ),
+      ),
+      ayuda:
+          'Pasada esta hora la herramienta aparece como vencida y se genera '
+          'una alerta.',
     );
   }
 }

@@ -9,6 +9,7 @@ import '../../data/modelos/perfil_trabajador.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
 import 'filas_trabajador.dart';
+import 'pantalla_pedido_qr.dart';
 import 'pantalla_pedir.dart';
 import 'trabajador_providers.dart';
 
@@ -28,6 +29,7 @@ class PantallaInicioTrabajador extends ConsumerWidget {
     final pendientes = ref.watch(misPendientesProvider);
     final porConfirmar = ref.watch(porConfirmarProvider);
     final novedades = ref.watch(misSolicitudesProvider).whenData(_novedades);
+    final porRetirar = ref.watch(pedidosPorRetirarProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -49,6 +51,12 @@ class PantallaInicioTrabajador extends ConsumerWidget {
               fila: (s) => FilaMiSolicitud(solicitud: s),
             ),
             const SizedBox(height: AppEspacio.lg),
+          ],
+          // Lo que ya pidió con QR y tiene que ir a buscar: el código tiene
+          // que estar a un toque al llegar al mesón.
+          for (final pedido in porRetirar) ...[
+            TarjetaPedidoPorRetirar(pedido: pedido),
+            const SizedBox(height: AppEspacio.md),
           ],
           _Obra(perfil: perfil),
           const SizedBox(height: AppEspacio.md),

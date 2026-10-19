@@ -5,6 +5,7 @@ import '../../core/theme/app_forma.dart';
 import '../../data/modelos/herramienta.dart';
 import '../../shared_widgets/estados.dart';
 import 'filas_trabajador.dart';
+import 'pantalla_pedido_qr.dart';
 import 'trabajador_providers.dart';
 
 /// Todo lo que pidió y todas las herramientas que tuvo. Sirve para responder
@@ -25,6 +26,7 @@ class _PantallaHistorialTrabajadorState
   Widget build(BuildContext context) {
     final solicitudes = ref.watch(misSolicitudesProvider);
     final prestamos = ref.watch(misPrestamosProvider);
+    final porRetirar = ref.watch(pedidosPorRetirarProvider);
 
     return Column(
       children: [
@@ -87,6 +89,10 @@ class _PantallaHistorialTrabajadorState
                       padding: AppEspacio.pantalla,
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
+                        for (final pedido in porRetirar) ...[
+                          TarjetaPedidoPorRetirar(pedido: pedido),
+                          const SizedBox(height: AppEspacio.sm),
+                        ],
                         for (final s in lista) ...[
                           FilaMiSolicitud(solicitud: s),
                           const SizedBox(height: AppEspacio.sm),

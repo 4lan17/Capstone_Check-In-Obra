@@ -117,6 +117,7 @@ class SolicitudHerramienta {
     required this.resueltoPorNombre,
     this.descripcion,
     this.fechaRecepcion,
+    this.pedidoId,
   });
 
   final int id;
@@ -137,6 +138,9 @@ class SolicitudHerramienta {
 
   /// Cuándo el trabajador confirmó que lo recibió. Nula hasta entonces.
   final DateTime? fechaRecepcion;
+
+  /// El pedido con QR que la trajo. Nulo si se pidió sola.
+  final int? pedidoId;
 
   bool get pendiente => estado == estadoPendiente;
 
@@ -160,5 +164,6 @@ class SolicitudHerramienta {
         resueltoPorNombre: j['resueltoPorNombre'] as String?,
         descripcion: j['descripcion'] as String?,
         fechaRecepcion: _fecha(j['fechaRecepcion']),
+        pedidoId: j['pedidoId'] as int?,
       );
 }
