@@ -62,10 +62,17 @@ public class SolicitudHerramientaService {
                     "Cada solicitud es por una herramienta: cada una tiene su propio código QR");
         }
         String paraQue = Texto.obligatorio(descripcion, "Para qué la necesitas", 3, 300);
+        Trabajador trabajador = trabajadorQuePide(usuarioId);
+        return solicitudHerramientaRepository.save(nueva(trabajador, herramientaId, paraQue));
+    }
+
+    /**
+     * Quien pide, bloqueado para que dos solicitudes simultáneas del mismo
+     * trabajador —con claves de idempotencia distintas— no pasen las dos el
+     * control de duplicado. También lo usa el pedido con QR.
+     */
+    Trabajador trabajadorQuePide(Long usuarioId) {
         Trabajador trabajador = trabajadorService.obtenerPorUsuario(usuarioId);
-        // Bloqueado para que dos solicitudes simultáneas del mismo trabajador
-        // —con claves de idempotencia distintas— no pasen las dos el control de
-        // duplicado.
         entityManager.refresh(trabajador, LockModeType.PESSIMISTIC_WRITE);
 
         // Sin cuadrilla, al aprobar no habría obra a la cual cargar el préstamo.
@@ -74,7 +81,14 @@ public class SolicitudHerramientaService {
             throw new ConflictoException(ConflictoException.OBRA_CERRADA,
                     "La obra " + obra.getNombre() + " está cerrada: ya no se prestan herramientas");
         }
+        return trabajador;
+    }
 
+    /**
+     * La solicitud armada y validada, sin guardar: la herramienta es de la
+     * empresa, está disponible y el trabajador no la tiene ya pedida.
+     */
+    SolicitudHerramienta nueva(Trabajador trabajador, Long herramientaId, String paraQue) {
         Herramienta herramienta = herramientaRepository.findById(herramientaId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Herramienta no encontrada: " + herramientaId));
@@ -88,7 +102,7 @@ public class SolicitudHerramientaService {
                     "Ya pediste " + herramienta.getNombre() + " y tu solicitud sigue pendiente");
         }
 
-        SolicitudHerramienta solicitud = SolicitudHerramienta.builder()
+        return SolicitudHerramienta.builder()
                 .trabajador(trabajador)
                 .herramienta(herramienta)
                 .cantidad(1)
@@ -96,12 +110,11 @@ public class SolicitudHerramientaService {
                 .estado(EstadoSolicitud.PENDIENTE)
                 .fechaSolicitud(LocalDateTime.now())
                 .build();
-        return solicitudHerramientaRepository.save(solicitud);
     }
 
     /** SolicitudHerramienta.aprobar(): PrestamoHerramienta del diagrama. */
     public PrestamoHerramienta aprobar(Long solicitudId, Long aprobadorId, LocalDateTime fechaDevolEsperada) {
-        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        SolicitudHerramienta solicitud = bloquearSuelta(solicitudId);
         Usuario aprobador = usuarioRepository.findById(aprobadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
@@ -120,7 +133,7 @@ public class SolicitudHerramientaService {
 
     /** SolicitudHerramienta.rechazar() del diagrama. */
     public SolicitudHerramienta rechazar(Long solicitudId, Long rechazadorId, String motivo) {
-        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        SolicitudHerramienta solicitud = bloquearSuelta(solicitudId);
         Usuario rechazador = usuarioRepository.findById(rechazadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + rechazadorId));
@@ -131,7 +144,7 @@ public class SolicitudHerramientaService {
     /** El trabajador retira su propia solicitud mientras sigue pendiente. */
     public SolicitudHerramienta cancelar(Long solicitudId) {
         // obtener() ya exige que sea suya cuando quien llama es trabajador.
-        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        SolicitudHerramienta solicitud = bloquearSuelta(solicitudId);
         solicitud.cancelar();
         return solicitudHerramientaRepository.save(solicitud);
     }
@@ -153,6 +166,20 @@ public class SolicitudHerramientaService {
     private SolicitudHerramienta bloquear(Long solicitudId) {
         var solicitud = obtener(solicitudId);
         entityManager.refresh(solicitud, LockModeType.PESSIMISTIC_WRITE);
+        return solicitud;
+    }
+
+    /**
+     * Aprobar, rechazar o cancelar una por una es solo para las sueltas. Una
+     * que va en un pedido con QR se resuelve con el pedido: si no, el QR
+     * quedaría prometiendo herramientas que ya no entrega.
+     */
+    private SolicitudHerramienta bloquearSuelta(Long solicitudId) {
+        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        if (solicitud.getPedido() != null) {
+            throw new ConflictoException(ConflictoException.EN_PEDIDO,
+                    "Esta solicitud es parte de un pedido con QR: se entrega o se cancela el pedido completo");
+        }
         return solicitud;
     }
 

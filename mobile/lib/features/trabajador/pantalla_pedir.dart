@@ -8,9 +8,11 @@ import '../../core/network/idempotencia.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_forma.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/api/auth_api.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/herramienta.dart';
 import '../../data/modelos/material.dart';
+import '../../data/modelos/pedido_herramienta.dart';
 import '../../data/modelos/perfil_trabajador.dart';
 import '../../shared_widgets/campo_texto.dart';
 import '../../shared_widgets/estados.dart';
@@ -19,6 +21,7 @@ import '../../shared_widgets/presion.dart';
 import '../admin/pantalla_materiales.dart' show categorias;
 import '../bodega/pantalla_bodega.dart';
 import 'pantalla_pedido_especial.dart';
+import 'pantalla_pedido_qr.dart';
 import 'trabajador_providers.dart';
 
 /// Buscador compartido por las dos pantallas de pedir. En obra se busca por
@@ -481,12 +484,19 @@ class _HojaMaterialState extends ConsumerState<_HojaMaterial> {
 
 // --- Herramienta ---------------------------------------------------------------
 
-/// Pedir una herramienta.
+/// Pedir herramientas, varias de una vez.
 ///
 /// Se muestran agrupadas por nombre con cuántas quedan —"Taladro percutor ·
 /// quedan 3"— y no una fila por QR: al trabajador le da lo mismo cuál de los
-/// tres taladros le toque. Se pide la primera disponible del grupo. Si no
-/// queda ninguna, la fila sigue ahí y ofrece pedir que la consigan.
+/// tres taladros le toque. Marcar un grupo elige la primera unidad disponible.
+///
+/// Lo marcado sale en un solo pedido y la app le da un QR para retirarlo: el
+/// bodeguero lo escanea y entrega todo junto, en vez de aprobar una solicitud
+/// por herramienta con el trabajador esperando en el mesón.
+///
+/// Si no queda ninguna, la fila no se puede marcar: sigue ahí y ofrece pedir
+/// que la consigan. Las que ya tiene pedidas tampoco, para no pedirlas dos
+/// veces sin darse cuenta.
 class PantallaPedirHerramienta extends ConsumerStatefulWidget {
   const PantallaPedirHerramienta({super.key});
 
@@ -499,6 +509,14 @@ class _PantallaPedirHerramientaState
     extends ConsumerState<PantallaPedirHerramienta> {
   final _busqueda = TextEditingController();
 
+  /// El "para qué" vive acá y no en la hoja: si el pedido choca con otro que
+  /// se llevó una herramienta, la hoja se cierra y lo escrito no se pierde.
+  final _paraQue = TextEditingController();
+
+  /// Los grupos marcados, por nombre. Se guarda el grupo y no la unidad: la
+  /// unidad se elige al enviar, con la lista recién cargada.
+  final _marcados = <String>{};
+
   @override
   void initState() {
     super.initState();
@@ -508,6 +526,7 @@ class _PantallaPedirHerramientaState
   @override
   void dispose() {
     _busqueda.dispose();
+    _paraQue.dispose();
     super.dispose();
   }
 
@@ -523,18 +542,55 @@ class _PantallaPedirHerramientaState
     );
   }
 
-  Future<void> _pedir(List<Herramienta> grupo) async {
-    final disponible = grupo.where((h) => h.disponible).firstOrNull;
-    if (disponible == null) {
-      _pedidoEspecial(herramienta: grupo.first);
-      return;
+  static Map<String, List<Herramienta>> _agrupar(Iterable<Herramienta> l) {
+    final grupos = <String, List<Herramienta>>{};
+    for (final h in l) {
+      grupos.putIfAbsent(h.nombre, () => []).add(h);
     }
-    final resultado = await showModalBottomSheet<_Resultado>(
+    return grupos;
+  }
+
+  /// Una unidad disponible por cada grupo marcado que todavía se puede pedir.
+  ///
+  /// Tras recargar la lista, un grupo marcado puede haber quedado sin unidades
+  /// o con una solicitud propia: deja de contar sin que haya que desmarcarlo.
+  List<Herramienta> _elegidas(
+    Map<String, List<Herramienta>> grupos,
+    Set<String> yaPedidas,
+  ) => [
+    for (final nombre in _marcados)
+      if (!yaPedidas.contains(nombre))
+        ?grupos[nombre]?.where((h) => h.disponible).firstOrNull,
+  ];
+
+  Future<void> _solicitar(List<Herramienta> elegidas) async {
+    if (elegidas.isEmpty) return;
+    final salida = await showModalBottomSheet<_SalidaPedido>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _HojaHerramienta(herramienta: disponible),
+      builder: (_) =>
+          _HojaPedidoHerramientas(elegidas: elegidas, paraQue: _paraQue),
     );
-    if (resultado == _Resultado.pedido && mounted) Navigator.of(context).pop();
+    if (!mounted || salida == null) return;
+    switch (salida) {
+      case _PedidoCreado(:final pedido):
+        // Reemplaza en vez de apilar: al volver del QR, el trabajador quiere
+        // Inicio, no la lista de la que ya pidió.
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => PantallaPedidoQr(pedido: pedido),
+          ),
+        );
+      case _PedidoEnConflicto(:final mensaje):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${mensaje.trim().replaceFirst(RegExp(r'\.$'), '')}. No se '
+              'pidió ninguna: revisa lo marcado y vuelve a pedir.',
+            ),
+          ),
+        );
+    }
   }
 
   @override
@@ -546,12 +602,17 @@ class _PantallaPedirHerramientaState
               const <MiSolicitud>[])
         if (s.esHerramienta) s.nombre,
     };
+    final elegidas = _elegidas(
+      _agrupar(herramientas.valueOrNull ?? const []),
+      yaPedidas,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Pedir herramienta')),
-      bottomNavigationBar: _PideloIgual(
-        texto: 'Pedir una que no hay',
-        onTap: _pedidoEspecial,
+      bottomNavigationBar: _BarraSolicitar(
+        cantidad: elegidas.length,
+        alSolicitar: () => _solicitar(elegidas),
+        alPedirEspecial: _pedidoEspecial,
       ),
       body: Column(
         children: [
@@ -584,13 +645,13 @@ class _PantallaPedirHerramientaState
                   ),
                 ),
                 constructor: (lista) {
-                  final grupos = <String, List<Herramienta>>{};
-                  for (final h in lista) {
-                    if (_coincide(h.nombre, _busqueda.text) ||
-                        _coincide(h.categoria, _busqueda.text)) {
-                      grupos.putIfAbsent(h.nombre, () => []).add(h);
-                    }
-                  }
+                  final grupos = _agrupar(
+                    lista.where(
+                      (h) =>
+                          _coincide(h.nombre, _busqueda.text) ||
+                          _coincide(h.categoria, _busqueda.text),
+                    ),
+                  );
                   if (grupos.isEmpty) {
                     return Vacio(
                       icono: Icons.search_off,
@@ -612,7 +673,12 @@ class _PantallaPedirHerramientaState
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
                       for (final e in orden) ...[
-                        _filaDeGrupo(e.key, e.value, yaPedidas),
+                        _filaDeGrupo(
+                          e.key,
+                          e.value,
+                          yaPedidas,
+                          elegidas: elegidas.length,
+                        ),
                         const SizedBox(height: AppEspacio.sm),
                       ],
                     ],
@@ -626,80 +692,177 @@ class _PantallaPedirHerramientaState
     );
   }
 
+  void _alternar(String nombre, {required int elegidas}) {
+    if (_marcados.remove(nombre)) {
+      setState(() {});
+      return;
+    }
+    if (elegidas >= PedidoHerramienta.maximoHerramientas) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Hasta ${PedidoHerramienta.maximoHerramientas} herramientas por '
+              'pedido. Pide estas primero y después el resto.',
+            ),
+          ),
+        );
+      return;
+    }
+    setState(() => _marcados.add(nombre));
+  }
+
   Widget _filaDeGrupo(
     String nombre,
     List<Herramienta> grupo,
-    Set<String> yaPedidas,
-  ) {
+    Set<String> yaPedidas, {
+    required int elegidas,
+  }) {
     final quedan = grupo.where((h) => h.disponible).length;
-    return _FilaElegible(
+    final yaPedida = yaPedidas.contains(nombre);
+    return _FilaHerramientaMarcable(
       titulo: nombre,
       detalle: quedan == 0
           ? '${grupo.first.categoria} · ninguna en bodega'
           : '${grupo.first.categoria} · '
                 '${quedan == 1 ? 'queda 1' : 'quedan $quedan'}',
-      yaPedido: yaPedidas.contains(nombre),
+      yaPedida: yaPedida,
       agotada: quedan == 0,
-      onTap: () => _pedir(grupo),
+      marcada: !yaPedida && quedan > 0 && _marcados.contains(nombre),
+      onTap: quedan == 0
+          ? () => _pedidoEspecial(herramienta: grupo.first)
+          : yaPedida
+          ? null
+          : () => _alternar(nombre, elegidas: elegidas),
     );
   }
 }
 
-class _HojaHerramienta extends ConsumerStatefulWidget {
-  const _HojaHerramienta({required this.herramienta});
-
-  final Herramienta herramienta;
-
-  @override
-  ConsumerState<_HojaHerramienta> createState() => _HojaHerramientaState();
+/// Cómo terminó la hoja del pedido.
+sealed class _SalidaPedido {
+  const _SalidaPedido();
 }
 
-class _HojaHerramientaState extends ConsumerState<_HojaHerramienta> {
-  final _paraQue = TextEditingController();
+class _PedidoCreado extends _SalidaPedido {
+  const _PedidoCreado(this.pedido);
+
+  final PedidoHerramienta pedido;
+}
+
+/// El backend lo rechazó entero —es todo o nada— porque algo de lo marcado
+/// ya no estaba disponible.
+class _PedidoEnConflicto extends _SalidaPedido {
+  const _PedidoEnConflicto(this.mensaje);
+
+  final String mensaje;
+}
+
+/// Pie fijo de la lista: el envío de lo marcado y, aparte, el pedido especial.
+class _BarraSolicitar extends StatelessWidget {
+  const _BarraSolicitar({
+    required this.cantidad,
+    required this.alSolicitar,
+    required this.alPedirEspecial,
+  });
+
+  final int cantidad;
+  final VoidCallback alSolicitar;
+  final VoidCallback alPedirEspecial;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: AppColors.card,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton.icon(
+                onPressed: cantidad == 0 ? null : alSolicitar,
+                icon: const Icon(Icons.qr_code_2, size: 20),
+                label: Text('Solicitar ($cantidad)'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: alPedirEspecial,
+                icon: const Icon(Icons.add_shopping_cart_outlined, size: 18),
+                label: const Text('Pedir una que no hay'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size.fromHeight(44),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HojaPedidoHerramientas extends ConsumerStatefulWidget {
+  const _HojaPedidoHerramientas({
+    required this.elegidas,
+    required this.paraQue,
+  });
+
+  final List<Herramienta> elegidas;
+  final TextEditingController paraQue;
+
+  @override
+  ConsumerState<_HojaPedidoHerramientas> createState() =>
+      _HojaPedidoHerramientasState();
+}
+
+class _HojaPedidoHerramientasState
+    extends ConsumerState<_HojaPedidoHerramientas> {
   final _formKey = GlobalKey<FormState>();
   bool _enviando = false;
   String? _error;
   final _intento = IntentoIdempotente();
 
-  @override
-  void dispose() {
-    _paraQue.dispose();
-    super.dispose();
-  }
-
   Future<void> _enviar() async {
     if (_enviando) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
-    final h = widget.herramienta;
-    final paraQue = _paraQue.text.trim();
+    final ids = widget.elegidas.map((h) => h.id).toList()..sort();
+    final paraQue = widget.paraQue.text.trim();
     setState(() {
       _enviando = true;
       _error = null;
     });
     try {
-      await ref
-          .read(solicitudesApiProvider)
-          .pedirHerramienta(
-            herramientaId: h.id,
+      final pedido = await ref
+          .read(pedidosHerramientaApiProvider)
+          .crear(
+            herramientaIds: ids,
             descripcion: paraQue,
-            clave: _intento.clavePara([h.id, paraQue]),
+            clave: _intento.clavePara([...ids, paraQue]),
           );
       recargarTrabajador(ref);
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Pediste ${h.nombre}. Retírala en bodega con tu credencial.',
-          ),
-        ),
-      );
-      Navigator.of(context).pop(_Resultado.pedido);
+      Navigator.of(context).pop(_PedidoCreado(pedido));
+    } on ApiException catch (e) {
+      if (e.statusCode == 409) {
+        // Otra persona se llevó alguna mientras se miraba la lista. El pedido
+        // es todo o nada, así que no quedó ninguna pedida: se recarga y se
+        // vuelve a la lista para que se vea qué cambió.
+        recargarTrabajador(ref);
+        if (mounted) Navigator.of(context).pop(_PedidoEnConflicto(e.mensaje));
+        return;
+      }
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } catch (e) {
-      // Otra persona pudo llevársela mientras se miraba la lista: se refresca
-      // para que deje de ofrecerse como disponible.
-      recargarTrabajador(ref);
       if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
@@ -708,7 +871,7 @@ class _HojaHerramientaState extends ConsumerState<_HojaHerramienta> {
 
   @override
   Widget build(BuildContext context) {
-    final h = widget.herramienta;
+    final n = widget.elegidas.length;
     return _Hoja(
       enviando: _enviando,
       child: Form(
@@ -717,17 +880,42 @@ class _HojaHerramientaState extends ConsumerState<_HojaHerramienta> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(h.nombre, style: AppTexto.subtitulo),
-            Text('${h.categoria} · ${h.codigoQr}', style: AppTexto.dato),
+            Text(
+              n == 1 ? 'Pedir 1 herramienta' : 'Pedir $n herramientas',
+              style: AppTexto.subtitulo,
+            ),
+            const SizedBox(height: AppEspacio.sm),
+            for (final h in widget.elegidas)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.check,
+                      size: 18,
+                      color: AppColors.accentFill,
+                    ),
+                    const SizedBox(width: AppEspacio.sm),
+                    Expanded(
+                      child: Text(
+                        h.nombre,
+                        style: AppTexto.cuerpo.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 8),
             Text(
-              'Bodega te dirá la fecha de devolución al entregártela. '
-              'Mientras la tengas, queda a tu nombre.',
+              'Te daremos un código QR. Muéstralo en bodega y te las '
+              'entregan todas juntas, con su fecha de devolución.',
               style: AppTexto.cuerpoChico,
             ),
             const SizedBox(height: 16),
             CampoParaQue(
-              controlador: _paraQue,
+              controlador: widget.paraQue,
               habilitado: !_enviando,
               hint: 'Ej.: perforar losa del 5º piso para la tabiquería',
             ),
@@ -737,11 +925,96 @@ class _HojaHerramientaState extends ConsumerState<_HojaHerramienta> {
             ],
             const SizedBox(height: 12),
             BotonEnvio(
-              texto: 'Solicitar herramienta',
+              texto: 'Pedir y generar QR',
               textoEnviando: 'Enviando…',
               enviando: _enviando,
               alPresionar: _enviar,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Una herramienta (un grupo del mismo nombre) que se marca para el pedido.
+class _FilaHerramientaMarcable extends StatelessWidget {
+  const _FilaHerramientaMarcable({
+    required this.titulo,
+    required this.detalle,
+    required this.yaPedida,
+    required this.agotada,
+    required this.marcada,
+    required this.onTap,
+  });
+
+  final String titulo;
+  final String detalle;
+  final bool yaPedida;
+
+  /// No queda en bodega: tocarla abre el pedido especial y no se marca.
+  final bool agotada;
+  final bool marcada;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final apagada = agotada || yaPedida;
+    return Semantics(
+      checked: apagada ? null : marcada,
+      child: PanelTocable(
+        semanticLabel:
+            '$titulo. $detalle.${yaPedida ? ' Ya la pediste.' : ''} '
+            '${agotada
+                ? 'Tocar para pedir que la consigan'
+                : yaPedida
+                ? ''
+                : 'Tocar para ${marcada ? 'desmarcar' : 'marcar'}'}',
+        onTap: onTap,
+        color: marcada
+            ? AppColors.accentTint
+            : apagada
+            ? AppColors.background
+            : AppColors.card,
+        borderColor: marcada ? AppColors.accentFill : AppColors.borderControl,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: apagada ? AppColors.textMuted : AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(detalle, style: AppTexto.dato),
+                  if (yaPedida) ...[
+                    const SizedBox(height: AppEspacio.sm),
+                    ChipEstado.aviso('Ya la pediste'),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: AppEspacio.sm),
+            if (agotada)
+              Text(
+                'Pedir que\nla consigan',
+                textAlign: TextAlign.end,
+                style: AppTexto.dato.copyWith(
+                  fontSize: 11.5,
+                  color: AppColors.accentFill,
+                ),
+              )
+            else
+              Checkbox(
+                value: marcada,
+                onChanged: onTap == null ? null : (_) => onTap!(),
+              ),
           ],
         ),
       ),
@@ -783,15 +1056,11 @@ class _FilaElegible extends StatelessWidget {
     required this.detalle,
     required this.yaPedido,
     required this.onTap,
-    this.agotada = false,
   });
 
   final String titulo;
   final String detalle;
   final bool yaPedido;
-
-  /// No queda en bodega: tocarla abre el pedido especial y no la solicitud.
-  final bool agotada;
   final VoidCallback? onTap;
 
   @override
@@ -799,9 +1068,8 @@ class _FilaElegible extends StatelessWidget {
     return PanelTocable(
       semanticLabel:
           '$titulo. $detalle.${yaPedido ? ' Ya lo tienes pedido.' : ''} '
-          '${agotada ? 'Tocar para pedir que la consigan' : 'Tocar para solicitar'}',
+          'Tocar para solicitar',
       onTap: onTap,
-      color: agotada ? AppColors.background : AppColors.card,
       child: Row(
         children: [
           Expanded(
@@ -810,10 +1078,10 @@ class _FilaElegible extends StatelessWidget {
               children: [
                 Text(
                   titulo,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w600,
-                    color: agotada ? AppColors.textMuted : AppColors.primary,
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -826,31 +1094,21 @@ class _FilaElegible extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppEspacio.sm),
-          if (agotada)
-            Text(
-              'Pedir que\nla consigan',
-              textAlign: TextAlign.end,
-              style: AppTexto.dato.copyWith(
-                fontSize: 11.5,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: const BoxDecoration(
+              color: AppColors.accentTint,
+              borderRadius: AppForma.borde,
+            ),
+            child: const Text(
+              'Solicitar',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
                 color: AppColors.accentFill,
               ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: const BoxDecoration(
-                color: AppColors.accentTint,
-                borderRadius: AppForma.borde,
-              ),
-              child: const Text(
-                'Solicitar',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.accentFill,
-                ),
-              ),
             ),
+          ),
         ],
       ),
     );

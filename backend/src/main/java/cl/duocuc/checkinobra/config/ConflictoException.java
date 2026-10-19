@@ -26,6 +26,8 @@ public class ConflictoException extends IllegalStateException {
     public static final String NO_ENTREGADA = "NO_ENTREGADA";
     /** El pedido especial no puede pasar a ese estado desde el que tiene. */
     public static final String TRANSICION_INVALIDA = "TRANSICION_INVALIDA";
+    /** La solicitud es parte de un pedido con QR: se entrega o se cancela el pedido entero. */
+    public static final String EN_PEDIDO = "EN_PEDIDO";
 
     private final String codigo;
 
