@@ -8,6 +8,7 @@ probar el escaneo con el teléfono.
 | `materiales-tabiqueria-y-cielos.xlsx` | 6 materiales. Se importa con `POST /api/materiales/importar` (rol ADMIN). |
 | `herramientas-tabiqueria-y-cielos.xlsx` | 4 herramientas. Se importa con `POST /api/herramientas/importar` (rol ADMIN). |
 | `codigos-de-barra-imprimibles.html` | Una etiqueta por ítem, con su nombre y el código dibujado. Ábrela en el navegador e imprímela, o escanéala directo desde la pantalla. |
+| `demo-escaneo.html` | Para mostrar el escaneo en vivo: un código grande a la vez (flechas ← →), con el guion de la demo y lo que pasa al escanear cada ítem. También trae la grilla para imprimir. Funciona sin conexión. |
 
 Hay dos planillas porque materiales y herramientas se importan por separado.
 Cada una tiene las columnas en el orden que espera `LectorPlanilla`, que lee
