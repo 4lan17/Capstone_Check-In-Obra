@@ -86,9 +86,9 @@ public class PedidoHerramientas implements PerteneceAEmpresa {
     }
 
     /**
-     * Bodega escaneó el QR: se aprueba cada solicitud que siga pendiente. Las
-     * que se resolvieron sueltas —el trabajador canceló una, o bodega la aprobó
-     * desde la cola— no se tocan.
+     * Bodega escaneó el QR: se aprueba cada solicitud que siga pendiente. Hoy
+     * son todas, porque la API no deja resolver sueltas las de un pedido
+     * ({@code EN_PEDIDO}); el filtro queda por si una ya venía resuelta.
      *
      * @return las recién aprobadas, a las que el servicio les crea el préstamo
      */

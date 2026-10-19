@@ -271,22 +271,27 @@ class PedidoHerramientasConQrTest {
     }
 
     @Test
-    void unaQueSeResolvioSueltaNoSePrestaDosVeces() throws Exception {
+    void unaSolicitudDelPedidoNoSeResuelveSuelta() throws Exception {
         String qr = crearPedido(taladro, atornillador);
         long taladroSolicitud = solicitudesDe(yo).stream()
                 .filter(sol -> sol.getHerramienta().getId().equals(taladro.getId()))
                 .findFirst().orElseThrow().getId();
+        String ruta = "/api/solicitudes-herramienta/" + taladroSolicitud;
 
-        // El trabajador se arrepiente del taladro desde la lista de solicitudes.
-        assertThat(put("/api/solicitudes-herramienta/" + taladroSolicitud + "/cancelar", null).statusCode())
-                .isEqualTo(200);
-
+        // Ni el trabajador desde su lista, ni bodega desde la cola: el QR
+        // quedaría prometiendo algo que ya no entrega.
+        assertThat(codigo(put(ruta + "/cancelar", null))).isEqualTo("EN_PEDIDO");
         token = jwtService.emitir(bodeguero);
+        assertThat(codigo(put(ruta + "/aprobar", devolucion()))).isEqualTo("EN_PEDIDO");
+        assertThat(codigo(put(ruta + "/rechazar", "{\"motivo\": \"En mantención\"}"))).isEqualTo("EN_PEDIDO");
+        assertThat(prestamosDe(yo)).isEmpty();
+
         JsonNode e = leer(put("/api/pedidos-herramienta/qr/" + qr + "/entregar", devolucion()));
-        assertThat(e.get("prestamos")).hasSize(1);
-        assertThat(e.get("prestamos").get(0).get("herramientaId").asLong()).isEqualTo(atornillador.getId());
-        assertThat(herramientaRepository.findById(taladro.getId()).orElseThrow().getEstado())
-                .isEqualTo(EstadoHerramienta.DISPONIBLE);
+        assertThat(e.get("prestamos")).hasSize(2);
+
+        // Ya entregado, confirmar la recepción sí es de a una.
+        token = jwtService.emitir(yo.getUsuario());
+        assertThat(put(ruta + "/confirmar-recepcion", null).statusCode()).isEqualTo(200);
     }
 
     // ---------------------------------------------------------------------

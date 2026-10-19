@@ -114,7 +114,7 @@ public class SolicitudHerramientaService {
 
     /** SolicitudHerramienta.aprobar(): PrestamoHerramienta del diagrama. */
     public PrestamoHerramienta aprobar(Long solicitudId, Long aprobadorId, LocalDateTime fechaDevolEsperada) {
-        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        SolicitudHerramienta solicitud = bloquearSuelta(solicitudId);
         Usuario aprobador = usuarioRepository.findById(aprobadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
@@ -133,7 +133,7 @@ public class SolicitudHerramientaService {
 
     /** SolicitudHerramienta.rechazar() del diagrama. */
     public SolicitudHerramienta rechazar(Long solicitudId, Long rechazadorId, String motivo) {
-        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        SolicitudHerramienta solicitud = bloquearSuelta(solicitudId);
         Usuario rechazador = usuarioRepository.findById(rechazadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + rechazadorId));
@@ -144,7 +144,7 @@ public class SolicitudHerramientaService {
     /** El trabajador retira su propia solicitud mientras sigue pendiente. */
     public SolicitudHerramienta cancelar(Long solicitudId) {
         // obtener() ya exige que sea suya cuando quien llama es trabajador.
-        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        SolicitudHerramienta solicitud = bloquearSuelta(solicitudId);
         solicitud.cancelar();
         return solicitudHerramientaRepository.save(solicitud);
     }
@@ -166,6 +166,20 @@ public class SolicitudHerramientaService {
     private SolicitudHerramienta bloquear(Long solicitudId) {
         var solicitud = obtener(solicitudId);
         entityManager.refresh(solicitud, LockModeType.PESSIMISTIC_WRITE);
+        return solicitud;
+    }
+
+    /**
+     * Aprobar, rechazar o cancelar una por una es solo para las sueltas. Una
+     * que va en un pedido con QR se resuelve con el pedido: si no, el QR
+     * quedaría prometiendo herramientas que ya no entrega.
+     */
+    private SolicitudHerramienta bloquearSuelta(Long solicitudId) {
+        SolicitudHerramienta solicitud = bloquear(solicitudId);
+        if (solicitud.getPedido() != null) {
+            throw new ConflictoException(ConflictoException.EN_PEDIDO,
+                    "Esta solicitud es parte de un pedido con QR: se entrega o se cancela el pedido completo");
+        }
         return solicitud;
     }
 
