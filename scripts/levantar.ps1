@@ -9,6 +9,10 @@ construye, que es lo que mas tarda.
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -SinCache     # reconstruye las imagenes desde cero
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -SinEmulador  # solo Docker
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -Avd NOMBRE   # otro emulador
+  powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -Telefono     # corre la app en el telefono por USB
+                                                                               # (API por adb reverse), sin emulador
+
+Con varios telefonos conectados: -Telefono -Serie <serie> (la serie sale de 'adb devices').
 
 En Linux y macOS usar scripts/levantar.sh. Compatible con Windows PowerShell 5.1.
 #>
@@ -17,7 +21,9 @@ param(
     [switch]$App,
     [switch]$SinCache,
     [switch]$SinEmulador,
-    [string]$Avd = $env:AVD
+    [string]$Avd = $env:AVD,
+    [switch]$Telefono,
+    [string]$Serie = $env:TELEFONO
 )
 
 # 'Continue' y no 'Stop': en Windows PowerShell 5.1, con 'Stop' cualquier linea
@@ -44,7 +50,14 @@ function Bien($texto) { Write-Host "  $texto" -ForegroundColor Green }
 function Mal($texto)  { Write-Host "  $texto" -ForegroundColor Red }
 function Salir($texto) { Mal $texto; exit 1 }
 
-if ($App -and $SinEmulador) {
+if ($Telefono) {
+    if ($PSBoundParameters.ContainsKey('Avd')) {
+        Salir '-Telefono no usa emulador: no se puede combinar con -Avd.'
+    }
+    # El telefono reemplaza al emulador, y la app siempre se corre en el.
+    $SinEmulador = $true
+    $App = $false
+} elseif ($App -and $SinEmulador) {
     Salir '-App necesita el emulador: no se puede combinar con -SinEmulador.'
 }
 
@@ -57,7 +70,7 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 # instalado: Android Studio no los agrega. Se buscan en las rutas de siempre.
 $Emulator = $null
 $Adb = $null
-if (-not $SinEmulador) {
+if (-not $SinEmulador -or $Telefono) {
     $candidatos = @(@($env:ANDROID_HOME, $env:ANDROID_SDK_ROOT, (Join-Path $env:LOCALAPPDATA 'Android\Sdk')) |
         Where-Object { $_ -and (Test-Path (Join-Path $_ 'emulator\emulator.exe')) })
     $comando = Get-Command emulator -ErrorAction SilentlyContinue
@@ -72,15 +85,53 @@ if (-not $SinEmulador) {
     } elseif ($candidatos) {
         $Adb = Join-Path $candidatos[0] 'platform-tools\adb.exe'
     }
-    if (-not $Emulator -or -not (Test-Path $Emulator) -or -not $Adb -or -not (Test-Path $Adb)) {
+    $faltaAdb = -not $Adb -or -not (Test-Path $Adb)
+    $faltaEmulator = (-not $SinEmulador) -and (-not $Emulator -or -not (Test-Path $Emulator))
+    if ($faltaAdb -or $faltaEmulator) {
         Mal 'No se encontro el SDK de Android (emulator.exe y adb.exe).'
         Info 'Instalalo desde Android Studio o define ANDROID_HOME.'
         Info 'Para seguir solo con Docker: scripts\levantar.ps1 -SinEmulador'
         exit 1
     }
-    if ($App -and -not (Get-Command flutter -ErrorAction SilentlyContinue)) {
-        Salir "Falta 'flutter' en el PATH."
+}
+if (($App -or $Telefono) -and -not (Get-Command flutter -ErrorAction SilentlyContinue)) {
+    Salir "Falta 'flutter' en el PATH."
+}
+
+# --- 0. telefono -----------------------------------------------------------
+# Se busca antes de tocar Docker: si el telefono no esta autorizado, mejor
+# saberlo ahora y no despues de construir la imagen.
+if ($Telefono) {
+    Paso 'Telefono'
+    & $Adb start-server 2>$null | Out-Null
+    $lineas = @(& $Adb devices 2>$null | Select-Object -Skip 1 |
+        Where-Object { $_ -and $_ -notmatch '^emulator-' })
+    $listos = @($lineas | Where-Object { $_ -match '\sdevice$' } | ForEach-Object { ($_ -split '\s+')[0] })
+    $pendientes = @($lineas | Where-Object { $_ -match '\sunauthorized$' } | ForEach-Object { ($_ -split '\s+')[0] })
+
+    if ($Serie) {
+        if ($listos -notcontains $Serie) { Salir "El telefono '$Serie' no esta conectado y autorizado." }
+    } elseif ($listos.Count -eq 0) {
+        if ($pendientes.Count -gt 0) {
+            Mal "El telefono $($pendientes[0]) esta conectado pero no autorizado."
+            Info "Desbloquealo y acepta 'Permitir depuracion USB' (marca 'Permitir siempre')."
+            Info 'Si el aviso no aparece, desconecta y vuelve a conectar el cable.'
+        } else {
+            Mal 'No hay ningun telefono conectado.'
+            Info "Conectalo por USB con la 'Depuracion USB' activada en Opciones de desarrollador."
+            Info "Debe aparecer como 'device' en: adb devices. En Windows puede faltar el driver USB del fabricante."
+        }
+        exit 1
+    } elseif ($listos.Count -gt 1) {
+        Mal 'Hay mas de un telefono conectado:'
+        $listos | ForEach-Object { Info "  $_" }
+        Info 'Elige uno: scripts\levantar.ps1 -Telefono -Serie <serie>'
+        exit 1
+    } else {
+        $Serie = $listos[0]
     }
+    $modelo = (& $Adb -s $Serie shell getprop ro.product.model 2>$null | Out-String).Trim()
+    Bien "$Serie ($modelo) conectado."
 }
 
 function EmuladorCorriendo {
@@ -193,6 +244,16 @@ if (-not $SinEmulador) {
     Bien "$Dispositivo listo."
 }
 
+# --- 4b. el telefono alcanza la API por el cable --------------------------
+# adb reverse publica el 8081 del computador como localhost:8081 del telefono:
+# no importa la WiFi ni la IP. Se pierde al desconectar el cable.
+if ($Telefono) {
+    Paso 'Conectando el telefono con la API'
+    & $Adb -s $Serie reverse tcp:8081 tcp:8081 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Salir "No se pudo hacer adb reverse en $Serie." }
+    Bien 'localhost:8081 del telefono llega a la API del computador.'
+}
+
 # La app lee la URL de la API de mobile\.env. Sin ese archivo igual arranca,
 # pero conviene que exista para que quien lo edite sepa donde esta.
 $envMovil = Join-Path $Raiz 'mobile\.env'
@@ -208,10 +269,18 @@ Info "Swagger      $Api/swagger-ui.html"
 Info 'PostgreSQL   localhost:5433  (postgres / postgres)'
 Info 'Admin        admin@arauco-ltda.cl  PIN 0000'
 if (-not $SinEmulador) { Info "Emulador     $Dispositivo" }
+if ($Telefono) { Info "Telefono     $Serie" }
 Info 'Cuentas de los cuatro roles: py scripts\cuentas_de_prueba.py'
 Info 'Bajar todo:                  docker compose down'
 
-if ($App) {
+if ($Telefono) {
+    Paso "Corriendo la app en $Serie"
+    Set-Location (Join-Path $Raiz 'mobile')
+    & flutter pub get
+    # La URL va al compilar y gana sobre mobile\.env (ver AppConfig), asi el
+    # .env de cada quien queda como esta.
+    & flutter run -d $Serie "--dart-define=API_BASE_URL=$Api"
+} elseif ($App) {
     Paso "Corriendo la app en $Dispositivo"
     Set-Location (Join-Path $Raiz 'mobile')
     & flutter pub get

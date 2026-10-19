@@ -9,7 +9,11 @@
 #   scripts/levantar.sh --sin-cache     # reconstruye las imagenes desde cero
 #   scripts/levantar.sh --sin-emulador  # solo Docker
 #   scripts/levantar.sh --avd NOMBRE    # otro emulador (por defecto Check-In-Obra_Pixel5)
+#   scripts/levantar.sh --telefono      # en vez del emulador, corre la app en el telefono
+#                                       # conectado por USB, con la API por adb reverse
 #
+# Con varios telefonos conectados: TELEFONO=<serie> scripts/levantar.sh --telefono
+# (la serie sale de 'adb devices').
 # En Windows usar scripts\levantar.ps1.
 set -euo pipefail
 
@@ -31,6 +35,8 @@ avd="${AVD:-}"
 correr_app=0
 sin_cache=0
 sin_emulador=0
+telefono=0
+serie_telefono="${TELEFONO:-}"
 
 # --- salida ---------------------------------------------------------------
 if [[ -t 1 ]]; then
@@ -54,13 +60,22 @@ while [[ $# -gt 0 ]]; do
     --app)          correr_app=1 ;;
     --sin-cache)    sin_cache=1 ;;
     --sin-emulador) sin_emulador=1 ;;
+    --telefono)     telefono=1 ;;
     --avd)          shift; avd="${1:?--avd necesita un nombre}" ;;
     -h|--help)      uso ;;
     *) printf 'Opcion desconocida: %s\n\n' "$1" >&2; uso 1 >&2 ;;
   esac
   shift
 done
-if (( correr_app && sin_emulador )); then
+if (( telefono )); then
+  if [[ -n "$avd" ]]; then
+    mal "--telefono no usa emulador: no se puede combinar con --avd."
+    exit 1
+  fi
+  # El telefono reemplaza al emulador, y la app siempre se corre en el.
+  sin_emulador=1
+  correr_app=0
+elif (( correr_app && sin_emulador )); then
   mal "--app necesita el emulador: no se puede combinar con --sin-emulador."
   exit 1
 fi
@@ -84,22 +99,72 @@ buscar_sdk() {
   return 1
 }
 
-if (( ! sin_emulador )); then
+necesarios=()
+(( ! sin_emulador )) && necesarios+=(emulator adb)
+(( telefono )) && necesarios+=(adb)
+if ((${#necesarios[@]})); then
   if ! command -v emulator >/dev/null || ! command -v adb >/dev/null; then
     if sdk="$(buscar_sdk)"; then
       PATH="$sdk/emulator:$sdk/platform-tools:$PATH"
     fi
   fi
-  for cmd in emulator adb; do
+  for cmd in "${necesarios[@]}"; do
     command -v "$cmd" >/dev/null || {
       mal "No se encontro '$cmd'. Instala el SDK de Android o define ANDROID_HOME."
       info "Para seguir solo con Docker: scripts/levantar.sh --sin-emulador"
       exit 1
     }
   done
-  if (( correr_app )); then
-    command -v flutter >/dev/null || { mal "Falta 'flutter' en el PATH."; exit 1; }
+fi
+if (( correr_app || telefono )); then
+  command -v flutter >/dev/null || { mal "Falta 'flutter' en el PATH."; exit 1; }
+fi
+
+# --- 0. telefono -----------------------------------------------------------
+# Se busca antes de tocar Docker: si el telefono no esta autorizado, mejor
+# saberlo ahora y no despues de construir la imagen.
+elegir_telefono() {
+  local lineas listos pendientes
+  lineas="$(adb devices 2>/dev/null | tail -n +2 | tr -d '\r' | grep -v '^emulator-' | grep -v '^$' || true)"
+  listos="$(awk '$2 == "device" { print $1 }' <<<"$lineas")"
+  pendientes="$(awk '$2 == "unauthorized" { print $1 }' <<<"$lineas")"
+
+  if [[ -n "$serie_telefono" ]]; then
+    if grep -qx "$serie_telefono" <<<"$listos"; then
+      return 0
+    fi
+    mal "El telefono '$serie_telefono' no esta conectado y autorizado."
+    return 1
   fi
+
+  if [[ -z "$listos" ]]; then
+    if [[ -n "$pendientes" ]]; then
+      mal "El telefono $(head -n1 <<<"$pendientes") esta conectado pero no autorizado."
+      info "Desbloquealo y acepta 'Permitir depuracion USB' (marca 'Permitir siempre')."
+      info "Si el aviso no aparece, desconecta y vuelve a conectar el cable."
+    else
+      mal "No hay ningun telefono conectado."
+      info "Conectalo por USB con la 'Depuracion USB' activada en Opciones de desarrollador."
+      info "Debe aparecer como 'device' en: adb devices"
+    fi
+    return 1
+  fi
+
+  if (( $(wc -l <<<"$listos") > 1 )); then
+    mal "Hay mas de un telefono conectado:"
+    sed 's/^/    /' <<<"$listos" >&2
+    info "Elige uno: TELEFONO=<serie> scripts/levantar.sh --telefono"
+    return 1
+  fi
+  serie_telefono="$listos"
+}
+
+if (( telefono )); then
+  paso "Telefono"
+  adb start-server >/dev/null 2>&1 || true
+  elegir_telefono || exit 1
+  modelo="$(adb -s "$serie_telefono" shell getprop ro.product.model 2>/dev/null | tr -d '\r')"
+  bien "$serie_telefono${modelo:+ ($modelo)} conectado."
 fi
 
 # --- 1. emulador (en segundo plano) ----------------------------------------
@@ -235,6 +300,18 @@ if (( ! sin_emulador )); then
   bien "$DISPOSITIVO listo."
 fi
 
+# --- 4b. el telefono alcanza la API por el cable --------------------------
+# adb reverse publica el 8081 del computador como localhost:8081 del telefono:
+# no importa la WiFi ni la IP. Se pierde al desconectar el cable.
+if (( telefono )); then
+  paso "Conectando el telefono con la API"
+  adb -s "$serie_telefono" reverse tcp:8081 tcp:8081 >/dev/null || {
+    mal "No se pudo hacer adb reverse en $serie_telefono."
+    exit 1
+  }
+  bien "localhost:8081 del telefono llega a la API del computador."
+fi
+
 # La app lee la URL de la API de mobile/.env. Sin ese archivo igual arranca,
 # pero conviene que exista para que quien lo edite sepa donde esta.
 if [[ ! -f mobile/.env ]]; then
@@ -251,10 +328,20 @@ info "Admin        admin@arauco-ltda.cl  PIN 0000"
 if (( ! sin_emulador )); then
   info "Emulador     $DISPOSITIVO"
 fi
+if (( telefono )); then
+  info "Telefono     $serie_telefono"
+fi
 info "${GRIS}Cuentas de los cuatro roles: python3 scripts/cuentas_de_prueba.py${FIN}"
 info "${GRIS}Bajar todo:                  docker compose down${FIN}"
 
-if (( correr_app )); then
+if (( telefono )); then
+  paso "Corriendo la app en $serie_telefono"
+  cd mobile
+  flutter pub get
+  # La URL va al compilar y gana sobre mobile/.env (ver AppConfig), asi el
+  # .env de cada quien queda como esta.
+  exec flutter run -d "$serie_telefono" --dart-define=API_BASE_URL="$API"
+elif (( correr_app )); then
   paso "Corriendo la app en $DISPOSITIVO"
   cd mobile
   flutter pub get

@@ -34,6 +34,34 @@ en él. En Windows: `powershell -ExecutionPolicy Bypass -File
 scripts\levantar.ps1 -App`. Sin `--app` (o `-App`) deja todo arriba sin correr
 la app; con `--avd` (o `-Avd`) usa otro emulador.
 
+### En tu teléfono
+
+1. Activa **Opciones de desarrollador**: toca 7 veces *Número de compilación*
+   (en Samsung está en *Ajustes → Acerca del teléfono → Información de
+   software*). Luego, en *Opciones de desarrollador*, activa **Depuración USB**.
+2. Conecta el cable y acepta **"¿Permitir depuración USB?"** marcando
+   *Permitir siempre desde este equipo*. `adb devices` debe mostrar el
+   teléfono como `device`, no como `unauthorized`.
+3. Desde la raíz:
+
+   ```bash
+   scripts/levantar.sh --telefono                                            # Linux y macOS
+   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -Telefono   # Windows
+   ```
+
+El script levanta Docker y hace `adb reverse tcp:8081 tcp:8081`, que publica
+la API del computador como `localhost:8081` en el teléfono. Después corre la
+app con `--dart-define=API_BASE_URL=http://localhost:8081`. No depende de la
+WiFi ni de la IP, y tu `.env` queda como está. El `reverse` se pierde al
+desconectar el cable: vuelve a correr el script. Con más de un teléfono
+conectado, elige uno con `TELEFONO=<serie> scripts/levantar.sh --telefono`
+(en Windows: `-Telefono -Serie <serie>`).
+
+A mano, sin el script: `adb reverse tcp:8081 tcp:8081` y luego
+`flutter run -d <serie> --dart-define=API_BASE_URL=http://localhost:8081`.
+Por WiFi, sin cable, deja la IP del computador en el `.env` (ver la tabla de
+arriba).
+
 ### La URL de la API (`.env`)
 
 ```
@@ -46,7 +74,9 @@ API_BASE_URL=http://10.0.2.2:8081
 | Celular físico | `http://<IP del computador en la WiFi>:8081`, por ejemplo `http://192.168.1.50:8081` |
 
 El `.env` no se versiona porque la IP cambia según la máquina y la red. Si
-falta, la app arranca igual con el valor del emulador. Va empaquetado como
+falta, la app arranca igual con el valor del emulador. Una URL pasada al
+compilar con `--dart-define=API_BASE_URL=...` tiene prioridad sobre el `.env`
+(`core/network/app_config.dart`). Va empaquetado como
 asset, así que **después de editarlo hay que reiniciar la app**: el hot reload
 no lo vuelve a leer.
 
@@ -167,9 +197,14 @@ backend arriba.
 IP del `.env` es la actual (cambia al cambiar de red); reiniciaste la app
 después de editar el `.env`.
 
-**El celular no aparece en `flutter devices`.** Activa la depuración USB. En
-Windows suele faltar el driver: instala el *Google USB Driver* desde el SDK
-Manager de Android Studio.
+**El celular no aparece en `flutter devices`.** Activa la depuración USB y
+cambia el modo USB del teléfono a *Transferencia de archivos*, porque algunos
+cables solo cargan. En Windows suele faltar el driver: instala el *Google USB
+Driver* desde el SDK Manager de Android Studio.
+
+**`adb devices` lo muestra como `unauthorized`.** Desbloquea el teléfono y
+acepta el aviso de depuración USB. Si no aparece, en *Opciones de
+desarrollador* toca *Revocar autorizaciones de depuración USB* y reconecta.
 
 **La CI falla en "Verificar formato".** Corre `dart format .` y commitea el
 resultado.
