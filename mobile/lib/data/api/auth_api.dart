@@ -71,10 +71,18 @@ class AuthApi {
 
   /// Login solo con PIN, para el usuario que el teléfono ya recuerda.
   /// Es la vía del rol TRABAJADOR: nadie escribe un correo con guantes puestos.
+  ///
+  /// Lleva también la empresa: los ids de usuario se repiten entre empresas,
+  /// así que `usuarioId` solo no dice de quién es el PIN.
   Future<SesionUsuario> loginPorPin({
     required int usuarioId,
+    required int empresaId,
     required String pin,
-  }) => _postLogin('/api/auth/login-pin', {'usuarioId': usuarioId, 'pin': pin});
+  }) => _postLogin('/api/auth/login-pin', {
+    'usuarioId': usuarioId,
+    'empresaId': empresaId,
+    'pin': pin,
+  });
 
   Future<SesionUsuario> _postLogin(
     String ruta,

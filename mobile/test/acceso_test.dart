@@ -14,13 +14,14 @@ class _AuthFalsa implements AuthApi {
   @override
   Future<SesionUsuario> loginPorPin({
     required int usuarioId,
+    required int empresaId,
     required String pin,
   }) async => SesionUsuario(
     token: 't',
     usuarioId: usuarioId,
     nombre: 'Jorge Reyes',
     rol: 'BODEGUERO',
-    empresaId: 1,
+    empresaId: empresaId,
   );
 
   @override
@@ -47,6 +48,7 @@ Future<void> _abrir(WidgetTester tester, {UsuarioRecordado? recordado}) async {
 
 const _jorge = UsuarioRecordado(
   usuarioId: 7,
+  empresaId: 1,
   nombre: 'Jorge Reyes',
   rol: 'BODEGUERO',
 );
