@@ -197,31 +197,45 @@ if (DockerResponde) {
     Bien 'Docker Desktop responde.'
 }
 
-# --- 2b. secreto JWT --------------------------------------------------------
-# La API no arranca sin JWT_SECRET (ni con el valor de ejemplo) y compose lo
-# lee del .env de la raiz, que no se versiona. Se genera una sola vez y no se
-# imprime.
-Paso 'Secreto JWT'
+# --- 2b. secretos ------------------------------------------------------------
+# La API no arranca sin JWT_SECRET ni sin las contrasenas de la base, y compose las
+# lee del .env de la raiz, que no se versiona. Se generan una sola vez, nunca se
+# imprimen, y se reemplaza cualquier valor de ejemplo ("CAMBIAR_...").
+Paso 'Secretos (.env)'
 $envRaiz = Join-Path $Raiz '.env'
-$lineas = @()
-if (Test-Path $envRaiz) { $lineas = @(Get-Content $envRaiz) }
-$valido = $lineas | Where-Object { $_ -match '^JWT_SECRET=\S{32,}$' -and $_ -notmatch '^JWT_SECRET=(?i)cambiar' }
-if ($valido) {
-    Bien 'JWT_SECRET ya definido en .env.'
-} else {
-    $bytes = New-Object byte[] 48
+function AsegurarSecreto([string]$Var, [int]$Bytes) {
+    $lineas = @()
+    if (Test-Path $envRaiz) { $lineas = @(Get-Content $envRaiz) }
+    $valido = $lineas | Where-Object { $_ -match "^$Var=\S{32,}$" -and $_ -notmatch "^$Var=(?i)cambiar" }
+    if ($valido) { Bien "$Var ya definido en .env."; return }
+    $azar = New-Object byte[] $Bytes
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $rng.GetBytes($bytes)
+    $rng.GetBytes($azar)
     $rng.Dispose()
-    $resto = @($lineas | Where-Object { $_ -notmatch '^JWT_SECRET=' })
-    Set-Content -Path $envRaiz -Value ($resto + ('JWT_SECRET=' + [Convert]::ToBase64String($bytes))) -Encoding ascii
-    Bien 'Generado un JWT_SECRET nuevo en .env (no se versiona).'
+    $valor = ([Convert]::ToBase64String($azar)) -replace '[+/=]', ''
+    $resto = @($lineas | Where-Object { $_ -notmatch "^$Var=" })
+    Set-Content -Path $envRaiz -Value ($resto + "$Var=$valor") -Encoding ascii
+    Bien "Generado $Var nuevo en .env (no se versiona)."
 }
+AsegurarSecreto 'JWT_SECRET' 48
+AsegurarSecreto 'POSTGRES_PASSWORD' 36
+AsegurarSecreto 'DB_APP_PASSWORD' 36
+AsegurarSecreto 'DB_MIGRADOR_PASSWORD' 36
 
 # --- 3. imagenes y contenedores --------------------------------------------
 Paso 'Construyendo las imagenes'
 if ($SinCache) { & docker compose build --no-cache } else { & docker compose build }
 if ($LASTEXITCODE -ne 0) { Salir 'Fallo la construccion de las imagenes.' }
+
+Paso 'Levantando la base y creando sus roles'
+# La API conecta como checkinobra_app (solo DML) y Flyway como checkinobra_migrador.
+# En un volumen nuevo los crea el entrypoint de Postgres; en uno anterior a esto no
+# corre solo, asi que se ejecuta siempre: es idempotente, y de paso sincroniza las
+# contrasenas con las del .env y le pasa las tablas viejas al migrador.
+& docker compose up -d --wait db
+if ($LASTEXITCODE -ne 0) { Salir 'La base no quedo lista.' }
+& docker compose exec -T db /docker-entrypoint-initdb.d/01-roles.sh
+if ($LASTEXITCODE -ne 0) { Salir 'No se pudieron crear los roles de la base.' }
 
 Paso 'Levantando los contenedores'
 & docker compose up -d
@@ -287,7 +301,7 @@ if (-not (Test-Path $envMovil)) {
 Paso 'Listo'
 Info "API          $Api"
 Info "Swagger      $Api/swagger-ui.html"
-Info 'PostgreSQL   localhost:5433  (postgres / postgres)'
+Info 'PostgreSQL   127.0.0.1:5433  (usuario checkinobra_app; la clave esta en .env como DB_APP_PASSWORD)'
 Info 'Admin        admin@arauco-ltda.cl  PIN 0000'
 if (-not $SinEmulador) { Info "Emulador     $Dispositivo" }
 if ($Telefono) { Info "Telefono     $Serie" }

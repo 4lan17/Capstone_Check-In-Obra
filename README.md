@@ -270,17 +270,25 @@ cd Capstone_Check-In-Obra
 
 ### 1. Backend + base de datos
 
-Antes del primer arranque, crea el `.env` de la raíz con un secreto propio para
-los JWT (la API no arranca sin él; `scripts/levantar.sh` lo hace solo):
+Antes del primer arranque, crea el `.env` de la raíz con secretos propios: el de
+los JWT y las contraseñas de la base (la API no arranca sin ellos;
+`scripts/levantar.sh` los genera solos):
 
 ```bash
 cp .env.example .env
-# edita JWT_SECRET: openssl rand -base64 48
+# reemplaza cada CAMBIAR_...: openssl rand -base64 36 | tr -d '+/=\n'
 ```
 
 ```bash
 docker compose up -d
 ```
+
+> **Volumen de una versión anterior.** Los roles de la base (ver
+> [Roles de la base](#roles-de-la-base)) los crea el entrypoint de Postgres, pero
+> solo al inicializar un volumen nuevo. Con uno que ya existía, corre una vez
+> `docker compose up -d --wait db && docker compose exec -T db /docker-entrypoint-initdb.d/01-roles.sh`
+> antes de `docker compose up -d` (`scripts/levantar.sh` lo hace solo). Es
+> idempotente y le pasa las tablas existentes al migrador, sin perder datos.
 
 La primera vez tarda varios minutos: compila la imagen y descarga PostgreSQL.
 Flyway crea el esquema completo y carga el usuario semilla automáticamente.
@@ -714,17 +722,38 @@ Se usan 8081 y 5433 en el host —no los 8080/5432 habituales— porque esos pue
 suelen estar ocupados por otros proyectos. Entre contenedores la comunicación
 sigue siendo `db:5432`, así que la aplicación no se entera del cambio.
 
+El puerto de PostgreSQL se publica **solo en `127.0.0.1`**: desde otra máquina de
+la red no se llega a la base (antes se publicaba en todas las interfaces).
+
+### Roles de la base
+
+Ninguno de los tres usuarios que toca el sistema es de uso libre:
+
+| Rol | Para qué | Permisos | Contraseña (en `.env`) |
+|---|---|---|---|
+| `checkinobra_app` | La API en ejecución | Solo `SELECT`, `INSERT`, `UPDATE` y `DELETE`. No es superusuario y no puede crear, alterar ni borrar tablas | `DB_APP_PASSWORD` |
+| `checkinobra_migrador` | Flyway, al arrancar | Dueño del esquema: aplica las migraciones (DDL). Tampoco es superusuario | `DB_MIGRADOR_PASSWORD` |
+| `postgres` | Administración | Superusuario. La API no lo usa | `POSTGRES_PASSWORD` |
+
+Los crea `db/crear-roles.sh` (SQL en `db/roles.sql`). `ALTER DEFAULT PRIVILEGES` hace
+que las tablas que cree una migración nueva queden accesibles para la API sin
+escribir un `GRANT` en cada una. Para comprobarlo:
+`SELECT rolsuper FROM pg_roles WHERE rolname = 'checkinobra_app'` devuelve `f`.
+
+Si un fallo de la API la compromete, quien la controla puede leer y escribir datos,
+pero no borrar tablas ni cambiar el esquema.
+
 ### Conectarse con un cliente SQL
 
 | Campo | Valor |
 |---|---|
-| Host | `localhost` |
+| Host | `localhost` (solo desde esta máquina) |
 | Puerto | `5433` |
 | Base | `checkinobra` |
-| Usuario | `postgres` |
-| Contraseña | `postgres` |
+| Usuario | `checkinobra_app` para consultar; `checkinobra_migrador` para cambiar el esquema a mano |
+| Contraseña | `DB_APP_PASSWORD` o `DB_MIGRADOR_PASSWORD` del `.env` de la raíz |
 
-O por terminal:
+O por terminal, como superusuario (por el socket del contenedor, sin contraseña):
 
 ```bash
 docker compose exec db psql -U postgres -d checkinobra

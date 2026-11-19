@@ -68,8 +68,8 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 ```
 
 > **Spring no lee `.env` por su cuenta.** Si arrancas sin exportar las
-> variables, toma el valor por defecto de `application.properties`
-> (`localhost:5432`) y no encuentra la base, que Docker publica en `5433`. En
+> variables, la API no arranca (no hay usuario ni contraseña por defecto) y la
+> URL por defecto es `localhost:5432`, no el `5433` que publica Docker. En
 > IntelliJ, carga el `.env` en la configuración de ejecución (*Environment
 > variables* o el plugin EnvFile).
 
@@ -78,8 +78,9 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 | Variable | Para qué | Valor por defecto |
 |---|---|---|
 | `SPRING_DATASOURCE_URL` | JDBC de PostgreSQL | `jdbc:postgresql://localhost:5432/checkinobra` |
-| `SPRING_DATASOURCE_USERNAME` | Usuario de la base | `postgres` |
-| `SPRING_DATASOURCE_PASSWORD` | Clave de la base | `postgres` |
+| `SPRING_DATASOURCE_USERNAME` | Usuario de la API: `checkinobra_app`, solo DML. **Obligatorio** | Ninguno |
+| `SPRING_DATASOURCE_PASSWORD` | Su contraseña (`DB_APP_PASSWORD`). **Obligatoria** | Ninguna |
+| `FLYWAY_USER` / `FLYWAY_PASSWORD` | Flyway: `checkinobra_migrador`, dueño del esquema | Los de la API (solo sirve con un único usuario) |
 | `JWT_SECRET` | Firma de los JWT. **Obligatorio**: la API no arranca si falta, tiene menos de 32 bytes o es el valor de ejemplo | Ninguno |
 | `BREVO_SMTP_USER` / `BREVO_SMTP_PASSWORD` | Correo saliente (Brevo SMTP) | Vacío |
 
@@ -115,11 +116,18 @@ borran. Para no ensuciar la base con la que pruebas la app, usa una aparte:
 
 ```bash
 docker compose exec db createdb -U postgres checkinobra_test
+docker compose exec -T -e PGDATABASE=checkinobra_test db /docker-entrypoint-initdb.d/01-roles.sh
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/checkinobra_test ./mvnw test
 ```
 
-La CI (`.github/workflows/ci.yml`) corre `./mvnw -B verify` contra un
-PostgreSQL 16 vacío en `localhost:5432`.
+La segunda línea crea los roles en esa base (ver
+[Roles de la base](../README.md#roles-de-la-base)), y con el `.env` de la raíz
+exportado la prueba corre como `checkinobra_app` y migra como
+`checkinobra_migrador`, igual que en producción. `RolesDeBaseDeDatosTest` falla si
+no es así.
+
+La CI (`.github/workflows/ci.yml`) crea los roles con `db/crear-roles.sh` sobre un
+PostgreSQL 16 vacío en `localhost:5432` y corre `./mvnw -B verify` con ellos.
 
 ---
 

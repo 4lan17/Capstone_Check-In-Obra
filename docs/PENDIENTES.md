@@ -191,7 +191,7 @@ constructora antes de que un presupuesto salga de estas cifras.
 |---|---|
 | Admin semilla con PIN `0000` | 🔴 Cambiar obligatoriamente |
 | `JWT_SECRET` con valor por defecto | 🟢 Sin valor por defecto: la API no arranca sin uno propio de 32 bytes o más (SEG1). Rotarlo en las instancias que ya corrieron con el antiguo |
-| Contraseñas de PostgreSQL `postgres/postgres` | 🔴 Solo válido en local |
+| Contraseñas de PostgreSQL `postgres/postgres` | 🟢 Sin valor por defecto: vienen del `.env`; la API usa `checkinobra_app` (solo DML) y Flyway `checkinobra_migrador`; el puerto va solo en `127.0.0.1` (SEG6, MT0) |
 | API por HTTP sin TLS | 🟠 Aceptable en LAN de obra; no fuera de ella |
 | Sin expiración de refresh ni renovación | 🟠 El token dura 8 h y luego obliga a reingresar |
 

@@ -27,6 +27,8 @@ jobs:
         image: postgres:16-alpine
         env:
           POSTGRES_DB: checkinobra
+          # Superusuario de un contenedor efimero del runner: no es alcanzable desde
+          # fuera de el. La API y Flyway no lo usan; ver el paso de roles.
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
@@ -46,6 +48,26 @@ jobs:
           distribution: temurin
           cache: maven
 
+      # La API conecta como checkinobra_app (solo DML) y Flyway como
+      # checkinobra_migrador, igual que en docker-compose. Las contraseñas se
+      # generan en cada corrida y se enmascaran en el log.
+      - name: Crear los roles de base de datos
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: checkinobra
+        run: |
+          app_pw="$(openssl rand -hex 24)"
+          migrador_pw="$(openssl rand -hex 24)"
+          echo "::add-mask::$app_pw"
+          echo "::add-mask::$migrador_pw"
+          echo "DB_APP_PASSWORD=$app_pw" >> "$GITHUB_ENV"
+          echo "DB_MIGRADOR_PASSWORD=$migrador_pw" >> "$GITHUB_ENV"
+          CHECKINOBRA_APP_PASSWORD="$app_pw" \
+          CHECKINOBRA_MIGRADOR_PASSWORD="$migrador_pw" \
+            ./db/crear-roles.sh
+
       - name: Compilar y testear
         working-directory: backend
         env:
@@ -53,8 +75,10 @@ jobs:
           # como en docker-compose (ahí ese puerto evita choques con otro
           # Postgres local; en CI no hay nada más escuchando).
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/checkinobra
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_DATASOURCE_USERNAME: checkinobra_app
+          SPRING_DATASOURCE_PASSWORD: ${{ env.DB_APP_PASSWORD }}
+          FLYWAY_USER: checkinobra_migrador
+          FLYWAY_PASSWORD: ${{ env.DB_MIGRADOR_PASSWORD }}
         run: ./mvnw -B verify
 
       - name: Publicar reportes de test
