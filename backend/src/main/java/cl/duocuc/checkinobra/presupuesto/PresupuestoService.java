@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.presupuesto;
 
+import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.cubicacion.Material;
 import cl.duocuc.checkinobra.cubicacion.MaterialService;
 import cl.duocuc.checkinobra.obra.Obra;
@@ -31,10 +32,13 @@ public class PresupuestoService {
     }
 
     public Presupuesto crear(Long obraId) {
+        // Primero la obra: si es ajena responde el mismo 404 que una inexistente.
+        // Preguntar antes por el presupuesto delataba qué obras de otra empresa
+        // ya tienen uno (409 frente a 404).
+        Obra obra = obraService.obtener(obraId);
         if (presupuestoRepository.findByObraId(obraId).isPresent()) {
             throw new IllegalStateException("La obra ya tiene un presupuesto");
         }
-        Obra obra = obraService.obtener(obraId);
         Presupuesto presupuesto = Presupuesto.builder()
                 .estado(EstadoPresupuesto.BORRADOR)
                 .total(0)
@@ -46,11 +50,13 @@ public class PresupuestoService {
     @Transactional(readOnly = true)
     public Presupuesto obtener(Long id) {
         return presupuestoRepository.findById(id)
+                .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Presupuesto no encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
     public Presupuesto obtenerPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return presupuestoRepository.findByObraId(obraId)
                 .orElseThrow(() -> new NoSuchElementException("La obra no tiene presupuesto: " + obraId));
     }
@@ -75,6 +81,7 @@ public class PresupuestoService {
 
     @Transactional(readOnly = true)
     public List<PresupuestoItem> listarItems(Long presupuestoId) {
+        obtener(presupuestoId);
         return presupuestoItemRepository.findByPresupuestoId(presupuestoId);
     }
 

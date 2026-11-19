@@ -38,11 +38,13 @@ public class PartidaController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public List<PartidaResponse> listarPorObra(@RequestParam Long obraId) {
         return partidaService.listarPorObra(obraId).stream().map(PartidaResponse::de).toList();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public PartidaResponse obtener(@PathVariable Long id) {
         return PartidaResponse.de(partidaService.obtener(id));
     }
@@ -55,6 +57,7 @@ public class PartidaController {
     }
 
     @GetMapping("/{id}/items-cubicados")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public List<ItemCubicadoResponse> itemsCubicados(@PathVariable Long id) {
         return partidaService.itemsCubicados(id).stream().map(ItemCubicadoResponse::de).toList();
     }
