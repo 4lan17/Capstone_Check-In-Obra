@@ -1,10 +1,13 @@
 package cl.duocuc.checkinobra.config;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,34 +27,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Autenticación")
 public class AuthController {
 
-    private final UsuarioRepository usuarioRepository;
+    private final AutenticacionService autenticacionService;
     private final JwtService jwtService;
 
-    public AuthController(UsuarioRepository usuarioRepository, JwtService jwtService) {
-        this.usuarioRepository = usuarioRepository;
+    public AuthController(AutenticacionService autenticacionService, JwtService jwtService) {
+        this.autenticacionService = autenticacionService;
         this.jwtService = jwtService;
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Login por correo + PIN — admin, jefe de terreno y bodeguero")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginPorCorreoRequest req) {
-        Usuario usuario = usuarioRepository.findByEmail(req.email())
-                .filter(u -> u.autenticarPorEmail(req.email()))
-                .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
-        if (!usuario.autenticar(req.pin())) {
-            throw new IllegalArgumentException("Credenciales inválidas");
-        }
+    @Operation(summary = "Login por correo + clave — los cuatro roles. "
+            + "ADMIN, JEFE_TERRENO y BODEGUERO usan una clave de 8 o más caracteres; TRABAJADOR, su PIN de 4 dígitos. "
+            + "Responde 429 con Retry-After tras demasiados intentos fallidos.")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginPorCorreoRequest req, HttpServletRequest http) {
+        Usuario usuario = autenticacionService.loginPorCorreo(req.email(), req.pin(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));
     }
 
     @PostMapping("/login-pin")
-    @Operation(summary = "Login por PIN — usuario ya identificado en el teléfono (rol TRABAJADOR)")
-    public ResponseEntity<LoginResponse> loginPin(@RequestBody LoginPorPinRequest req) {
-        Usuario usuario = usuarioRepository.findById(req.usuarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
-        if (!usuario.autenticar(req.pin())) {
-            throw new IllegalArgumentException("Credenciales inválidas");
-        }
+    @Operation(summary = "Login por PIN — usuario ya identificado en el teléfono. Solo rol TRABAJADOR. "
+            + "Responde 429 con Retry-After tras demasiados intentos fallidos.")
+    public ResponseEntity<LoginResponse> loginPin(@RequestBody LoginPorPinRequest req, HttpServletRequest http) {
+        Usuario usuario = autenticacionService.loginPorPin(req.usuarioId(), req.pin(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));
     }
 
@@ -64,7 +61,13 @@ public class AuthController {
                 usuario.getEmpresa().getId());
     }
 
-    public record LoginPorCorreoRequest(@NotBlank String email, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {
+    /**
+     * {@code pin} lleva el PIN de 4 dígitos del TRABAJADOR o la clave de 8 o más
+     * caracteres de los demás roles; {@code clave} es un alias del mismo campo.
+     */
+    public record LoginPorCorreoRequest(
+            @NotBlank String email,
+            @NotBlank @Size(min = 4, max = 72) @JsonAlias("clave") String pin) {
     }
 
     public record LoginPorPinRequest(@NotNull Long usuarioId, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {

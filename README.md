@@ -343,13 +343,14 @@ bodeguero no puede despacharle nada.
 | Rol | Correo | PIN | Qué ve hoy en la app |
 |---|---|---|---|
 | Administrador | `admin@arauco-ltda.cl` | `0000` | Obras, materiales, usuarios, empresa y la vista de bodega |
-| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `1111` | Pantalla de rol pendiente (su flujo no está construido) |
-| Bodeguero | `jorge.reyes@arauco-ltda.cl` | `2222` | Inicio, bodega, herramientas y alertas de la obra que elija |
+| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `jefe-1111-obra` | Pantalla de rol pendiente (su flujo no está construido) |
+| Bodeguero | `jorge.reyes@arauco-ltda.cl` | `bodega-2222-obra` | Inicio, bodega, herramientas y alertas de la obra que elija |
 | Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Pantalla de rol pendiente (su flujo no está construido) |
 | Trabajador | `javier.ortiz@arauco-ltda.cl` | `4444` | Idem |
 
 Los correos y PINs salen de `CUENTAS` en el script: si cambias uno allá, cámbialo
-acá.
+acá. El jefe de terreno y el bodeguero usan una clave de 8 o más caracteres: la
+API la exige a todo rol que no sea trabajador.
 
 **Probar el escaneo de credencial sin la app del trabajador.** Como esa app
 todavía no existe, no hay QR que mostrar. Corre el script con
@@ -595,9 +596,24 @@ equivocado.
 
 Dos formas de entrar, ambas devuelven el mismo JWT:
 
-- `POST /api/auth/login` — correo + PIN. Para admin, jefe de terreno y bodeguero.
-- `POST /api/auth/login-pin` — id de usuario + PIN. Para el trabajador, cuyo
-  teléfono ya lo tiene identificado (nadie escribe un correo con guantes puestos).
+- `POST /api/auth/login` — correo + clave. Admin, jefe de terreno y bodeguero
+  usan una **clave de 8 a 72 caracteres**; el trabajador, su PIN de 4 dígitos. El
+  campo del cuerpo es `pin` (también se acepta `clave`).
+- `POST /api/auth/login-pin` — id de usuario + PIN. **Solo para el trabajador**,
+  cuyo teléfono ya lo tiene identificado (nadie escribe un correo con guantes
+  puestos). Con el id de otro rol responde igual que con un PIN equivocado.
+
+**Intentos fallidos.** Tras 5 fallos seguidos la cuenta se bloquea 1 minuto; desde
+ahí, cada fallo más la bloquea otra vez con el doble de tiempo (hasta 1 hora). Una
+IP con 30 fallos se bloquea 5 minutos, también creciente. Mientras dura el bloqueo
+la API responde `429` con la cabecera `Retry-After` (segundos) y
+`codigo: DEMASIADOS_INTENTOS`, **sin mirar la clave**: ni la correcta entra. Un
+acierto reinicia la cuenta. Las cuentas que no existen se bloquean igual y tardan
+lo mismo que las que sí, para no revelar qué correos están registrados. Los
+topes se ajustan con `checkinobra.login.*` (ver `application.properties`). El
+estado vive en memoria, así que se reinicia con la API y no se comparte entre
+instancias; y la IP es la del socket (`getRemoteAddr`), que tras un proxy será la
+del proxy hasta configurar `server.forward-headers-strategy`.
 
 El token dura 8 horas y lleva el id, el rol y la empresa del usuario.
 
