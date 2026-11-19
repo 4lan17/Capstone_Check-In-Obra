@@ -12,6 +12,7 @@ import 'features/auth/pantalla_acceso.dart';
 import 'features/auth/sesion_controller.dart';
 import 'features/bodega/shell_bodega.dart';
 import 'features/inicio/pantalla_rol_pendiente.dart';
+import 'features/jefe_terreno/shell_jefe_terreno.dart';
 import 'features/trabajador/shell_trabajador.dart';
 
 Future<void> main() async {
@@ -51,7 +52,8 @@ Widget _paraElRol(SesionUsuario sesion) => switch (sesion.rol) {
   'BODEGUERO' => const ShellBodega(),
   'ADMIN' => const ShellAdmin(),
   'TRABAJADOR' => const ShellTrabajador(),
-  // Jefe de terreno: su flujo está pendiente.
+  'JEFE_TERRENO' => const ShellJefeTerreno(),
+  // Un rol que la app no conoce (uno nuevo del backend, por ejemplo).
   _ => PantallaRolPendiente(sesion: sesion),
 };
 
