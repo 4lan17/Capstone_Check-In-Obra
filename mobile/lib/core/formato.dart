@@ -29,6 +29,23 @@ abstract final class Formato {
 
   static String hora(DateTime d) => _hora.format(d);
 
+  /// "45 segundos", "1 minuto", "2 min 30 s", "1 h": una espera como se dice,
+  /// redondeada hacia arriba (esperar de menos vuelve a bloquear).
+  static String espera(int segundos) {
+    if (segundos < 60) {
+      return '$segundos ${segundos == 1 ? 'segundo' : 'segundos'}';
+    }
+    final minutos = segundos ~/ 60;
+    final resto = segundos % 60;
+    if (minutos < 60) {
+      if (resto == 0) return '$minutos ${minutos == 1 ? 'minuto' : 'minutos'}';
+      return '$minutos min $resto s';
+    }
+    final horas = minutos ~/ 60;
+    final m = minutos % 60;
+    return m == 0 ? '$horas h' : '$horas h $m min';
+  }
+
   static String fechaHora(DateTime d) => _fechaHora.format(d);
 
   /// "hoy 09:02", "ayer 15:41" o "22 ago" — como en el mockup del kardex.

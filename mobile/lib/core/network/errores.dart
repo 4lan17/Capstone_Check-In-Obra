@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../data/api/auth_api.dart';
+import '../formato.dart';
 
 /// Traduce cualquier fallo a un mensaje que le sirva a quien está en obra.
 ///
@@ -9,6 +10,16 @@ import '../../data/api/auth_api.dart';
 /// nombran directamente.
 String mensajeDeError(Object error) {
   if (error is ApiException) {
+    // Demasiados intentos fallidos: se dice cuánto esperar. El backend bloquea
+    // la cuenta aunque la clave sea la correcta, así que reintentar antes solo
+    // alarga la espera.
+    if (error.demasiadosIntentos) {
+      final espera = error.reintentarEnSegundos;
+      return espera == null
+          ? 'Demasiados intentos. Espera un momento antes de volver a intentar.'
+          : 'Demasiados intentos. Espera ${Formato.espera(espera)} antes de '
+                'volver a intentar.';
+    }
     // Una solicitud que va en un pedido con QR no se resuelve sola. El backend
     // lo explica, pero en términos del modelo; esto dice qué hacer.
     if (error.codigo == 'EN_PEDIDO') {

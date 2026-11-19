@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/errores.dart';
+import '../../core/politica_clave.dart';
 import '../../core/storage/sesion_storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_forma.dart';
@@ -67,7 +68,10 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
   Widget build(BuildContext context) {
     final sesion = ref.watch(sesionProvider);
     final recordado = ref.watch(usuarioRecordadoProvider).valueOrNull;
-    final conPin = recordado != null && !_usarCorreo;
+    // El acceso rápido por PIN es solo del TRABAJADOR: el backend rechaza
+    // `login-pin` para los demás roles, que entran con correo y clave.
+    final conPin =
+        recordado != null && PoliticaClave.esPin(recordado.rol) && !_usarCorreo;
     final duracion = Movimiento.de(context, Movimiento.estado);
 
     final Widget cuerpo = conPin
@@ -174,22 +178,24 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
                 : null,
           ),
           const SizedBox(height: AppEspacio.md + 4),
-          const Text('PIN de 4 dígitos', style: AppTexto.rotulo),
+          const Text('PIN o clave', style: AppTexto.rotulo),
           const SizedBox(height: AppEspacio.sm),
           _CampoTexto(
             controlador: _pin,
-            hint: '••••',
+            hint: 'Tu clave',
             icono: Icons.lock_outline,
-            teclado: TextInputType.number,
+            // Texto y no solo dígitos: administradores, jefes y bodegueros
+            // entran con una clave de 8 a 72 caracteres. El trabajador que
+            // use este formulario sigue tecleando su PIN de 4 dígitos.
+            teclado: TextInputType.visiblePassword,
             oculto: _ocultarPin,
             mono: true,
-            maxLength: 4,
-            formatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: PoliticaClave.maximoClave,
             // Un botón que es solo un ícono no se anuncia solo: sin `tooltip`,
             // el lector de pantalla lo lee como "botón" a secas. El texto
             // cambia con el estado, para que se sepa qué va a pasar al tocarlo.
             sufijo: IconButton(
-              tooltip: _ocultarPin ? 'Mostrar el PIN' : 'Ocultar el PIN',
+              tooltip: _ocultarPin ? 'Mostrar la clave' : 'Ocultar la clave',
               icon: Icon(
                 _ocultarPin
                     ? Icons.visibility_outlined
@@ -199,8 +205,7 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
               ),
               onPressed: () => setState(() => _ocultarPin = !_ocultarPin),
             ),
-            validador: (v) =>
-                (v == null || v.length != 4) ? 'El PIN son 4 dígitos' : null,
+            validador: (v) => PoliticaClave.errorAlEntrar(v ?? ''),
             alEnviar: (_) => _entrar(),
           ),
           if (sesion.hasError) ...[
@@ -219,12 +224,12 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
           ),
           const SizedBox(height: AppEspacio.lg),
           Text(
-            'El correo es para administradores y jefes de terreno. En obra se '
-            'entra con PIN: el teléfono recuerda a quien entró y el PIN nunca '
-            'sale del equipo.',
+            'Administradores, jefes de terreno y bodegueros entran con su correo '
+            'y su clave. Solo el trabajador entra con PIN: el teléfono lo '
+            'recuerda y el PIN nunca sale del equipo.',
             style: AppTexto.cuerpoChico.copyWith(color: AppColors.secondary),
           ),
-          if (recordado != null) ...[
+          if (recordado != null && PoliticaClave.esPin(recordado.rol)) ...[
             const SizedBox(height: AppEspacio.md),
             Align(
               alignment: Alignment.centerLeft,
@@ -502,7 +507,6 @@ class _CampoTexto extends StatelessWidget {
     this.oculto = false,
     this.mono = false,
     this.maxLength,
-    this.formatters,
     this.sufijo,
     this.validador,
     this.alEnviar,
@@ -517,7 +521,6 @@ class _CampoTexto extends StatelessWidget {
   final bool oculto;
   final bool mono;
   final int? maxLength;
-  final List<TextInputFormatter>? formatters;
   final Widget? sufijo;
   final String? Function(String?)? validador;
   final void Function(String)? alEnviar;
@@ -531,7 +534,6 @@ class _CampoTexto extends StatelessWidget {
       keyboardType: teclado,
       obscureText: oculto,
       maxLength: maxLength,
-      inputFormatters: formatters,
       validator: validador,
       onFieldSubmitted: alEnviar,
       autofillHints: autofill,

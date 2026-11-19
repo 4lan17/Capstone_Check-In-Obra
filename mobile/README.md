@@ -150,6 +150,14 @@ teléfono → API → base. Hoy no se llega a ella desde ninguna pantalla.
 usuario en `flutter_secure_storage`. El PIN no se guarda nunca: el acceso
 rápido del trabajador vuelve a mandarlo al servidor (`/api/auth/login-pin`).
 
+**Quién entra con qué.** El TRABAJADOR entra con un PIN de 4 dígitos, y solo él
+usa el acceso rápido por PIN (`login-pin`). ADMIN, JEFE_TERRENO y BODEGUERO
+entran con correo y una clave de 8 a 72 caracteres; el teléfono no les ofrece
+el acceso rápido aunque los recuerde. Tras 5 intentos fallidos el servidor
+bloquea la cuenta (aunque la clave sea la correcta) y responde 429 con
+`Retry-After`: la app dice cuánto esperar. La regla de la clave está en
+`core/politica_clave.dart`, igual a la del backend.
+
 **Lo que recuerda el teléfono va por empresa y usuario.** Con una base por
 empresa los ids se repiten: la obra 3 o el usuario 4 existen en cada una. Por
 eso el usuario recordado guarda también su `empresaId` (que viaja en
