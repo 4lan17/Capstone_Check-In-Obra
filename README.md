@@ -311,11 +311,14 @@ Y abrir Swagger UI en **http://localhost:8081/swagger-ui.html**
 
 ### 2. Primer login
 
-La migración `V2` crea un administrador, `admin@arauco-ltda.cl`, **sin
-credencial publicada**: la `V11` anuló el PIN `0000` que traía. Su clave inicial es
-la de `PRIMER_ADMIN_CLAVE` en el `.env` de la raíz (`scripts/levantar.sh` genera
-una; a mano, define la tuya de 8 o más caracteres antes de arrancar). La API la
-aplica al arrancar, solo si la cuenta aún no tiene credencial.
+En una base vacía, al arrancar, la API crea la primera empresa (por defecto
+Constructora Arauco Ltda., `PRIMERA_EMPRESA_RUT` y `PRIMERA_EMPRESA_NOMBRE`) y su
+administrador, `admin@arauco-ltda.cl` (`PRIMER_ADMIN_EMAIL`). **No hay credencial
+publicada**: la migración `V2` que sembraba el PIN `0000` salió de `db/migration`, y
+en las bases que ya la habían aplicado la `V11` lo anuló. Su clave inicial es la de
+`PRIMER_ADMIN_CLAVE` en el `.env` de la raíz (`scripts/levantar.sh` genera una; a
+mano, define la tuya de 8 o más caracteres antes de arrancar). La API la aplica al
+arrancar, solo si la cuenta aún no tiene credencial.
 
 **Ubuntu**
 
@@ -763,6 +766,7 @@ Ninguno de los tres usuarios que toca el sistema es de uso libre:
 |---|---|---|---|
 | `checkinobra_app` | La API en ejecución | Solo `SELECT`, `INSERT`, `UPDATE` y `DELETE`. No es superusuario y no puede crear, alterar ni borrar tablas | `DB_APP_PASSWORD` |
 | `checkinobra_migrador` | Flyway, al arrancar | Dueño del esquema: aplica las migraciones (DDL). Tampoco es superusuario | `DB_MIGRADOR_PASSWORD` |
+| `checkinobra_plataforma` | La API, para leer y escribir la **base de catálogo** | Solo `SELECT/INSERT/UPDATE/DELETE` en `checkinobra_catalogo`. No puede conectarse a la base de una empresa | `DB_PLATAFORMA_PASSWORD` |
 | `postgres` | Administración | Superusuario. La API no lo usa | `POSTGRES_PASSWORD` |
 
 Los crea `db/crear-roles.sh` (SQL en `db/roles.sql`). `ALTER DEFAULT PRIVILEGES` hace
@@ -771,7 +775,21 @@ escribir un `GRANT` en cada una. Para comprobarlo:
 `SELECT rolsuper FROM pg_roles WHERE rolname = 'checkinobra_app'` devuelve `f`.
 
 Si un fallo de la API la compromete, quien la controla puede leer y escribir datos,
-pero no borrar tablas ni cambiar el esquema.
+pero no borrar tablas ni cambiar el esquema. Cada rol solo puede conectarse a su
+base: `checkinobra_app` a la de la empresa, `checkinobra_plataforma` al catálogo.
+
+### Base de catálogo
+
+`checkinobra_catalogo` guarda qué empresas existen y cómo conectarse a la base de
+cada una (tablas `planes`, `empresas`, `operadores` e `indice_login`, esta última
+de correo a empresa). Sus migraciones están en `backend/src/main/resources/db/catalogo`
+y las aplica el migrador al arrancar la API. Hoy hay una sola empresa y una sola
+base, así que la API **lee** el catálogo pero sigue abriendo esa base como antes;
+elegir la base por empresa llega con el enrutador (MT2). El catálogo guarda una
+*referencia* al secreto (`env:SPRING_DATASOURCE_PASSWORD`), nunca la contraseña.
+Las decisiones de diseño están en
+[`docs/arquitectura/multitenant.html`](docs/arquitectura/multitenant.html).
+
 
 ### Conectarse con un cliente SQL
 
@@ -797,7 +815,7 @@ solo verifica que las entidades calcen con las tablas).
 | Archivo | Qué hace |
 |---|---|
 | `V1__init_schema.sql` | Crea las 17 tablas con sus llaves foráneas e índices |
-| `V2__seed_admin.sql` | Inserta una empresa y el admin de arranque (su PIN `0000` lo anula la `V11`) |
+| `V2__seed_admin.sql` | **Ya no está** (MT1): sembraba la empresa y el admin con el PIN `0000`. Las bases que la aplicaron la conservan en su historial; la `V11` anuló su PIN |
 | `V3__rut_en_usuario_...sql` | Sube el RUT a `usuarios`, agrega el jefe de la obra y el receptor del despacho |
 | `V4__codigo_de_barra_en_materiales.sql` | Agrega `materiales.codigo_barra` (único **por empresa**) para el escáner |
 | `V5__normaliza_codigos_a_mayusculas.sql` | Pasa a mayúsculas los SKU y códigos de herramienta existentes |

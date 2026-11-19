@@ -574,9 +574,50 @@
     </div>
   </div>
 
+  <section>
+    <h2>Decisiones tomadas en la fase 1 (MT1)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>La tabla <code>empresas</code> de cada base</h3></div>
+      <ul>
+        <li>Cada base conserva <strong>una copia de una fila</strong> de <code>empresas</code>: la de su propia empresa, con el mismo <code>id</code> que tiene en el catálogo</li>
+        <li>Se descartó retirar las FKs: cuatro entidades la referencian (<code>Usuario</code>, <code>Obra</code>, <code>Material</code>, <code>Herramienta</code>) y <code>AccesoEmpresa</code> y la columna <code>empresa_id</code> se mantienen como segunda capa</li>
+        <li>Ese <code>id</code> es el que viaja en el JWT, así que el catálogo no necesita una columna aparte con "el id en la base"</li>
+        <li>Una empresa, una base: <code>nombre_base</code> es único en el catálogo</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Qué hay en <code>checkinobra_catalogo</code></h3></div>
+      <ul>
+        <li>Tablas <code>planes</code>, <code>empresas</code> (rut, nombre, plan, estado, base, usuario y <em>referencia</em> al secreto), <code>operadores</code> e <code>indice_login</code> (correo → empresa, en minúsculas)</li>
+        <li>Sus migraciones están en <code>db/catalogo</code> y las aplica el migrador. La API la usa como <code>checkinobra_plataforma</code>, que solo ve esa base; el rol de una empresa no puede conectarse a ella</li>
+        <li>El catálogo guarda <code>env:NOMBRE_DE_VARIABLE</code>, nunca la contraseña</li>
+        <li>Al arrancar, la API migra el catálogo, registra a la empresa de la base actual (idempotente: no pisa el plan ni el estado que fije la plataforma) y completa el índice sin reasignar un correo que ya sea de otra empresa</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>El primer administrador ya no viene en una migración</h3></div>
+      <ul>
+        <li><code>V2__seed_admin.sql</code> salió de <code>db/migration</code>: el ADMIN se crea al dar de alta la empresa, no en cada base nueva</li>
+        <li>Mientras no exista el módulo de plataforma (fase 4), en una base vacía nace la primera empresa con su ADMIN al arrancar, con la clave de <code>PRIMER_ADMIN_CLAVE</code> y obligado a cambiarla</li>
+        <li>Las bases que ya aplicaron <code>V2</code> la conservan en su historial; Flyway ignora la migración aplicada que ya no está (<code>ignore-migration-patterns=*:missing</code>)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Lo que todavía no hace</h3></div>
+      <ul>
+        <li>La API sigue abriendo una sola base: el catálogo se lee, pero no enruta (fase 2)</li>
+        <li>El índice de login se completa al arrancar; mantenerlo al crear usuarios llega con el login por empresa (MT4)</li>
+        <li>No hay alta de empresas ni su base propia (fase 4)</li>
+      </ul>
+    </div>
+  </div>
+
   <footer class="footer">
     <span>Check-In-Obra · Propuesta multi-tenant · base por empresa</span>
-    <span>Actualizada el 2026-10-19 tras la observación recibida</span>
+    <span>Actualizada el 2026-11-19: fase 1 (catálogo de empresas)</span>
   </footer>
 
 </div>
