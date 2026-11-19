@@ -1,5 +1,10 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -35,7 +40,7 @@ public class PedidoHerramientasController {
     @PostMapping
     @PreAuthorize("hasRole('TRABAJADOR')")
     @ResponseStatus(HttpStatus.CREATED)
-    public PedidoHerramientasResponse crear(@RequestBody CrearPedidoHerramientasRequest req) {
+    public PedidoHerramientasResponse crear(@Valid @RequestBody CrearPedidoHerramientasRequest req) {
         return PedidoHerramientasResponse.de(pedidoHerramientasService.crear(
                 SesionActual.usuarioId(), req.herramientaIds(), req.descripcion()));
     }
@@ -62,11 +67,13 @@ public class PedidoHerramientasController {
 
     @PutMapping("/qr/{codigoQr}/entregar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public EntregaPedidoResponse entregar(@PathVariable String codigoQr, @RequestBody EntregarPedidoRequest req) {
+    public EntregaPedidoResponse entregar(@PathVariable String codigoQr, @Valid @RequestBody EntregarPedidoRequest req) {
         return EntregaPedidoResponse.de(pedidoHerramientasService.entregar(codigoQr, req.fechaDevolEsperada()));
     }
 
-    public record CrearPedidoHerramientasRequest(List<Long> herramientaIds, String descripcion) {
+    public record CrearPedidoHerramientasRequest(
+            @NotEmpty(message = "Elige al menos una herramienta") List<@NotNull(message = "Hay una herramienta sin id") Long> herramientaIds,
+            @NotBlank(message = "Cuenta para qué las necesitas") @Size(max = 300, message = "La descripción admite hasta 300 caracteres") String descripcion) {
     }
 
     public record EntregarPedidoRequest(LocalDateTime fechaDevolEsperada) {

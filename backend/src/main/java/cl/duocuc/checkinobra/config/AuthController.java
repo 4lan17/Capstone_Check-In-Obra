@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.config;
 
+import jakarta.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,7 +41,7 @@ public class AuthController {
     @Operation(summary = "Login por correo + clave — los cuatro roles. "
             + "ADMIN, JEFE_TERRENO y BODEGUERO usan una clave de 8 o más caracteres; TRABAJADOR, su PIN de 4 dígitos. "
             + "Responde 429 con Retry-After tras demasiados intentos fallidos.")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginPorCorreoRequest req, HttpServletRequest http) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginPorCorreoRequest req, HttpServletRequest http) {
         Usuario usuario = autenticacionService.loginPorCorreo(req.email(), req.pin(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));
     }
@@ -48,7 +49,7 @@ public class AuthController {
     @PostMapping("/login-pin")
     @Operation(summary = "Login por PIN — usuario ya identificado en el teléfono. Solo rol TRABAJADOR. "
             + "Responde 429 con Retry-After tras demasiados intentos fallidos.")
-    public ResponseEntity<LoginResponse> loginPin(@RequestBody LoginPorPinRequest req, HttpServletRequest http) {
+    public ResponseEntity<LoginResponse> loginPin(@Valid @RequestBody LoginPorPinRequest req, HttpServletRequest http) {
         Usuario usuario = autenticacionService.loginPorPin(req.usuarioId(), req.pin(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));
     }
@@ -56,7 +57,7 @@ public class AuthController {
     @PutMapping("/pin")
     @Operation(summary = "Cambia la clave propia. Es lo único que puede llamar una cuenta con clave provisoria "
             + "(debeCambiarClave). Devuelve una sesión nueva, ya sin la obligación.")
-    public ResponseEntity<LoginResponse> cambiarPin(@RequestBody CambiarPinRequest req, HttpServletRequest http) {
+    public ResponseEntity<LoginResponse> cambiarPin(@Valid @RequestBody CambiarPinRequest req, HttpServletRequest http) {
         Usuario usuario = autenticacionService.cambiarPin(
                 SesionActual.usuarioId(), req.pinActual(), req.pinNuevo(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));

@@ -1,5 +1,9 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -32,7 +36,7 @@ public class SolicitudHerramientaController {
     @PostMapping
     @PreAuthorize("hasRole('TRABAJADOR')")
     @ResponseStatus(HttpStatus.CREATED)
-    public SolicitudHerramientaResponse crear(@RequestBody CrearSolicitudRequest req) {
+    public SolicitudHerramientaResponse crear(@Valid @RequestBody CrearSolicitudRequest req) {
         return SolicitudHerramientaResponse.de(
                 solicitudHerramientaService.crear(
                         // Se pide a nombre propio, igual que una solicitud de material.
@@ -42,7 +46,7 @@ public class SolicitudHerramientaController {
     /** Aprobar/rechazar es de BODEGUERO o ADMIN, según la matriz de permisos. */
     @PutMapping("/{id}/aprobar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public PrestamoHerramientaResponse aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
+    public PrestamoHerramientaResponse aprobar(@PathVariable Long id, @Valid @RequestBody AprobarRequest req) {
         // Aprobar una solicitud produce el préstamo, no la solicitud.
         return PrestamoHerramientaResponse.de(
                 solicitudHerramientaService.aprobar(id, SesionActual.usuarioId(), req.fechaDevolEsperada()));
@@ -50,7 +54,7 @@ public class SolicitudHerramientaController {
 
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public SolicitudHerramientaResponse rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
+    public SolicitudHerramientaResponse rechazar(@PathVariable Long id, @Valid @RequestBody RechazarRequest req) {
         return SolicitudHerramientaResponse.de(
                 solicitudHerramientaService.rechazar(id, SesionActual.usuarioId(), req.motivo()));
     }
@@ -105,12 +109,16 @@ public class SolicitudHerramientaController {
     }
 
     /** {@code cantidad} es opcional y, si viene, tiene que ser 1: cada herramienta tiene su QR. */
-    public record CrearSolicitudRequest(Long herramientaId, Integer cantidad, String descripcion) {
+    public record CrearSolicitudRequest(
+            @NotNull(message = "Falta la herramienta") Long herramientaId,
+            Integer cantidad,
+            @NotBlank(message = "Cuenta para qué la necesitas") @Size(max = 300, message = "La descripción admite hasta 300 caracteres") String descripcion) {
     }
 
     public record AprobarRequest(LocalDateTime fechaDevolEsperada) {
     }
 
-    public record RechazarRequest(String motivo) {
+    public record RechazarRequest(
+            @NotBlank(message = "El motivo es obligatorio") @Size(max = 500, message = "El motivo admite hasta 500 caracteres") String motivo) {
     }
 }
