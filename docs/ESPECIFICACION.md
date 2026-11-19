@@ -450,7 +450,7 @@ Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
 
 JWT firmado con HMAC-SHA. El token dura **30 minutos** y se renueva con un refresh token (ver el README; configurable con
 `checkinobra.jwt.expiracion-minutos`) y lleva `sub` (id de usuario), `email`,
-`rol` y `empresaId`. No hay refresh: vencido el token, se vuelve a entrar.
+`rol`, `empresaId`, `iss`, `aud` y `tv` (versión de sesión). El refresh token rota en cada uso (`POST /api/auth/refresh`); un refresh reutilizado cierra todas las sesiones del usuario.
 
 Rutas públicas: `/api/auth/**` y la documentación OpenAPI. Todo lo demás exige
 `Authorization: Bearer <token>`.
