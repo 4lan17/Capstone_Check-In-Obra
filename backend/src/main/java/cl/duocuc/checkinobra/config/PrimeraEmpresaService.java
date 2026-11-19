@@ -6,13 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Locale;
 
 /**
- * Crea la primera empresa y su administrador en una base vacía (MT1, #104).
+ * Crea al administrador de la primera empresa cuando todavía no tiene ninguno (MT1/MT2).
  *
- * <p>La migración V2 sembraba una empresa y un ADMIN en cada base nueva. Eso sale
- * de {@code db/migration}: el ADMIN se crea al dar de alta la empresa, no en cada
- * base. Mientras no exista el módulo de plataforma que da de alta empresas, la
- * primera nace al arrancar, con la clave de {@code PRIMER_ADMIN_CLAVE}, y su
- * administrador queda obligado a cambiarla en su primer ingreso (SEG3).
+ * <p>La migración V2 sembraba una empresa y un ADMIN en cada base nueva. Eso salió de
+ * {@code db/migration}: la empresa la registra {@link BaseInicialInicializador} y su
+ * ADMIN se crea acá, con la clave de {@code PRIMER_ADMIN_CLAVE}, obligado a cambiarla en
+ * su primer ingreso (SEG3). Corre con la empresa en el {@link TenantContext}.
  */
 @Service
 @Transactional
@@ -29,13 +28,13 @@ public class PrimeraEmpresaService {
     }
 
     /**
-     * Crea la empresa y su ADMIN si la base no tiene ninguna empresa todavía.
+     * Crea el ADMIN de la empresa si no tiene ninguno.
      *
-     * @return {@code true} si las creó; {@code false} si no hizo nada (sin clave, o ya hay empresas)
+     * @return {@code true} si lo creó; {@code false} si no hizo nada (sin clave, sin empresa, o ya hay un ADMIN)
      * @throws IllegalStateException si la clave es un valor de ejemplo
      * @throws IllegalArgumentException si la clave no cumple la política de claves
      */
-    public boolean crearSiNoHay(String rut, String nombre, String adminEmail, String clave) {
+    public boolean crearAdminSiNoHay(String rut, String adminEmail, String clave) {
         if (clave == null || clave.isBlank()) {
             return false;
         }
@@ -43,21 +42,19 @@ public class PrimeraEmpresaService {
             throw new IllegalStateException(
                     "PRIMER_ADMIN_CLAVE es un valor de ejemplo. Define una clave propia de 8 o más caracteres.");
         }
-        if (empresaRepository.count() > 0) {
+        Empresa empresa = empresaRepository.findByRut(rut).orElse(null);
+        if (empresa == null || usuarioRepository.existsByEmpresaIdAndRol(empresa.getId(), RolUsuario.ADMIN)) {
             return false;
         }
-        // La clave se valida antes de guardar nada: una clave débil no debe dejar
-        // una empresa sin administrador.
+        // La clave se valida antes de guardar nada.
         Usuario admin = Usuario.builder()
                 .nombre(NOMBRE_DEL_ADMIN)
                 .email(adminEmail.trim())
                 .rol(RolUsuario.ADMIN)
+                .empresa(empresa)
                 .build();
         admin.definirPin(clave);
         admin.setDebeCambiarPin(true);
-
-        Empresa empresa = empresaRepository.save(Empresa.builder().nombre(nombre).rut(rut).build());
-        admin.setEmpresa(empresa);
         usuarioRepository.save(admin);
         return true;
     }

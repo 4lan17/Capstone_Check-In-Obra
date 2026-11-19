@@ -27,6 +27,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 class CatalogoDeEmpresasTest {
 
     @Autowired private CatalogoDeEmpresas catalogo;
+    @Autowired private BaseInicialInicializador baseInicial;
+    @Autowired private SincronizadorDeCatalogo sincronizador;
     @Autowired private EmpresaRepository empresaRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JdbcTemplate baseDeLaEmpresa;
@@ -59,6 +61,14 @@ class CatalogoDeEmpresasTest {
             enElCatalogo.update("DELETE FROM indice_login WHERE empresa_id = ?", id);
             enElCatalogo.update("DELETE FROM empresas WHERE id = ?", id);
         }
+    }
+
+    /** El arranque real: registra la base actual si tiene a la empresa, y completa el índice. */
+    private Optional<CatalogoDeEmpresas.EmpresaRegistrada> registrarBaseActual(String rut) {
+        String nombre = empresaRepository.findByRut(rut).map(Empresa::getNombre).orElse("Sin nombre");
+        Optional<Long> id = baseInicial.asegurar(rut, nombre, false);
+        id.ifPresent(sincronizador::sincronizarIndiceDeLogin);
+        return id.flatMap(i -> catalogo.listar().stream().filter(r -> r.id().equals(i)).findFirst());
     }
 
     // --- esquema ------------------------------------------------------------------
@@ -113,7 +123,7 @@ class CatalogoDeEmpresasTest {
 
     @Test
     void laBaseActualQuedaRegistradaConLosDatosParaConectarse() {
-        Optional<CatalogoDeEmpresas.EmpresaRegistrada> registrada = catalogo.registrarBaseActual(empresa.getRut());
+        Optional<CatalogoDeEmpresas.EmpresaRegistrada> registrada = registrarBaseActual(empresa.getRut());
 
         assertThat(registrada).isPresent();
         CatalogoDeEmpresas.EmpresaRegistrada r = registrada.get();
@@ -130,7 +140,7 @@ class CatalogoDeEmpresasTest {
 
     @Test
     void elCatalogoGuardaUnaReferenciaAlSecretoNuncaElSecreto() {
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         List<String> fila = enElCatalogo.queryForList(
                 "SELECT concat_ws('|', rut, nombre, nombre_base, usuario_base, secreto_ref) FROM empresas WHERE id = ?",
@@ -142,8 +152,8 @@ class CatalogoDeEmpresasTest {
 
     @Test
     void registrarDosVecesNoDuplicaNiFalla() {
-        catalogo.registrarBaseActual(empresa.getRut());
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         assertThat(enElCatalogo.queryForObject(
                 "SELECT count(*) FROM empresas WHERE id = ?", Integer.class, empresa.getId())).isEqualTo(1);
@@ -154,7 +164,7 @@ class CatalogoDeEmpresasTest {
     void soloSeRegistraLaEmpresaQueSePide() {
         Empresa otra = empresaRepository.save(Empresa.builder().nombre("Otra " + s).rut("O-" + s).build());
 
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         assertThat(catalogo.listar()).extracting(CatalogoDeEmpresas.EmpresaRegistrada::id)
                 .contains(empresa.getId()).doesNotContain(otra.getId());
@@ -162,15 +172,15 @@ class CatalogoDeEmpresasTest {
 
     @Test
     void siLaEmpresaNoEstaEnLaBaseNoSeRegistraNada() {
-        assertThat(catalogo.registrarBaseActual("no-existe-" + s)).isEmpty();
+        assertThat(registrarBaseActual("no-existe-" + s)).isEmpty();
     }
 
     @Test
     void laAltaDelCatalogoNoMueveElPlanNiElEstadoQueFijeLaPlataforma() {
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
         enElCatalogo.update("UPDATE empresas SET estado = 'SUSPENDIDA' WHERE id = ?", empresa.getId());
 
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         assertThat(enElCatalogo.queryForObject(
                 "SELECT estado FROM empresas WHERE id = ?", String.class, empresa.getId())).isEqualTo("SUSPENDIDA");
@@ -183,7 +193,7 @@ class CatalogoDeEmpresasTest {
         usuarioRepository.save(Usuario.builder().nombre("Jefe").email("Jefe-" + s + "@Test.cl")
                 .rol(RolUsuario.JEFE_TERRENO).empresa(empresa).build());
 
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         assertThat(catalogo.empresaDeCorreo("jefe-" + s + "@test.cl")).contains(empresa.getId());
         assertThat(catalogo.empresaDeCorreo("JEFE-" + s + "@TEST.CL")).contains(empresa.getId());
@@ -204,7 +214,7 @@ class CatalogoDeEmpresasTest {
         usuarioRepository.save(Usuario.builder().nombre("Repetido").email(correo)
                 .rol(RolUsuario.BODEGUERO).empresa(empresa).build());
 
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         assertThat(catalogo.empresaDeCorreo(correo)).contains(idAjeno);
     }
@@ -214,8 +224,8 @@ class CatalogoDeEmpresasTest {
         usuarioRepository.save(Usuario.builder().nombre("Uno").email("uno-" + s + "@test.cl")
                 .rol(RolUsuario.BODEGUERO).empresa(empresa).build());
 
-        catalogo.registrarBaseActual(empresa.getRut());
-        catalogo.registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
+        registrarBaseActual(empresa.getRut());
 
         assertThat(enElCatalogo.queryForObject(
                 "SELECT count(*) FROM indice_login WHERE empresa_id = ?", Integer.class, empresa.getId()))

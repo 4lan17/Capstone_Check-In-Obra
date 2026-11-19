@@ -18,9 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtService jwtService;
+    private final ResolutorDeBases resolutor;
 
-    public SecurityConfig(JwtService jwtService) {
+    public SecurityConfig(JwtService jwtService, ResolutorDeBases resolutor) {
         this.jwtService = jwtService;
+        this.resolutor = resolutor;
     }
 
     @Bean
@@ -52,7 +54,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html")
                         .permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthFilter(jwtService, resolutor), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

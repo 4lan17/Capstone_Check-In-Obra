@@ -18,6 +18,7 @@ public class PrimerAdminInicializador implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(PrimerAdminInicializador.class);
 
+    private final CatalogoDeEmpresas catalogo;
     private final PrimerAdminService primerAdminService;
     private final PrimeraEmpresaService primeraEmpresaService;
     private final String email;
@@ -26,12 +27,14 @@ public class PrimerAdminInicializador implements ApplicationRunner {
     private final String nombreEmpresa;
 
     public PrimerAdminInicializador(
+            CatalogoDeEmpresas catalogo,
             PrimerAdminService primerAdminService,
             PrimeraEmpresaService primeraEmpresaService,
             @Value("${checkinobra.primer-admin.email:admin@arauco-ltda.cl}") String email,
             @Value("${checkinobra.primer-admin.clave:}") String clave,
             @Value("${checkinobra.primera-empresa.rut:76.412.330-9}") String rutEmpresa,
             @Value("${checkinobra.primera-empresa.nombre:Constructora Arauco Ltda.}") String nombreEmpresa) {
+        this.catalogo = catalogo;
         this.primerAdminService = primerAdminService;
         this.primeraEmpresaService = primeraEmpresaService;
         this.email = email;
@@ -42,6 +45,17 @@ public class PrimerAdminInicializador implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        var empresa = catalogo.buscarPorRut(rutEmpresa);
+        if (empresa.isEmpty()) {
+            log.warn("La empresa {} no está registrada en el catálogo: no hay administrador al que darle clave.",
+                    rutEmpresa);
+            return;
+        }
+        // Fuera de una petición no hay empresa en el contexto: se fija la de esta.
+        TenantContext.ejecutarEn(empresa.get().id(), this::aplicar);
+    }
+
+    private void aplicar() {
         if (clave == null || clave.isBlank()) {
             if (primerAdminService.hayAdminSinCredencial(email)) {
                 log.warn("El administrador {} no tiene clave y nadie puede entrar con él. "
@@ -51,13 +65,12 @@ public class PrimerAdminInicializador implements ApplicationRunner {
         }
         // Una clave que no cumple la política hace fallar el arranque: es una
         // configuración equivocada y conviene verla, no que el admin quede sin acceso.
-        // Base vacía: nace la primera empresa con su administrador (ya no la siembra V2).
-        if (primeraEmpresaService.crearSiNoHay(rutEmpresa, nombreEmpresa, email, clave)) {
-            log.info("Se creó la empresa {} y su administrador {}: deberá cambiar la clave en su primer ingreso.",
-                    rutEmpresa, email);
+        if (primeraEmpresaService.crearAdminSiNoHay(rutEmpresa, email, clave)) {
+            log.info("Se creó el administrador {} de la empresa {}: deberá cambiar la clave en su primer ingreso.",
+                    email, rutEmpresa);
             return;
         }
-        // Base que ya tenía empresa y administrador sin credencial (la semilla anulada por V11).
+        // Base que ya tenía administrador sin credencial (la semilla anulada por V11).
         if (primerAdminService.fijarClaveInicial(email, clave)) {
             log.info("Se fijó la clave inicial de {}: deberá cambiarla en su primer ingreso.", email);
         }

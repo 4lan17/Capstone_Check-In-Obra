@@ -12,17 +12,22 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final EmpresaService empresaService;
+    private final CatalogoDeEmpresas catalogo;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, EmpresaService empresaService) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository, EmpresaService empresaService, CatalogoDeEmpresas catalogo) {
         this.usuarioRepository = usuarioRepository;
         this.empresaService = empresaService;
+        this.catalogo = catalogo;
     }
 
     /** Corresponde a Empresa.registrarUsuario(u) del diagrama, orquestado desde el servicio. */
     public Usuario crear(
             Long empresaId, String nombre, String email, String rut, RolUsuario rol, String pinInicial) {
         AccesoEmpresa.exigirEmpresa(empresaId);
-        if (usuarioRepository.existsByEmail(email)) {
+        // Sin distinguir mayúsculas: el índice de login guarda el correo en minúsculas, y dos usuarios
+        // de una misma empresa que solo difieran en eso no se podrían distinguir al entrar.
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
             throw new IllegalStateException("Ya existe un usuario con ese correo");
         }
         // El RUT identifica a la persona en toda la cadena: quien recibe un
@@ -47,7 +52,18 @@ public class UsuarioService {
         if (pinInicial != null) {
             usuario.definirPin(pinInicial);
         }
-        return usuarioRepository.save(usuario);
+        // El correo es único en todo el sistema y el login lo usa para saber qué base
+        // abrir: se reserva en el índice del catálogo antes de guardar. Son dos bases sin
+        // transacción compartida, así que si guardar falla se suelta la reserva.
+        if (!catalogo.reservarCorreo(email, empresaId)) {
+            throw new IllegalStateException("Ya existe un usuario con ese correo");
+        }
+        try {
+            return usuarioRepository.saveAndFlush(usuario);
+        } catch (RuntimeException e) {
+            catalogo.liberarCorreo(email, empresaId);
+            throw e;
+        }
     }
 
     @Transactional(readOnly = true)

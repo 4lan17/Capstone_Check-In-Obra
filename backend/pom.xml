@@ -144,6 +144,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
+					<systemPropertyVariables>
+						<!-- La suite comparte una sola base entre muchas empresas de prueba: usa su propio
+						     resolutor (ConexionCompartidaParaPruebas) y valida el mapeo contra ella. -->
+						<checkinobra.pruebas.conexion-compartida>true</checkinobra.pruebas.conexion-compartida>
+						<spring.jpa.hibernate.ddl-auto>validate</spring.jpa.hibernate.ddl-auto>
+						<spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access>true</spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access>
+					</systemPropertyVariables>
 					<environmentVariables>
 						<!-- La API no arranca sin JWT_SECRET (SEG1). Este valor es solo de pruebas:
 						     no firma nada fuera de ./mvnw test y de la CI. -->

@@ -41,6 +41,7 @@ class LoginSeguroTest {
     @Autowired private EmpresaRepository empresaRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JwtService jwtService;
+    @Autowired private CatalogoDePrueba catalogoDePrueba;
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final JsonMapper json = JsonMapper.builder().build();
@@ -54,6 +55,7 @@ class LoginSeguroTest {
     void prepararUsuarios() {
         s = UUID.randomUUID().toString().substring(0, 8);
         empresa = empresaRepository.save(Empresa.builder().nombre("Empresa " + s).rut("R-" + s).build());
+        catalogoDePrueba.registrar(empresa);
         trabajador = usuario("obrero-" + s, RolUsuario.TRABAJADOR, PIN);
         admin = usuario("admin-" + s, RolUsuario.ADMIN, CLAVE_LARGA);
     }
@@ -255,7 +257,9 @@ class LoginSeguroTest {
         Usuario u = Usuario.builder()
                 .nombre(nombre).email(nombre + "@test.cl").rol(rol).empresa(empresa).build();
         u.definirPin(clave);
-        return usuarioRepository.save(u);
+        Usuario guardado = usuarioRepository.save(u);
+        catalogoDePrueba.indexar(guardado);
+        return guardado;
     }
 
     private HttpResponse<String> crearUsuario(String token, RolUsuario rol, String clave) throws Exception {
@@ -273,7 +277,8 @@ class LoginSeguroTest {
     }
 
     private HttpResponse<String> loginPin(long usuarioId, String pin) throws Exception {
-        return post("/api/auth/login-pin", "{\"usuarioId\": %d, \"pin\": \"%s\"}".formatted(usuarioId, pin), null);
+        return post("/api/auth/login-pin",
+                "{\"usuarioId\": %d, \"empresaId\": %d, \"pin\": \"%s\"}".formatted(usuarioId, empresa.getId(), pin), null);
     }
 
     private HttpResponse<String> loginCorreo(String email, String clave) throws Exception {
