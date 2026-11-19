@@ -29,7 +29,8 @@ class ConfiguracionDelEnrutadorTest {
     }
 
     @Test
-    void flywayTieneSuPropiaUrlPorqueElDataSourceEsElEnrutador() throws Exception {
-        assertThat(propiedades()).contains("spring.flyway.url=");
+    void flywayLoCorreElMigradorPorBaseYNoElAutoconfiguradoDeSpring() throws Exception {
+        // El de Spring Boot migra una sola base y necesita una conexión sin empresa.
+        assertThat(propiedades()).contains("spring.flyway.enabled=false");
     }
 }

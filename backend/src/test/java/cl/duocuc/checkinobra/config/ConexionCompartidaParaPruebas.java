@@ -62,7 +62,17 @@ class ConexionCompartidaParaPruebas {
     Compartido resolutorCompartido(
             @Value("${spring.datasource.url}") String url,
             @Value("${spring.datasource.username}") String usuario,
-            @Value("${spring.datasource.password}") String clave) {
+            @Value("${spring.datasource.password}") String clave,
+            @Value("${spring.flyway.user}") String migrador,
+            @Value("${spring.flyway.password}") String claveMigrador) {
+        // En una base de despliegue migra MigradorDeBases al arrancar; aquí la base compartida de
+        // la suite se migra antes de que Hibernate valide el mapeo contra ella.
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(url, migrador, claveMigrador)
+                .locations("classpath:db/migration")
+                .ignoreMigrationPatterns("*:missing")
+                .load()
+                .migrate();
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(usuario);

@@ -38,7 +38,13 @@ public class CatalogoDeEmpresas implements DisposableBean {
     /** Una empresa tal como la guarda el catálogo. */
     public record EmpresaRegistrada(
             Long id, String rut, String nombre, String plan, String estado,
-            String nombreBase, String usuarioBase, String secretoRef) {
+            String nombreBase, String usuarioBase, String secretoRef,
+            String migracionEstado, String migracionError) {
+
+        /** ¿Se puede abrir su base? Solo si está activa y quedó migrada a la última versión. */
+        public boolean abierta() {
+            return "ACTIVA".equals(estado) && "OK".equals(migracionEstado);
+        }
     }
 
     private final HikariDataSource pool;
@@ -77,15 +83,40 @@ public class CatalogoDeEmpresas implements DisposableBean {
     public List<EmpresaRegistrada> listar() {
         return catalogo.sql("""
                         SELECT e.id, e.rut, e.nombre, p.codigo AS plan, e.estado,
-                               e.nombre_base, e.usuario_base, e.secreto_ref
+                               e.nombre_base, e.usuario_base, e.secreto_ref,
+                               e.migracion_estado, e.migracion_error
                         FROM empresas e JOIN planes p ON p.id = e.plan_id
                         ORDER BY e.id
                         """)
                 .query((rs, n) -> new EmpresaRegistrada(
                         rs.getLong("id"), rs.getString("rut"), rs.getString("nombre"), rs.getString("plan"),
                         rs.getString("estado"), rs.getString("nombre_base"), rs.getString("usuario_base"),
-                        rs.getString("secreto_ref")))
+                        rs.getString("secreto_ref"), rs.getString("migracion_estado"),
+                        rs.getString("migracion_error")))
                 .list();
+    }
+
+    /**
+     * Anota cómo salió la migración de la base de una empresa. Si falló, la empresa queda sin
+     * base abierta y el error a la vista; si salió bien, se limpia el anterior.
+     */
+    public void marcarMigracion(Long empresaId, boolean ok, String error) {
+        catalogo.sql("""
+                        UPDATE empresas
+                           SET migracion_estado = :estado, migracion_error = :error, migrada_en = now()
+                         WHERE id = :id
+                        """)
+                .param("estado", ok ? "OK" : "ERROR")
+                .param("error", ok ? null : recortar(error))
+                .param("id", empresaId)
+                .update();
+    }
+
+    private static String recortar(String texto) {
+        if (texto == null) {
+            return "Sin detalle";
+        }
+        return texto.length() <= 2000 ? texto : texto.substring(0, 2000);
     }
 
     /** Los datos con que la base actual se registra: su nombre, su usuario y la referencia a su secreto. */

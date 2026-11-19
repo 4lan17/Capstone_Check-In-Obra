@@ -31,8 +31,7 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
 
     private final CatalogoDeEmpresas catalogo;
     private final Environment entorno;
-    private final String prefijoUrl;
-    private final String parametrosUrl;
+    private final UrlsDeBases urls;
     private final int tamanoPool;
     private final ConcurrentHashMap<Long, HikariDataSource> pools = new ConcurrentHashMap<>();
 
@@ -44,10 +43,7 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
             CatalogoDeEmpresas catalogo, Environment entorno, String urlDelServidor, int tamanoPool) {
         this.catalogo = catalogo;
         this.entorno = entorno;
-        int barra = urlDelServidor.lastIndexOf('/');
-        int interrogacion = urlDelServidor.indexOf('?', barra);
-        this.prefijoUrl = urlDelServidor.substring(0, barra + 1);
-        this.parametrosUrl = interrogacion < 0 ? "" : urlDelServidor.substring(interrogacion);
+        this.urls = new UrlsDeBases(urlDelServidor);
         this.tamanoPool = tamanoPool;
         refrescar();
     }
@@ -60,7 +56,7 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
     @Override
     public synchronized void refrescar() {
         List<CatalogoDeEmpresas.EmpresaRegistrada> activas = catalogo.listar().stream()
-                .filter(e -> "ACTIVA".equals(e.estado())).toList();
+                .filter(CatalogoDeEmpresas.EmpresaRegistrada::abierta).toList();
         Set<Long> vigentes = Set.copyOf(activas.stream().map(CatalogoDeEmpresas.EmpresaRegistrada::id).toList());
         pools.keySet().removeIf(id -> {
             if (vigentes.contains(id)) {
@@ -92,7 +88,7 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
             throw new IllegalStateException("No está definida la variable " + variable);
         }
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(prefijoUrl + e.nombreBase() + parametrosUrl);
+        config.setJdbcUrl(urls.de(e.nombreBase()));
         config.setUsername(e.usuarioBase());
         config.setPassword(clave);
         config.setPoolName("empresa-" + e.id());
