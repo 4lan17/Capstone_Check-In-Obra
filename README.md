@@ -270,6 +270,14 @@ cd Capstone_Check-In-Obra
 
 ### 1. Backend + base de datos
 
+Antes del primer arranque, crea el `.env` de la raíz con un secreto propio para
+los JWT (la API no arranca sin él; `scripts/levantar.sh` lo hace solo):
+
+```bash
+cp .env.example .env
+# edita JWT_SECRET: openssl rand -base64 48
+```
+
 ```bash
 docker compose up -d
 ```

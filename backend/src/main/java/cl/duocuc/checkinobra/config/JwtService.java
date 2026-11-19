@@ -18,14 +18,50 @@ import java.util.Date;
 @Component
 public class JwtService {
 
+    /** HS256 exige al menos 256 bits; menos que eso se adivina por fuerza bruta. */
+    static final int MIN_BYTES_SECRETO = 32;
+
+    /**
+     * Todo valor de ejemplo que se haya publicado empieza así: el que estuvo en
+     * application.properties y el marcador de .env.example. Rechazar el prefijo
+     * y no solo el valor exacto cubre también una copia con otro formato.
+     */
+    private static final String PREFIJO_DE_EJEMPLO = "cambiar";
+
     private final SecretKey key;
     private final long expiracionMinutos;
 
     public JwtService(
             @Value("${checkinobra.jwt.secret}") String secret,
             @Value("${checkinobra.jwt.expiracion-minutos:480}") long expiracionMinutos) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.key = Keys.hmacShaKeyFor(exigirSecretoSeguro(secret).getBytes(StandardCharsets.UTF_8));
         this.expiracionMinutos = expiracionMinutos;
+    }
+
+    /**
+     * La API no arranca sin un secreto propio. Con un valor por defecto
+     * publicado en el repo, cualquiera firmaba un token con {@code rol=ADMIN} y
+     * la empresa que quisiera (S-01). El mensaje nunca incluye el valor
+     * recibido: un secreto mal pegado no debe terminar en los logs.
+     */
+    static String exigirSecretoSeguro(String secreto) {
+        if (secreto == null || secreto.isBlank()) {
+            throw new IllegalStateException(
+                    "Falta JWT_SECRET. Defínelo en el .env (ver .env.example); "
+                            + "genera uno con: openssl rand -base64 48");
+        }
+        String limpio = secreto.trim();
+        if (limpio.toLowerCase(java.util.Locale.ROOT).startsWith(PREFIJO_DE_EJEMPLO)) {
+            throw new IllegalStateException(
+                    "JWT_SECRET es el valor de ejemplo del repositorio y no es seguro. "
+                            + "Genera uno propio con: openssl rand -base64 48");
+        }
+        if (limpio.getBytes(StandardCharsets.UTF_8).length < MIN_BYTES_SECRETO) {
+            throw new IllegalStateException(
+                    "JWT_SECRET debe tener al menos " + MIN_BYTES_SECRETO
+                            + " bytes. Genera uno con: openssl rand -base64 48");
+        }
+        return limpio;
     }
 
     public String emitir(Usuario usuario) {

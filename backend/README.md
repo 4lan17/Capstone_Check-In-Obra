@@ -80,12 +80,17 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 | `SPRING_DATASOURCE_URL` | JDBC de PostgreSQL | `jdbc:postgresql://localhost:5432/checkinobra` |
 | `SPRING_DATASOURCE_USERNAME` | Usuario de la base | `postgres` |
 | `SPRING_DATASOURCE_PASSWORD` | Clave de la base | `postgres` |
-| `JWT_SECRET` | Firma de los JWT | Un texto de ejemplo, **no seguro** |
+| `JWT_SECRET` | Firma de los JWT. **Obligatorio**: la API no arranca si falta, tiene menos de 32 bytes o es el valor de ejemplo | Ninguno |
 | `BREVO_SMTP_USER` / `BREVO_SMTP_PASSWORD` | Correo saliente (Brevo SMTP) | Vacío |
 
-`docker-compose.yml` solo define las tres del datasource. Dentro de Docker la
-API firma los tokens con el `JWT_SECRET` por defecto: sirve en local, pero
-cualquier despliegue real tiene que definirlo.
+`docker-compose.yml` define las del datasource y lee `JWT_SECRET` del `.env` de
+la raíz (no se versiona). `scripts/levantar.sh` lo genera la primera vez; a
+mano: copia `.env.example` a `.env` y reemplaza el marcador con
+`openssl rand -base64 48`. Sin él, `docker compose` se niega a levantar el
+backend. `./mvnw test` y la CI usan un secreto de pruebas definido en el `pom.xml`.
+
+Si una instancia ya corrió con el valor por defecto antiguo, rota el secreto:
+los tokens firmados con él valían.
 
 ---
 
