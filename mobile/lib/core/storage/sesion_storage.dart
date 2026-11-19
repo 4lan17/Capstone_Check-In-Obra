@@ -61,6 +61,12 @@ class SesionStorage {
     await _storage.delete(key: _clavePerfilTrabajador);
   }
 
+  /// Reemplaza solo la sesión: es lo que hace cada renovación del token, que
+  /// ocurre cada ~30 minutos y no tiene por qué tocar al usuario recordado ni
+  /// lo demás.
+  Future<void> actualizarSesion(SesionUsuario sesion) =>
+      _storage.write(key: _claveSesion, value: jsonEncode(sesion.aJson()));
+
   Future<SesionUsuario?> leer() async {
     final crudo = await _storage.read(key: _claveSesion);
     if (crudo == null) return null;

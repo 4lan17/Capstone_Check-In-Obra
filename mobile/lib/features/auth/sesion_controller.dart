@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -106,10 +108,36 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
 
   /// Cierra la sesión pero recuerda al usuario, para que pueda volver a
   /// entrar solo con su PIN.
-  Future<void> salir() async {
+  ///
+  /// Con [revocar] (lo normal) también le avisa al servidor para que revoque el
+  /// refresh token: sin eso, quien se llevara una copia podría seguir
+  /// renovando. Es **después** de cerrar la sesión local y sin esperarlo: si
+  /// falla —sin señal en la obra— el cierre ya ocurrió, y el refresh vence solo.
+  Future<void> salir({bool revocar = true}) async {
     navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
+    final refresh = revocar ? state.valueOrNull?.refreshToken : null;
     await _storage.cerrarSesion();
     state = const AsyncValue.data(null);
+    if (refresh != null) _revocarEnElServidor(refresh);
+  }
+
+  void _revocarEnElServidor(String refresh) {
+    // Sin await a propósito. El error no se puede mostrar a nadie: la pantalla
+    // ya es la de acceso.
+    unawaited(_api.cerrarSesion(refresh).catchError((Object _) {}));
+  }
+
+  /// Una renovación del token de acceso: la sesión sigue siendo la misma
+  /// persona, con token y refresh nuevos. Si mientras tanto entró otra cuenta,
+  /// se descarta (no se le pisa la sesión a quien entró después).
+  void aplicarRenovada(SesionUsuario nueva) {
+    final actual = state.valueOrNull;
+    if (actual == null ||
+        actual.usuarioId != nueva.usuarioId ||
+        actual.empresaId != nueva.empresaId) {
+      return;
+    }
+    state = AsyncValue.data(nueva);
   }
 
   /// El servidor rechazó el token guardado: venció o lo revocaron.
@@ -120,7 +148,8 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   Future<void> expirar() async {
     if (state.valueOrNull == null) return;
     navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
-    await salir();
+    // El servidor ya dijo que la sesión no vale: no hay nada que revocar.
+    await salir(revocar: false);
     mensajeroRaiz.currentState
       ?..hideCurrentSnackBar()
       ..showSnackBar(

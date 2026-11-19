@@ -806,7 +806,7 @@ class EmpresaApi {
 final clienteRestProvider = Provider<ClienteRest>((ref) {
   ref.watch(
     sesionProvider.select(
-      (s) => (s.valueOrNull?.usuarioId, s.valueOrNull?.token),
+      (s) => (s.valueOrNull?.usuarioId, s.valueOrNull?.empresaId),
     ),
   );
   return ClienteRest(ref.watch(apiClientProvider));

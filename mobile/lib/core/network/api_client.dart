@@ -5,6 +5,7 @@ import '../../data/api/auth_api.dart';
 import '../storage/sesion_storage.dart';
 import '../../features/auth/sesion_controller.dart';
 import 'app_config.dart';
+import 'renovador_sesion.dart';
 
 /// Cliente HTTP contra la API de Check-In-Obra.
 ///
@@ -16,10 +17,17 @@ class ApiClient {
     SesionStorage? storage,
     void Function()? alExpirar,
     void Function()? alDebeCambiarClave,
+    Future<ResultadoRenovacion> Function(String tokenQueFallo)? renovar,
   }) : dio = dio ?? _crearDio() {
     if (storage != null) {
       this.dio.interceptors.add(
-        _InterceptorToken(storage, alExpirar, alDebeCambiarClave),
+        _InterceptorToken(
+          this.dio,
+          storage,
+          alExpirar,
+          alDebeCambiarClave,
+          renovar,
+        ),
       );
     }
   }
@@ -45,29 +53,43 @@ class ApiClient {
 /// Adjunta el JWT a cada petición, salvo a las de `/api/auth` — pedir el
 /// token mandando el token no tiene sentido.
 ///
-/// También detecta el token vencido. El JWT guardado se usa para entrar sin
-/// credenciales al abrir la app, pero expira: sin esto se entraba igual y cada
-/// pantalla mostraba "tu sesión expiró" sin ofrecer salida. Un 401 fuera de
-/// `/api/auth` cierra la sesión, y quien está en bodega vuelve a la pantalla
-/// del PIN con su usuario recordado.
+/// También se ocupa del token vencido. El de acceso dura 30 minutos; ante un
+/// 401 fuera de `/api/auth` se intenta **renovarlo** con el refresh token y
+/// reintentar la petición **una vez**, sin que quien está en bodega note nada.
+/// Solo se cierra la sesión si el servidor dice que ya no vale (`SESION_INVALIDA`,
+/// o el refresh rechazado): ahí vuelve a la pantalla de acceso con su usuario
+/// recordado. Sin señal no se cierra nada: no poder renovar no es lo mismo que
+/// no poder seguir.
 class _InterceptorToken extends Interceptor {
-  _InterceptorToken(this._storage, this._alExpirar, this._alDebeCambiarClave);
+  _InterceptorToken(
+    this._dio,
+    this._storage,
+    this._alExpirar,
+    this._alDebeCambiarClave,
+    this._renovar,
+  );
 
+  final Dio _dio;
   final SesionStorage _storage;
   final void Function()? _alExpirar;
   final void Function()? _alDebeCambiarClave;
+  final Future<ResultadoRenovacion> Function(String tokenQueFallo)? _renovar;
+
+  static const _marcaReintento = 'reintentado_tras_renovar';
 
   @override
-  void onResponse(
+  Future<void> onResponse(
     Response<dynamic> response,
     ResponseInterceptorHandler handler,
-  ) {
-    final esAuth = response.requestOptions.path.startsWith('/api/auth');
-    final llevabaToken = response.requestOptions.headers.containsKey(
-      'Authorization',
-    );
+  ) async {
+    final pedida = response.requestOptions;
+    final esAuth = pedida.path.startsWith('/api/auth');
+    final autorizacion = pedida.headers['Authorization'];
+    final llevabaToken = autorizacion is String;
+
     if (response.statusCode == 401 && !esAuth && llevabaToken) {
-      _alExpirar?.call();
+      await _alRecibir401(response, handler, autorizacion);
+      return;
     }
     // Cuenta con clave provisoria: el servidor responde 403 a todo salvo al
     // cambio de clave. No es un "sin permiso" que mostrar como error, sino una
@@ -79,6 +101,54 @@ class _InterceptorToken extends Interceptor {
       }
     }
     handler.next(response);
+  }
+
+  Future<void> _alRecibir401(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+    String autorizacion,
+  ) async {
+    final pedida = response.requestOptions;
+    final cuerpo = response.data;
+    final sesionInvalida =
+        cuerpo is Map && cuerpo['codigo'] == 'SESION_INVALIDA';
+    final yaReintentada = pedida.extra[_marcaReintento] == true;
+    final renovar = _renovar;
+
+    // El servidor dijo que la sesión no vale, o ya se reintentó con un token
+    // recién renovado y igual falló: no hay más que intentar.
+    if (sesionInvalida || yaReintentada || renovar == null) {
+      _alExpirar?.call();
+      handler.next(response);
+      return;
+    }
+
+    final resultado = await renovar(autorizacion.replaceFirst('Bearer ', ''));
+    switch (resultado) {
+      case ResultadoRenovacion.renovada:
+        try {
+          // `onRequest` vuelve a leer el token del almacenamiento: el
+          // reintento sale con el nuevo.
+          final reintento = await _dio.fetch<dynamic>(
+            pedida.copyWith(
+              data: pedida.data is FormData
+                  ? (pedida.data as FormData).clone()
+                  : pedida.data,
+              extra: {...pedida.extra, _marcaReintento: true},
+            ),
+          );
+          handler.resolve(reintento);
+        } on DioException catch (e) {
+          handler.reject(e);
+        }
+      case ResultadoRenovacion.sesionInvalida:
+        _alExpirar?.call();
+        handler.next(response);
+      case ResultadoRenovacion.noDisponible:
+        // La petición falla con su 401, pero la sesión sigue: se puede
+        // reintentar cuando vuelva la señal.
+        handler.next(response);
+    }
   }
 
   @override
@@ -109,7 +179,27 @@ final apiClientProvider = Provider<ApiClient>(
     alExpirar: () => ref.read(sesionProvider.notifier).expirar(),
     alDebeCambiarClave: () =>
         ref.read(sesionProvider.notifier).exigirCambioDeClave(),
+    renovar: (tokenQueFallo) => ref
+        .read(renovadorDeSesionProvider)
+        .renovar(tokenQueFallo: tokenQueFallo),
   ),
+);
+
+/// Renueva el token de acceso. Usa un cliente **sin** el interceptor del token:
+/// renovar no lleva token, y con él un 401 del propio refresh intentaría
+/// renovar de nuevo, sin fin.
+final renovadorDeSesionProvider = Provider<RenovadorDeSesion>((ref) {
+  return RenovadorDeSesion(
+    storage: ref.watch(sesionStorageProvider),
+    pedir: (refresh) => ref.read(authApiSinTokenProvider).renovar(refresh),
+    alRenovar: (nueva) =>
+        ref.read(sesionProvider.notifier).aplicarRenovada(nueva),
+  );
+});
+
+/// El cliente de auth **sin** interceptor de token, para renovar la sesión.
+final authApiSinTokenProvider = Provider<AuthApi>(
+  (ref) => AuthApi(ApiClient()),
 );
 
 final authApiProvider = Provider<AuthApi>(
