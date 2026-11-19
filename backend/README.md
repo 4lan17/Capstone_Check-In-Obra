@@ -86,8 +86,8 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 `docker-compose.yml` define las del datasource y lee `JWT_SECRET` del `.env` de
 la raíz (no se versiona). `scripts/levantar.sh` lo genera la primera vez; a
 mano: copia `.env.example` a `.env` y reemplaza el marcador con
-`openssl rand -base64 48`. Sin él, `docker compose` se niega a levantar el
-backend. `./mvnw test` y la CI usan un secreto de pruebas definido en el `pom.xml`.
+`openssl rand -base64 48`. Sin él, el backend sale al arrancar con un mensaje que lo
+explica (`docker compose logs backend`). `./mvnw test` y la CI usan un secreto de pruebas definido en el `pom.xml`.
 
 Si una instancia ya corrió con el valor por defecto antiguo, rota el secreto:
 los tokens firmados con él valían.
