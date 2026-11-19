@@ -5,19 +5,28 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/sesion_controller.dart';
 import '../bodega/bodega_providers.dart';
+import '../../shared_widgets/barra_pestanas.dart';
 import '../cubicacion/pantalla_partidas.dart';
 import '../obra/obra_activa.dart';
 import '../obra/pantalla_elegir_obra.dart';
+import '../presupuesto/pantalla_presupuesto.dart';
 
 /// La app del jefe de terreno.
 ///
 /// Como la del bodeguero, trabaja sobre una obra: partidas y presupuesto son
 /// *de una obra*, así que hay que elegirla antes de mostrar nada.
-class ShellJefeTerreno extends ConsumerWidget {
+class ShellJefeTerreno extends ConsumerStatefulWidget {
   const ShellJefeTerreno({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShellJefeTerreno> createState() => _ShellJefeTerrenoState();
+}
+
+class _ShellJefeTerrenoState extends ConsumerState<ShellJefeTerreno> {
+  int _tab = 0;
+
+  @override
+  Widget build(BuildContext context) {
     final obra = ref.watch(obraActivaProvider);
 
     if (obra.isLoading && !obra.hasValue) {
@@ -41,7 +50,29 @@ class ShellJefeTerreno extends ConsumerWidget {
           ),
         ],
       ),
-      body: const SafeArea(top: false, child: PantallaPartidas()),
+      body: SafeArea(
+        top: false,
+        child: IndexedStack(
+          index: _tab,
+          children: const [PantallaPartidas(), PantallaPresupuesto()],
+        ),
+      ),
+      bottomNavigationBar: BarraDePestanas(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.straighten_outlined),
+            selectedIcon: Icon(Icons.straighten),
+            label: 'Partidas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.request_quote_outlined),
+            selectedIcon: Icon(Icons.request_quote),
+            label: 'Presupuesto',
+          ),
+        ],
+      ),
     );
   }
 }

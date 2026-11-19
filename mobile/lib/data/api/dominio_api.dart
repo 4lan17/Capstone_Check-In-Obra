@@ -15,9 +15,11 @@ import '../modelos/partida.dart';
 import '../modelos/pedido_especial.dart';
 import '../modelos/pedido_herramienta.dart';
 import '../modelos/perfil_trabajador.dart';
+import '../modelos/presupuesto.dart';
 import '../modelos/solicitud.dart';
 import '../modelos/trabajador.dart';
 import '../modelos/usuario.dart';
+import 'auth_api.dart' show ApiException;
 import 'cliente_rest.dart';
 
 /// Obras de la empresa. La empresa ya no viaja como parámetro: el backend la
@@ -838,6 +840,93 @@ class PartidasApi {
   );
 }
 
+/// Presupuesto de una obra: uno por obra (RN-10), con ciclo
+/// BORRADOR → APROBADO → CONGELADO.
+class PresupuestosApi {
+  const PresupuestosApi(this._rest);
+
+  final ClienteRest _rest;
+
+  /// `null` cuando la obra aún no tiene presupuesto: el backend lo responde con
+  /// 404, y acá eso es un estado normal —el jefe todavía no lo crea— y no un
+  /// error.
+  Future<Presupuesto?> porObra(int obraId) async {
+    try {
+      return await _rest.uno(
+        '/api/presupuestos',
+        Presupuesto.desdeJson,
+        params: {'obraId': obraId},
+      );
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Responde 409 si la obra ya tiene uno.
+  Future<Presupuesto> crear(int obraId, {String? clave}) => _rest.crear(
+    '/api/presupuestos',
+    {'obraId': obraId},
+    Presupuesto.desdeJson,
+    clave: clave,
+  );
+
+  Future<List<PresupuestoItem>> items(int presupuestoId) => _rest.lista(
+    '/api/presupuestos/$presupuestoId/items',
+    PresupuestoItem.desdeJson,
+  );
+
+  /// El precio lo pone el backend, del catálogo vigente (RN-13). Responde 409
+  /// si el presupuesto está congelado (RN-12).
+  Future<PresupuestoItem> agregarItem(
+    int presupuestoId, {
+    required int materialId,
+    required double cantidad,
+    String? clave,
+  }) => _rest.crear(
+    '/api/presupuestos/$presupuestoId/items',
+    {'materialId': materialId, 'cantidad': cantidad},
+    PresupuestoItem.desdeJson,
+    clave: clave,
+  );
+
+  /// Agrega de una vez los ítems cubicados de una partida, con su cantidad con
+  /// merma y el precio vigente (RN-13). Es atómico: entran todos o ninguno.
+  ///
+  /// Responde 409 si el presupuesto está congelado, si la partida es de otra
+  /// obra o si todavía no se cubicó. **No deduplica**: llamarlo dos veces con
+  /// la misma partida duplica las filas, así que la pantalla debe impedir el
+  /// segundo envío y reintentar con la misma `clave`.
+  Future<List<PresupuestoItem>> agregarDesdePartida(
+    int presupuestoId, {
+    required int partidaId,
+    String? clave,
+  }) => _rest.crearLista(
+    '/api/presupuestos/$presupuestoId/items/desde-partida',
+    {'partidaId': partidaId},
+    PresupuestoItem.desdeJson,
+    clave: clave,
+  );
+
+  /// Solo un BORRADOR pasa a APROBADO (RN-11); otro estado responde 409.
+  Future<Presupuesto> aprobar(int presupuestoId, {String? clave}) =>
+      _rest.actualizar(
+        '/api/presupuestos/$presupuestoId/aprobar',
+        const {},
+        Presupuesto.desdeJson,
+        clave: clave,
+      );
+
+  /// Solo un APROBADO pasa a CONGELADO, y no vuelve atrás (RN-11).
+  Future<Presupuesto> congelar(int presupuestoId, {String? clave}) =>
+      _rest.actualizar(
+        '/api/presupuestos/$presupuestoId/congelar',
+        const {},
+        Presupuesto.desdeJson,
+        clave: clave,
+      );
+}
+
 class EmpresaApi {
   const EmpresaApi(this._rest);
 
@@ -888,6 +977,9 @@ final trabajadoresApiProvider = Provider(
 );
 final partidasApiProvider = Provider(
   (ref) => PartidasApi(ref.watch(clienteRestProvider)),
+);
+final presupuestosApiProvider = Provider(
+  (ref) => PresupuestosApi(ref.watch(clienteRestProvider)),
 );
 final empresaApiProvider = Provider(
   (ref) => EmpresaApi(ref.watch(clienteRestProvider)),
