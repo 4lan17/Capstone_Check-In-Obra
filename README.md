@@ -791,6 +791,13 @@ Si un fallo de la API la compromete, quien la controla puede leer y escribir dat
 pero no borrar tablas ni cambiar el esquema. Cada rol solo puede conectarse a su
 base: `checkinobra_app` a la de la empresa, `checkinobra_plataforma` al catálogo.
 
+### Seguridad de la cadena de entrega
+
+- **CI** (`.github/workflows`): permisos mínimos (`contents: read`), todas las acciones fijadas por SHA, `CodeQL` sobre el backend y revisión de dependencias en cada PR (`dependency-review`, bloquea severidad alta; requiere el grafo de dependencias activo en el repositorio).
+- **Dependabot** (`.github/dependabot.yml`): maven, pub, github-actions, docker y docker-compose, una vez por semana.
+- **Imágenes** (`backend/Dockerfile`, `docker-compose.yml` y la CI): fijadas por digest; el contenedor del backend no corre como root y tiene `HEALTHCHECK`. Dependabot propone el digest nuevo.
+- springdoc está en la línea 3.x, la de Spring Boot 4.
+
 ### Base de catálogo
 
 `checkinobra_catalogo` guarda qué empresas existen y cómo conectarse a la base de
