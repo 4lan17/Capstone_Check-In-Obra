@@ -268,8 +268,8 @@ fi
 # imprimen, y se reemplaza cualquier valor de ejemplo ("CAMBIAR_...").
 paso "Secretos (.env)"
 asegurar_secreto() {
-  local var="$1" bytes="$2" valor
-  if grep -Eq "^${var}=[^[:space:]]{32,}\$" .env 2>/dev/null \
+  local var="$1" bytes="$2" minimo="${3:-32}" valor
+  if grep -Eq "^${var}=[^[:space:]]{${minimo},}\$" .env 2>/dev/null \
      && ! grep -Eiq "^${var}=cambiar" .env; then
     bien "$var ya definido en .env."
     return 0
@@ -286,6 +286,9 @@ asegurar_secreto JWT_SECRET 48
 asegurar_secreto POSTGRES_PASSWORD 36
 asegurar_secreto DB_APP_PASSWORD 36
 asegurar_secreto DB_MIGRADOR_PASSWORD 36
+# Clave inicial del administrador: corta a proposito (se copia a mano en la app, que
+# pide cambiarla en el primer ingreso). La migracion V11 anulo el PIN 0000.
+asegurar_secreto PRIMER_ADMIN_CLAVE 12 12
 
 # --- 3. imagenes y contenedores --------------------------------------------
 paso "Construyendo las imagenes"
@@ -357,7 +360,7 @@ paso "Listo"
 info "API          $API"
 info "Swagger      $API/swagger-ui.html"
 info "PostgreSQL   127.0.0.1:5433  (usuario checkinobra_app; la clave esta en .env como DB_APP_PASSWORD)"
-info "Admin        admin@arauco-ltda.cl  PIN 0000"
+info "Admin        admin@arauco-ltda.cl  clave inicial: PRIMER_ADMIN_CLAVE en .env (la app te pide cambiarla)"
 if (( ! sin_emulador )); then
   info "Emulador     $DISPOSITIVO"
 fi

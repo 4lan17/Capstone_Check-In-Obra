@@ -40,13 +40,17 @@ docker compose up -d
 | Swagger UI | http://localhost:8081/swagger-ui.html |
 | PostgreSQL | `localhost:5433`, base `checkinobra`, usuario y clave `postgres` |
 
-Flyway aplica las migraciones al arrancar. La `V2` deja un administrador para
-la primera entrada: `admin@arauco-ltda.cl` con PIN `0000`.
+Flyway aplica las migraciones al arrancar. La `V2` crea al administrador
+`admin@arauco-ltda.cl` y la `V11` le anula el PIN `0000` que traía: su clave
+inicial es `PRIMER_ADMIN_CLAVE` (del `.env` de la raíz, que `scripts/levantar.sh`
+genera) y la cuenta queda obligada a cambiarla con `PUT /api/auth/pin` antes de
+hacer cualquier otra cosa. Detalle en el
+[README de la raíz](../README.md#2-primer-login).
 
 ```bash
 curl -X POST http://localhost:8081/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@arauco-ltda.cl","pin":"0000"}'
+  -d "{\"email\":\"admin@arauco-ltda.cl\",\"pin\":\"$PRIMER_ADMIN_CLAVE\"}"
 ```
 
 Para tener las cuentas de los cuatro roles y una obra de ejemplo:

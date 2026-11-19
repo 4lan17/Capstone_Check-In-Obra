@@ -203,10 +203,10 @@ if (DockerResponde) {
 # imprimen, y se reemplaza cualquier valor de ejemplo ("CAMBIAR_...").
 Paso 'Secretos (.env)'
 $envRaiz = Join-Path $Raiz '.env'
-function AsegurarSecreto([string]$Var, [int]$Bytes) {
+function AsegurarSecreto([string]$Var, [int]$Bytes, [int]$Minimo = 32) {
     $lineas = @()
     if (Test-Path $envRaiz) { $lineas = @(Get-Content $envRaiz) }
-    $valido = $lineas | Where-Object { $_ -match "^$Var=\S{32,}$" -and $_ -notmatch "^$Var=(?i)cambiar" }
+    $valido = $lineas | Where-Object { $_ -match "^$Var=\S{$Minimo,}$" -and $_ -notmatch "^$Var=(?i)cambiar" }
     if ($valido) { Bien "$Var ya definido en .env."; return }
     $azar = New-Object byte[] $Bytes
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -221,6 +221,9 @@ AsegurarSecreto 'JWT_SECRET' 48
 AsegurarSecreto 'POSTGRES_PASSWORD' 36
 AsegurarSecreto 'DB_APP_PASSWORD' 36
 AsegurarSecreto 'DB_MIGRADOR_PASSWORD' 36
+# Clave inicial del administrador: corta a proposito (se copia a mano en la app, que
+# pide cambiarla en el primer ingreso). La migracion V11 anulo el PIN 0000.
+AsegurarSecreto 'PRIMER_ADMIN_CLAVE' 12 12
 
 # --- 3. imagenes y contenedores --------------------------------------------
 Paso 'Construyendo las imagenes'
@@ -302,7 +305,7 @@ Paso 'Listo'
 Info "API          $Api"
 Info "Swagger      $Api/swagger-ui.html"
 Info 'PostgreSQL   127.0.0.1:5433  (usuario checkinobra_app; la clave esta en .env como DB_APP_PASSWORD)'
-Info 'Admin        admin@arauco-ltda.cl  PIN 0000'
+Info 'Admin        admin@arauco-ltda.cl  clave inicial: PRIMER_ADMIN_CLAVE en .env (la app te pide cambiarla)'
 if (-not $SinEmulador) { Info "Emulador     $Dispositivo" }
 if ($Telefono) { Info "Telefono     $Serie" }
 Info 'Cuentas de los cuatro roles: py scripts\cuentas_de_prueba.py'

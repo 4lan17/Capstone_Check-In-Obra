@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,13 +53,27 @@ public class AuthController {
         return ResponseEntity.ok(respuestaPara(usuario));
     }
 
+    @PutMapping("/pin")
+    @Operation(summary = "Cambia la clave propia. Es lo único que puede llamar una cuenta con clave provisoria "
+            + "(debeCambiarClave). Devuelve una sesión nueva, ya sin la obligación.")
+    public ResponseEntity<LoginResponse> cambiarPin(@RequestBody CambiarPinRequest req, HttpServletRequest http) {
+        Usuario usuario = autenticacionService.cambiarPin(
+                SesionActual.usuarioId(), req.pinActual(), req.pinNuevo(), http.getRemoteAddr());
+        return ResponseEntity.ok(respuestaPara(usuario));
+    }
+
     private LoginResponse respuestaPara(Usuario usuario) {
         return new LoginResponse(
                 jwtService.emitir(usuario),
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getRol(),
-                usuario.getEmpresa().getId());
+                usuario.getEmpresa().getId(),
+                usuario.isDebeCambiarPin());
+    }
+
+    public record CambiarPinRequest(
+            @NotBlank @Size(max = 72) String pinActual, @NotBlank @Size(max = 72) String pinNuevo) {
     }
 
     /**
@@ -73,6 +88,11 @@ public class AuthController {
     public record LoginPorPinRequest(@NotNull Long usuarioId, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {
     }
 
-    public record LoginResponse(String token, Long usuarioId, String nombre, RolUsuario rol, Long empresaId) {
+    /**
+     * @param debeCambiarClave la clave es provisoria: el token solo sirve para
+     *     {@code PUT /api/auth/pin} hasta que la cambie
+     */
+    public record LoginResponse(
+            String token, Long usuarioId, String nombre, RolUsuario rol, Long empresaId, boolean debeCambiarClave) {
     }
 }

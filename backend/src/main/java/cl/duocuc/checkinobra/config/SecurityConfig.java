@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -41,6 +42,9 @@ public class SecurityConfig {
                         // permiso". Se permite el *dispatch* de error, no una
                         // petición directa a /error.
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        // Cambiar la propia clave exige estar autenticado: va antes
+                        // del permitAll de /api/auth/**.
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/pin").authenticated()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
