@@ -71,7 +71,17 @@ API_BASE_URL=http://10.0.2.2:8081
 | Dónde corre la app | Valor |
 |---|---|
 | Emulador de Android | `http://10.0.2.2:8081`, que es el localhost del computador visto desde el emulador |
-| Celular físico | `http://<IP del computador en la WiFi>:8081`, por ejemplo `http://192.168.1.50:8081` |
+| Celular físico por USB | `http://localhost:8081` con `adb reverse` (lo hace `scripts/levantar.sh --telefono`) |
+| Producción (release) | `https://…`, pasada al compilar con `--dart-define=API_BASE_URL=https://…` |
+
+**Sin tráfico en claro.** Android bloquea todo HTTP salvo, en las compilaciones
+de *debug*, hacia `10.0.2.2`, `localhost` y `127.0.0.1`
+(`android/app/src/debug/res/xml/network_security_config.xml`). Por eso ya no
+sirve apuntar el `.env` a la IP del computador en la WiFi
+(`http://192.168.1.50:8081`): la petición se corta antes de salir. Para un
+teléfono físico usa el cable y `adb reverse`. En **release** la app además
+rechaza al arrancar cualquier `API_BASE_URL` que no empiece con `https://`, y
+no cae al valor del emulador si falta.
 
 El `.env` no se versiona porque la IP cambia según la máquina y la red. Si
 falta, la app arranca igual con el valor del emulador. Una URL pasada al
@@ -249,9 +259,7 @@ resultado.
 libsqlite3…`.** Es una descarga corrupta del binario de `sqlite3` en el runner
 de GitHub, no un problema del código. Relanza el job.
 
-**Antes de generar un APK de release.** El permiso `INTERNET` está solo en los
-manifiestos `debug` y `profile`. El de `main` declara solo `CAMERA`, así que
-un APK de release no podría llamar a la API. Agrega
-`<uses-permission android:name="android.permission.INTERNET"/>` en
-`android/app/src/main/AndroidManifest.xml`. Además, el release necesita un
-keystore de firma, que no está en el repo.
+**Antes de generar un APK de release.** Compílalo con
+`--dart-define=API_BASE_URL=https://…`: sin una URL `https://` la app no
+arranca. El release además necesita un keystore de firma, que no está en el
+repo. El permiso `INTERNET` ya está en el manifiesto principal.

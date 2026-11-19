@@ -10,6 +10,7 @@ import 'data/api/auth_api.dart';
 import 'features/admin/shell_admin.dart';
 import 'features/auth/pantalla_acceso.dart';
 import 'features/auth/pantalla_cambiar_clave.dart';
+import 'features/auth/pantalla_configuracion_invalida.dart';
 import 'features/auth/sesion_controller.dart';
 import 'features/bodega/shell_bodega.dart';
 import 'features/inicio/pantalla_rol_pendiente.dart';
@@ -19,6 +20,12 @@ import 'features/trabajador/shell_trabajador.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.cargar();
+  // En release, una URL que no sea https:// impide arrancar (S-10).
+  final errorDeConfiguracion = AppConfig.errorDeConfiguracion;
+  if (errorDeConfiguracion != null) {
+    runApp(PantallaConfiguracionInvalida(mensaje: errorDeConfiguracion));
+    return;
+  }
   // Sin esto, `DateFormat` con locale 'es_CL' lanza LocaleDataException y
   // revienta cualquier pantalla que muestre una fecha — que en esta app son
   // casi todas: el kardex, las alertas y el cierre de turno.
