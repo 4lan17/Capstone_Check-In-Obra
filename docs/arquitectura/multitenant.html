@@ -636,6 +636,7 @@
         <li>El bloqueo por intentos incluye la empresa en su clave de cuenta por la misma razón</li>
         <li>Crear un usuario reserva su correo en el catálogo antes de guardarlo, y lo suelta si guardar falla (dos bases, sin transacción compartida). Se compara sin distinguir mayúsculas</li>
         <li>Mientras exista una sola empresa, <code>login-pin</code> sin <code>empresaId</code> se resuelve a esa: es lo que permite que una app anterior siga entrando</li>
+        <li>Además de abrir la base de la empresa pedida, el login comprueba que el usuario encontrado sea de ella: con una base por empresa siempre lo es, y si una base estuviera mal registrada o compartida, no se entra con la empresa equivocada (MT4)</li>
       </ul>
     </div>
     <div class="card">

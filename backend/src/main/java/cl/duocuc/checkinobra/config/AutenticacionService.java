@@ -83,7 +83,9 @@ public class AutenticacionService {
     public Usuario loginPorCorreo(String email, String clave, String ip) {
         Optional<Long> empresaId = catalogo.empresaDeCorreo(email).filter(resolutor::conoce);
         Optional<Usuario> usuario = empresaId.flatMap(id -> TenantContext.ejecutarEn(id,
-                () -> usuarioRepository.findByEmail(email).filter(u -> u.autenticarPorEmail(email))));
+                () -> usuarioRepository.findByEmail(email)
+                        .filter(u -> u.autenticarPorEmail(email))
+                        .filter(u -> esDeLaEmpresa(u, id))));
         String claveCuenta = usuario.map(u -> claveDeCuenta(u.getEmpresa().getId(), u.getId()))
                 .orElse("e:" + (email == null ? "" : email.trim().toLowerCase()));
         return verificar(usuario, clave, claveCuenta, ip);
@@ -100,7 +102,7 @@ public class AutenticacionService {
     public Usuario loginPorPin(Long usuarioId, Long empresaId, String pin, String ip) {
         Optional<Long> empresa = elegirEmpresa(empresaId);
         Optional<Usuario> usuario = empresa.flatMap(id -> TenantContext.ejecutarEn(id,
-                () -> usuarioRepository.findById(usuarioId)));
+                () -> usuarioRepository.findById(usuarioId).filter(u -> esDeLaEmpresa(u, id))));
         String claveCuenta = usuario.map(u -> claveDeCuenta(u.getEmpresa().getId(), u.getId()))
                 .orElse("i:" + empresaId + ":" + usuarioId);
         // Un ADMIN, JEFE_TERRENO o BODEGUERO no entra por acá aunque acierte: su
@@ -115,6 +117,15 @@ public class AutenticacionService {
         }
         var todas = resolutor.empresas();
         return todas.size() == 1 ? todas.stream().findFirst() : Optional.empty();
+    }
+
+    /**
+     * Segunda comprobación, además de abrir la base de esa empresa: el usuario encontrado tiene
+     * que ser de ella. Con una base por empresa siempre lo es; si la base fuera compartida (como
+     * la de la suite de pruebas, o una mal registrada) esto evita entrar con la empresa equivocada.
+     */
+    private static boolean esDeLaEmpresa(Usuario usuario, Long empresaId) {
+        return usuario.getEmpresa() != null && empresaId.equals(usuario.getEmpresa().getId());
     }
 
     /** Los ids de usuario se repiten entre bases: la clave del bloqueo incluye la empresa. */
