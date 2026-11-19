@@ -10,4 +10,8 @@ public interface SolicitudMaterialRepository extends JpaRepository<SolicitudMate
     List<SolicitudMaterial> findByObraId(Long obraId);
     List<SolicitudMaterial> findByObraIdAndEstado(Long obraId, EstadoSolicitud estado);
     List<SolicitudMaterial> findByEstado(EstadoSolicitud estado);
+
+    /** ¿Ya tiene el trabajador pedido ese material, para esa obra, y sigue sin resolverse? */
+    boolean existsByTrabajadorIdAndMaterialIdAndObraIdAndEstado(
+            Long trabajadorId, Long materialId, Long obraId, EstadoSolicitud estado);
 }
