@@ -70,6 +70,40 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// reiniciar la app, por eso parecía intermitente.
   void _recordar() => ref.invalidate(usuarioRecordadoProvider);
 
+  /// Cambia la clave de quien tiene la sesión y pasa a usar la sesión nueva
+  /// que devuelve el servidor, ya sin la obligación de cambiarla.
+  ///
+  /// No pasa por `AsyncLoading`: eso reemplazaría la pantalla por el indicador
+  /// de carga de la raíz. Un fallo (clave actual mal escrita, bloqueo por
+  /// intentos) se relanza para que la pantalla lo muestre donde está.
+  Future<void> cambiarClave({
+    required String claveActual,
+    required String claveNueva,
+  }) async {
+    final sesion = await _api.cambiarClave(
+      claveActual: claveActual,
+      claveNueva: claveNueva,
+    );
+    await _storage.guardar(sesion);
+    _recordar();
+    state = AsyncValue.data(sesion);
+  }
+
+  /// El servidor respondió `DEBE_CAMBIAR_PIN` a una petición: la cuenta tiene
+  /// una clave provisoria. Se marca la sesión y la raíz muestra el cambio de
+  /// clave en vez de la app. Puede llegar varias veces seguidas (varias
+  /// peticiones en vuelo); solo la primera actúa.
+  Future<void> exigirCambioDeClave() async {
+    final sesion = state.valueOrNull;
+    if (sesion == null || sesion.debeCambiarClave) return;
+    final marcada = sesion.conCambioPendiente();
+    // Se saca a la persona de donde esté: lo que estaba apilado no se puede
+    // usar hasta que cambie la clave.
+    navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
+    await _storage.guardar(marcada);
+    state = AsyncValue.data(marcada);
+  }
+
   /// Cierra la sesión pero recuerda al usuario, para que pueda volver a
   /// entrar solo con su PIN.
   Future<void> salir() async {

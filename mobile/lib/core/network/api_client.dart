@@ -11,10 +11,16 @@ import 'app_config.dart';
 /// Los timeouts son cortos a propósito: en terreno, esperar 30 segundos a que
 /// una petición muera es peor que fallar rápido y reintentar.
 class ApiClient {
-  ApiClient({Dio? dio, SesionStorage? storage, void Function()? alExpirar})
-    : dio = dio ?? _crearDio() {
+  ApiClient({
+    Dio? dio,
+    SesionStorage? storage,
+    void Function()? alExpirar,
+    void Function()? alDebeCambiarClave,
+  }) : dio = dio ?? _crearDio() {
     if (storage != null) {
-      this.dio.interceptors.add(_InterceptorToken(storage, alExpirar));
+      this.dio.interceptors.add(
+        _InterceptorToken(storage, alExpirar, alDebeCambiarClave),
+      );
     }
   }
 
@@ -45,10 +51,11 @@ class ApiClient {
 /// `/api/auth` cierra la sesión, y quien está en bodega vuelve a la pantalla
 /// del PIN con su usuario recordado.
 class _InterceptorToken extends Interceptor {
-  _InterceptorToken(this._storage, this._alExpirar);
+  _InterceptorToken(this._storage, this._alExpirar, this._alDebeCambiarClave);
 
   final SesionStorage _storage;
   final void Function()? _alExpirar;
+  final void Function()? _alDebeCambiarClave;
 
   @override
   void onResponse(
@@ -62,6 +69,15 @@ class _InterceptorToken extends Interceptor {
     if (response.statusCode == 401 && !esAuth && llevabaToken) {
       _alExpirar?.call();
     }
+    // Cuenta con clave provisoria: el servidor responde 403 a todo salvo al
+    // cambio de clave. No es un "sin permiso" que mostrar como error, sino una
+    // orden de llevar a la persona a cambiarla.
+    if (response.statusCode == 403 && !esAuth && llevabaToken) {
+      final cuerpo = response.data;
+      if (cuerpo is Map && cuerpo['codigo'] == 'DEBE_CAMBIAR_PIN') {
+        _alDebeCambiarClave?.call();
+      }
+    }
     handler.next(response);
   }
 
@@ -70,7 +86,10 @@ class _InterceptorToken extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    if (!options.path.startsWith('/api/auth')) {
+    // `/api/auth/pin` es la única ruta de auth que va autenticada: cambia la
+    // clave de quien tiene la sesión.
+    if (!options.path.startsWith('/api/auth') ||
+        options.path == '/api/auth/pin') {
       final token = await _storage.leerToken();
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
@@ -88,6 +107,8 @@ final apiClientProvider = Provider<ApiClient>(
     // Se lee al momento del 401, no al construir: el controlador de sesión
     // depende de este cliente para el login.
     alExpirar: () => ref.read(sesionProvider.notifier).expirar(),
+    alDebeCambiarClave: () =>
+        ref.read(sesionProvider.notifier).exigirCambioDeClave(),
   ),
 );
 
