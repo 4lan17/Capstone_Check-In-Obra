@@ -66,7 +66,7 @@ android {
     buildTypes {
         release {
             // Nunca la clave de debug: cualquiera tiene la misma, así que un
-            // APK firmado con ella no prueba quién lo publicó (hallazgo S-27).
+            // APK firmado con ella no prueba quién lo publicó (hallazgo S-20).
             signingConfig = if (hayKeystore) signingConfigs.getByName("release") else null
         }
     }

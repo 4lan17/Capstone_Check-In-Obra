@@ -40,7 +40,7 @@ void main() {
     });
   });
 
-  group('Firma de release (S-27)', () {
+  group('Firma de release (S-20)', () {
     final gradle = _leer('app/build.gradle.kts');
 
     test('el release no se firma con la clave de debug', () {
