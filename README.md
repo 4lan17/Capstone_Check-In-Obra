@@ -648,7 +648,20 @@ estado vive en memoria, así que se reinicia con la API y no se comparte entre
 instancias; y la IP es la del socket (`getRemoteAddr`), que tras un proxy será la
 del proxy hasta configurar `server.forward-headers-strategy`.
 
-El token dura 8 horas y lleva el id, el rol y la empresa del usuario.
+### Sesión y tokens
+
+- **El token de acceso dura 30 minutos** (`checkinobra.jwt.expiracion-minutos`; antes, 8 horas) y lleva el id, el rol y la empresa del usuario, el emisor (`iss=checkinobra`), la audiencia (`aud=checkinobra-api`) y la versión de sesión (`tv`). Un token sin esos campos, o con otros, no entra.
+- **Se revalida en cada petición**: el usuario tiene que existir y seguir con la misma `token_version` con que se emitió el token. La versión sube al **restablecer la clave** de un usuario o al **cambiar la propia**, y deja sin efecto, de inmediato, todos sus tokens anteriores (y sus refresh tokens).
+- **Refresh token**: cada login (y cada cambio de clave) devuelve también `refreshToken`. `POST /api/auth/refresh` con `{"refreshToken": "..."}` devuelve un par nuevo (acceso y refresh) y deja revocado el presentado (rotación). Dura 7 días sin usarse (`checkinobra.jwt.refresh-dias`). Se guarda solo su hash. **Si se presenta uno ya usado se asume robo y se revocan todas las sesiones del usuario.** Un refresh que no sirve (inexistente, vencido, revocado, mal formado) responde siempre `401` con `codigo: SESION_INVALIDA`, sin decir cuál fue el motivo.
+- `POST /api/auth/logout` con el mismo cuerpo revoca el refresh token y responde siempre `204`.
+
+### Registro de eventos de seguridad
+
+El logger `seguridad` escribe una línea `evento=… clave=valor` por login exitoso, fallido y bloqueado, acceso denegado (403 por rol), clave restablecida o cambiada, usuario creado y uso o reutilización de un refresh token. Lleva el id de usuario y de empresa y la IP; **nunca** claves, tokens ni correos. Se puede enviar aparte configurando ese logger en `logback`.
+
+### Errores
+
+El cuerpo de un error lleva el mensaje solo de las excepciones que escribimos nosotros; las de librerías (`Invalid UUID string: …`, `No value present`) salen con un texto genérico y el original queda en el log.
 
 ### Códigos de respuesta
 

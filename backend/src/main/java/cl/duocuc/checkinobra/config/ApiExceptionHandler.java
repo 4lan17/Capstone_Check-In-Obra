@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,12 @@ public class ApiExceptionHandler {
                         DemasiadosIntentosException.CODIGO));
     }
 
+    /** El refresh token no sirve: 401 y un código para que la app pida la clave de nuevo. */
+    @ExceptionHandler(SesionInvalidaException.class)
+    public ResponseEntity<ErrorBody> sesionInvalida(SesionInvalidaException ex) {
+        return cuerpo(HttpStatus.UNAUTHORIZED, ex.getMessage(), SesionInvalidaException.CODIGO);
+    }
+
     @ExceptionHandler(AccesoDenegadoException.class)
     public ResponseEntity<ErrorBody> accesoDenegado(AccesoDenegadoException ex) {
         return cuerpo(HttpStatus.FORBIDDEN, ex.getMessage());
@@ -57,13 +64,14 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorBody> noEncontrado(NoSuchElementException ex) {
-        return cuerpo(HttpStatus.NOT_FOUND, ex.getMessage());
+        return cuerpo(HttpStatus.NOT_FOUND, mensajeSeguro(ex, "No se encontró lo que pedías"));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorBody> conflicto(IllegalStateException ex) {
         String codigo = ex instanceof ConflictoException c ? c.codigo() : null;
-        return cuerpo(HttpStatus.CONFLICT, ex.getMessage(), codigo);
+        return cuerpo(HttpStatus.CONFLICT,
+                mensajeSeguro(ex, "La operación no se puede completar en el estado actual"), codigo);
     }
 
     /**
@@ -93,7 +101,31 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorBody> solicitudInvalida(IllegalArgumentException ex) {
-        return cuerpo(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return cuerpo(HttpStatus.BAD_REQUEST, mensajeSeguro(ex, "La solicitud no es válida"));
+    }
+
+    /**
+     * El mensaje de una excepción es para quien llama solo si la escribimos nosotros: las de
+     * librerías ({@code Invalid UUID string: …}, {@code No value present}) cuentan detalles
+     * internos, y publicarlas es dar pistas gratis (S-25). Una excepción es propia si se lanzó
+     * desde una clase de este proyecto; el resto responde un texto genérico y deja el original
+     * en el log, donde sí sirve.
+     */
+    static String mensajeSeguro(RuntimeException ex, String generico) {
+        if (esPropia(ex)) {
+            return ex.getMessage();
+        }
+        LoggerFactory.getLogger(ApiExceptionHandler.class)
+                .warn("Excepción de librería con mensaje no publicado ({}): {}", ex.getClass().getName(), ex.getMessage());
+        return generico;
+    }
+
+    private static boolean esPropia(RuntimeException ex) {
+        if (ex instanceof ConflictoException) {
+            return true;
+        }
+        StackTraceElement[] pila = ex.getStackTrace();
+        return pila.length > 0 && pila[0].getClassName().startsWith("cl.duocuc.checkinobra.");
     }
 
     /**

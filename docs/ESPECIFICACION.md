@@ -448,7 +448,7 @@ Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
 
 ### 9.1 Autenticación
 
-JWT firmado con HMAC-SHA. El token dura **8 horas** (configurable con
+JWT firmado con HMAC-SHA. El token dura **30 minutos** y se renueva con un refresh token (ver el README; configurable con
 `checkinobra.jwt.expiracion-minutos`) y lleva `sub` (id de usuario), `email`,
 `rol` y `empresaId`. No hay refresh: vencido el token, se vuelve a entrar.
 

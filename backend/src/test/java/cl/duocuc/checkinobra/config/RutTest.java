@@ -44,7 +44,8 @@ class RutTest {
         var admin = new UsuarioAutenticado(1L, "admin@constructora.cl", RolUsuario.ADMIN, 1L);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(admin, null, List.of()));
-        usuarioService = new UsuarioService(usuarioRepository, empresaService, catalogo);
+        usuarioService = new UsuarioService(usuarioRepository, empresaService, catalogo,
+                org.mockito.Mockito.mock(SesionService.class), new EventosDeSeguridad());
         org.mockito.Mockito.lenient().when(catalogo.reservarCorreo(any(), any())).thenReturn(true);
     }
 

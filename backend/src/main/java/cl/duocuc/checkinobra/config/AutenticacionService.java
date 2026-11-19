@@ -41,6 +41,8 @@ public class AutenticacionService {
     private final UsuarioRepository usuarioRepository;
     private final CatalogoDeEmpresas catalogo;
     private final ResolutorDeBases resolutor;
+    private final EventosDeSeguridad eventos;
+    private final SesionService sesionService;
     private final LimitadorDeIntentos porCuenta;
     private final LimitadorDeIntentos porIp;
 
@@ -49,6 +51,8 @@ public class AutenticacionService {
             UsuarioRepository usuarioRepository,
             CatalogoDeEmpresas catalogo,
             ResolutorDeBases resolutor,
+            EventosDeSeguridad eventos,
+            SesionService sesionService,
             @Value("${checkinobra.login.cuenta.max-fallos:5}") int cuentaMaxFallos,
             @Value("${checkinobra.login.cuenta.bloqueo-base-segundos:60}") long cuentaBloqueoBase,
             @Value("${checkinobra.login.cuenta.bloqueo-maximo-segundos:3600}") long cuentaBloqueoMaximo,
@@ -56,7 +60,7 @@ public class AutenticacionService {
             @Value("${checkinobra.login.ip.bloqueo-base-segundos:300}") long ipBloqueoBase,
             @Value("${checkinobra.login.ip.bloqueo-maximo-segundos:3600}") long ipBloqueoMaximo,
             @Value("${checkinobra.login.olvido-segundos:86400}") long olvido) {
-        this(usuarioRepository, catalogo, resolutor,
+        this(usuarioRepository, catalogo, resolutor, eventos, sesionService,
                 new LimitadorDeIntentos(cuentaMaxFallos, Duration.ofSeconds(cuentaBloqueoBase),
                         Duration.ofSeconds(cuentaBloqueoMaximo), Duration.ofSeconds(olvido), Clock.systemUTC()),
                 new LimitadorDeIntentos(ipMaxFallos, Duration.ofSeconds(ipBloqueoBase),
@@ -65,10 +69,13 @@ public class AutenticacionService {
 
     AutenticacionService(
             UsuarioRepository usuarioRepository, CatalogoDeEmpresas catalogo, ResolutorDeBases resolutor,
+            EventosDeSeguridad eventos, SesionService sesionService,
             LimitadorDeIntentos porCuenta, LimitadorDeIntentos porIp) {
         this.usuarioRepository = usuarioRepository;
         this.catalogo = catalogo;
         this.resolutor = resolutor;
+        this.eventos = eventos;
+        this.sesionService = sesionService;
         this.porCuenta = porCuenta;
         this.porIp = porIp;
     }
@@ -148,21 +155,35 @@ public class AutenticacionService {
             throw new IllegalArgumentException("La clave nueva debe ser distinta de la actual");
         }
         usuario.definirPin(pinNuevo);
-        return usuarioRepository.save(usuario);
+        // Una clave nueva deja sin efecto las demás sesiones del usuario: el token que ya tenía y
+        // sus refresh tokens. La respuesta trae una sesión nueva.
+        usuario.invalidarSesiones();
+        Usuario guardado = usuarioRepository.save(usuario);
+        sesionService.revocarTodos(guardado.getId());
+        eventos.claveCambiada(guardado.getId(), ip);
+        return guardado;
     }
 
     private Usuario verificar(Optional<Usuario> usuario, String clave, String claveCuenta, String ip) {
-        exigirNoBloqueado(claveCuenta, ip);
+        try {
+            exigirNoBloqueado(claveCuenta, ip);
+        } catch (DemasiadosIntentosException e) {
+            eventos.loginBloqueado(ip);
+            throw e;
+        }
         boolean correcta = comprobar(usuario, clave);
         if (!correcta) {
             porCuenta.registrarFallo(claveCuenta);
             porIp.registrarFallo(ip);
+            eventos.loginFallido(usuario.map(Usuario::getId).orElse(null), ip);
             throw new IllegalArgumentException(CREDENCIALES_INVALIDAS);
         }
         // El acierto limpia la cuenta pero no la IP: quien tiene una cuenta
         // propia no debería poder reiniciar así el contador con que prueba las ajenas.
         porCuenta.registrarExito(claveCuenta);
-        return usuario.orElseThrow();
+        Usuario autenticado = usuario.orElseThrow();
+        eventos.loginExitoso(autenticado, ip);
+        return autenticado;
     }
 
     private void exigirNoBloqueado(String claveCuenta, String ip) {
