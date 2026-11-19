@@ -680,9 +680,33 @@
     </div>
   </div>
 
+  <section>
+    <h2>Pruebas de aislamiento (MT5)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>Dos bases, de verdad</h3></div>
+      <ul>
+        <li><code>AislamientoConDosBasesTest</code> registra dos empresas en el catálogo, cada una en su base (la de la suite y una segunda, vacía, que se migra en la prueba), con el enrutador real y sin el resolutor compartido que usan las demás pruebas</li>
+        <li>Con el token de A, cada GET por id de un objeto de B responde 404 y cada listado responde 404 o vacío; los listados generales no traen nada de B</li>
+        <li>Sin empresa en el contexto, tocar la base falla por JDBC y por JPA, y una tarea programada sin empresa fijada también</li>
+        <li>Corren en la CI: el paso de roles crea la segunda base con <code>CHECKINOBRA_BASES_EXTRA</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Lo que demuestran</h3></div>
+      <ul>
+        <li>Estos casos pasan <strong>aunque un endpoint olvide filtrar por empresa</strong>: los datos de B no están en la base que abre el token de A. Con una sola base, <code>GET /api/trabajadores?obraId=</code> devolvía nombre y RUT ajenos (S-05); con dos bases, devuelve una lista vacía</li>
+        <li>Se comprobó con una mutación: si el resolutor entrega siempre la misma base, la suite detecta la fuga (con los datos de B en la respuesta de A)</li>
+        <li><code>AccesoEmpresa</code> sigue siendo la segunda capa para una base con más de una empresa (la de las demás pruebas)</li>
+      </ul>
+    </div>
+  </div>
+
   <footer class="footer">
     <span>Check-In-Obra · Propuesta multi-tenant · base por empresa</span>
-    <span>Actualizada el 2026-11-19: fases 1 a 3 (catálogo, enrutador y Flyway por base)</span>
+    <span>Actualizada el 2026-11-19: fases 1 a 3 y pruebas de aislamiento</span>
   </footer>
 
 </div>

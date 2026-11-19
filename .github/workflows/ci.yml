@@ -70,6 +70,7 @@ jobs:
           CHECKINOBRA_APP_PASSWORD="$app_pw" \
           CHECKINOBRA_MIGRADOR_PASSWORD="$migrador_pw" \
           CHECKINOBRA_PLATAFORMA_PASSWORD="$plataforma_pw" \
+          CHECKINOBRA_BASES_EXTRA="checkinobra_b" \
             ./db/crear-roles.sh
 
       - name: Compilar y testear

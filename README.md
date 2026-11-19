@@ -810,7 +810,7 @@ Las migraciones de `db/migration` las corre `MigradorDeBases` (Flyway programát
 - **Una base que falla queda anotada, sin abrir (su empresa no tiene pool y sus tokens no valen) y no impide arrancar a las demás.** Una base nueva empieza `PENDIENTE` y solo se abre cuando su migración sale `OK`.
 - `RegistroIdempotencia.purgarVencidas`, la única tarea programada, recorre las empresas con base abierta y fija la de cada una (MT2).
 
-La base de una empresa tiene que existir antes y el migrador, poder conectarse y crear tablas en ella; crearla es parte del alta de empresas (fase 4) y hoy se hace a mano.
+La base de una empresa tiene que existir antes y el migrador, poder conectarse y crear tablas en ella; crearla es parte del alta de empresas (fase 4). `db/crear-base-de-empresa.sql` hace ese paso de infraestructura (la base vacía, con el migrador de dueño y la API con permiso de conexión y de DML) y es lo que usan las pruebas de aislamiento para tener una segunda base.
 
 
 
