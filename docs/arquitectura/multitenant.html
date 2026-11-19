@@ -615,9 +615,50 @@
     </div>
   </div>
 
+  <section>
+    <h2>Decisiones tomadas en la fase 2 (MT2)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>El enrutador</h3></div>
+      <ul>
+        <li><code>JwtAuthFilter</code> llena el <code>TenantContext</code> con la empresa del token y lo limpia en un <code>finally</code> <strong>después</strong> de toda la cadena: <code>IdempotenciaFilter</code> corre más adentro y también usa la base</li>
+        <li><code>TenantRoutingDataSource</code> no tiene base por defecto. Sin empresa en el contexto, o con una sin pool, lanza <code>SinEmpresaEnContextoException</code></li>
+        <li>Un pool por empresa, armado desde el catálogo. La contraseña sale de la referencia <code>env:VARIABLE</code>; una empresa mal registrada se anota y no impide arrancar a las demás</li>
+        <li>Un token sin <code>empresaId</code> (antes, un NPE) o de una empresa sin base o suspendida es un token inválido: 401</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>El login pasa antes del token</h3></div>
+      <ul>
+        <li>Antes de autenticarse no hay empresa en el contexto. <code>/api/auth/login</code> la saca del índice del catálogo; <code>/api/auth/login-pin</code> recibe <code>empresaId</code> junto al id de usuario, porque los ids se repiten entre bases</li>
+        <li>El bloqueo por intentos incluye la empresa en su clave de cuenta por la misma razón</li>
+        <li>Crear un usuario reserva su correo en el catálogo antes de guardarlo, y lo suelta si guardar falla (dos bases, sin transacción compartida). Se compara sin distinguir mayúsculas</li>
+        <li>Mientras exista una sola empresa, <code>login-pin</code> sin <code>empresaId</code> se resuelve a esa: es lo que permite que una app anterior siga entrando</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>Hibernate sin conexión por defecto</h3></div>
+      <ul>
+        <li><code>hibernate.boot.allow_jdbc_metadata_access=false</code>, dialecto PostgreSQL explícito y <code>ddl-auto=none</code>: al arrancar no se abre ninguna conexión</li>
+        <li>Se pierde la validación del mapeo contra el esquema al arrancar. La suite de pruebas la conserva (<code>validate</code> contra su base) y el esquema de cada empresa lo garantizan las migraciones (fase 3)</li>
+        <li>Flyway migra la base actual con su propia URL, porque el <code>DataSource</code> de la aplicación ya es el enrutador</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Lo que sigue sin hacer</h3></div>
+      <ul>
+        <li>Flyway por cada base del catálogo y un job que migre una empresa nueva (fase 3, MT3)</li>
+        <li>Alta de empresas y de su base (fase 4): hoy la base de una empresa se crea fuera, y solo hay una</li>
+        <li>La purga de claves de idempotencia ya recorre las empresas con base abierta; si una falla, sigue con las demás</li>
+      </ul>
+    </div>
+  </div>
+
   <footer class="footer">
     <span>Check-In-Obra · Propuesta multi-tenant · base por empresa</span>
-    <span>Actualizada el 2026-11-19: fase 1 (catálogo de empresas)</span>
+    <span>Actualizada el 2026-11-19: fases 1 y 2 (catálogo y enrutador)</span>
   </footer>
 
 </div>
