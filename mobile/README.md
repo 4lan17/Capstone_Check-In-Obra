@@ -259,7 +259,24 @@ resultado.
 libsqlite3…`.** Es una descarga corrupta del binario de `sqlite3` en el runner
 de GitHub, no un problema del código. Relanza el job.
 
-**Antes de generar un APK de release.** Compílalo con
-`--dart-define=API_BASE_URL=https://…`: sin una URL `https://` la app no
-arranca. El release además necesita un keystore de firma, que no está en el
-repo. El permiso `INTERNET` ya está en el manifiesto principal.
+**Generar un APK de release.** Usa `scripts/release-apk.sh` desde la raíz (o
+el workflow manual *APK de release* del CI). Hace tres cosas que `flutter build
+apk --release` a secas no hace:
+
+- exige `API_BASE_URL=https://…` y la pasa con `--dart-define` (en release la
+  app **no** lee el `.env`);
+- firma con tu keystore, tomado de `CHECKINOBRA_KEYSTORE_FILE`,
+  `CHECKINOBRA_KEYSTORE_PASSWORD`, `CHECKINOBRA_KEY_ALIAS` y
+  `CHECKINOBRA_KEY_PASSWORD`, o de `android/key.properties`
+  (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; no se versiona).
+  Sin keystore el build se detiene con un mensaje: ya no firma con la clave de
+  debug;
+- ofusca el código (`--obfuscate`) y deja los símbolos en `build/debug-info/`.
+  Guárdalos junto a cada versión que publiques: sin ellos un stack trace del
+  APK no se puede leer.
+
+En el CI, el workflow toma el keystore de los secretos del repositorio
+(`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+`ANDROID_KEY_PASSWORD`) y la URL de la variable `API_BASE_URL`. El keystore
+nunca se sube al repo. La app tampoco se respalda en Google ni se copia a otro
+teléfono (`allowBackup="false"` y reglas de extracción).

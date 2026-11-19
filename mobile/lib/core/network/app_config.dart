@@ -42,7 +42,8 @@ abstract final class AppConfig {
 
   static const _urlDeDesarrollo = 'http://10.0.2.2:8081';
 
-  /// Decide la URL de la API y, en release, la exige `https://`.
+  /// Decide la URL de la API y, en release, la exige `https://` y solo la
+  /// toma de `--dart-define`.
   ///
   /// El JWT y el PIN viajan en cada petición: por HTTP quedan en claro para
   /// cualquiera en la misma WiFi (hallazgo S-10). Fuera de desarrollo se
@@ -57,10 +58,15 @@ abstract final class AppConfig {
     required String? delEnv,
     required bool release,
   }) {
+    // En release la URL entra solo por `--dart-define`. El `.env` es un
+    // archivo de desarrollo que viaja empaquetado dentro del APK: dejar que
+    // decidiera la URL de producción haría que un `.env` olvidado en la
+    // máquina de quien compila cambiara a qué servidor habla la app.
+    final delArchivo = release ? null : delEnv;
     final url = (definida != null && definida.isNotEmpty)
         ? definida
-        : (delEnv != null && delEnv.isNotEmpty)
-        ? delEnv
+        : (delArchivo != null && delArchivo.isNotEmpty)
+        ? delArchivo
         : null;
 
     if (!release) return url ?? _urlDeDesarrollo;
