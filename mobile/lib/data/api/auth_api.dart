@@ -39,7 +39,12 @@ class SesionUsuario {
 /// Se lanza cuando el servidor respondió pero rechazó la petición
 /// (por ejemplo, credenciales incorrectas).
 class ApiException implements Exception {
-  const ApiException(this.statusCode, this.mensaje, {this.codigo});
+  const ApiException(
+    this.statusCode,
+    this.mensaje, {
+    this.codigo,
+    this.reintentarEnSegundos,
+  });
 
   final int statusCode;
   final String mensaje;
@@ -49,6 +54,16 @@ class ApiException implements Exception {
   /// 409 puede ser "no alcanza el stock" o "otro bodeguero ya la aprobó", y
   /// esos dos casos se le muestran distinto a quien está en bodega.
   final String? codigo;
+
+  /// Cuánto esperar antes de reintentar, de la cabecera `Retry-After` de un
+  /// 429. `null` si no vino.
+  final int? reintentarEnSegundos;
+
+  /// El servidor bloqueó el intento por demasiados fallos (`DEMASIADOS_INTENTOS`).
+  /// Reintentar antes de tiempo no sirve —ni la clave correcta entra— y alarga
+  /// el bloqueo.
+  bool get demasiadosIntentos =>
+      statusCode == 429 || codigo == 'DEMASIADOS_INTENTOS';
 
   /// La operación ya estaba hecha: otro bodeguero se adelantó o el reintento
   /// llegó después de un éxito cuya respuesta se perdió. No es un error que
@@ -97,7 +112,21 @@ class AuthApi {
     if (codigo == 200 && respuesta.data != null) {
       return SesionUsuario.desdeJson(respuesta.data!);
     }
-    throw ApiException(codigo, _mensajeDeError(respuesta.data, codigo));
+    throw ApiException(
+      codigo,
+      _mensajeDeError(respuesta.data, codigo),
+      codigo: respuesta.data?['codigo'] as String?,
+      reintentarEnSegundos: segundosDeEspera(
+        respuesta.headers.value('retry-after'),
+      ),
+    );
+  }
+
+  /// El valor de `Retry-After` en segundos, o `null` si falta o no es un número
+  /// (la cabecera también admite una fecha; el backend manda segundos).
+  static int? segundosDeEspera(String? cabecera) {
+    final segundos = int.tryParse(cabecera?.trim() ?? '');
+    return segundos != null && segundos > 0 ? segundos : null;
   }
 
   /// El backend responde errores con el formato de `ApiExceptionHandler`:
