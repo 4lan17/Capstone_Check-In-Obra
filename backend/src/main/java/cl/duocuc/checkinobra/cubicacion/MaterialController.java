@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.importacion.PlantillaExcel;
+import cl.duocuc.checkinobra.importacion.LectorPlanilla;
 import cl.duocuc.checkinobra.importacion.ResultadoImportacion;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
@@ -77,6 +78,7 @@ public class MaterialController {
         if (archivo.isEmpty()) {
             throw new IllegalArgumentException("La planilla llegó vacía");
         }
+        LectorPlanilla.exigirNombreXlsx(archivo.getOriginalFilename());
         try (var entrada = archivo.getInputStream()) {
             return materialService.importar(SesionActual.empresaId(), entrada, confirmar);
         } catch (IOException e) {

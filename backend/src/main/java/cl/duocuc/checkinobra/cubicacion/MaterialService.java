@@ -51,7 +51,7 @@ public class MaterialService {
         // Con ignore-case porque puede haber filas anteriores a la
         // normalización: si no, "vol-10" y "VOL-10" conviven como dos
         // materiales que nadie distingue en pantalla.
-        if (materialRepository.findBySkuIgnoreCase(sku).isPresent()) {
+        if (materialRepository.findByEmpresaIdAndSkuIgnoreCase(empresaId, sku).isPresent()) {
             throw new IllegalStateException("Ya existe un material con ese SKU");
         }
         // El duplicado del código de barras se busca **dentro de la empresa**:
@@ -145,7 +145,7 @@ public class MaterialService {
         // fila. Con el tope de 2.000 filas la diferencia es entre dos consultas
         // y cuatro mil.
         Set<String> skusExistentes = existentes(
-                skusDelArchivo, materialRepository::findBySkuIn, Material::getSku);
+                skusDelArchivo, skus -> materialRepository.findByEmpresaIdAndSkuIn(empresaId, skus), Material::getSku);
         Set<String> codigosExistentes = existentes(
                 codigosDelArchivo,
                 codigos -> materialRepository.findByEmpresaIdAndCodigoBarraIn(empresaId, codigos),

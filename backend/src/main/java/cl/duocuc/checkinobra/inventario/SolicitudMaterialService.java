@@ -118,6 +118,7 @@ public class SolicitudMaterialService {
         Usuario aprobador = usuarioRepository.findById(aprobadorId)
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + aprobadorId));
+        exigirCantidadEntregable(solicitud, cantidadAEntregar);
 
         solicitud.aprobar(aprobador);
         solicitudMaterialRepository.save(solicitud);
@@ -132,6 +133,21 @@ public class SolicitudMaterialService {
                 solicitud.getTrabajador().getId(),
                 TipoMovimiento.DESPACHO,
                 cantidadAEntregar);
+    }
+
+    /**
+     * Lo que se entrega es mayor que cero y no pasa de lo que el trabajador pidió: la solicitud es
+     * la autorización de esa cantidad, y aprobar más sacaría de la bodega material que nadie pidió.
+     * Aprobar menos sí vale (entrega parcial por falta de stock).
+     */
+    private static void exigirCantidadEntregable(SolicitudMaterial solicitud, double cantidadAEntregar) {
+        if (!(cantidadAEntregar > 0) || !Double.isFinite(cantidadAEntregar)) {
+            throw new IllegalArgumentException("La cantidad a entregar debe ser mayor a 0");
+        }
+        if (cantidadAEntregar > solicitud.getCantidad() + 1e-6) {
+            throw new IllegalArgumentException(
+                    "No se puede entregar más de lo solicitado: se pidieron " + solicitud.getCantidad());
+        }
     }
 
     /** SolicitudMaterial.rechazar() del diagrama. */

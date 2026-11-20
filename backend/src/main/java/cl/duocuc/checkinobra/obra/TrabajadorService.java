@@ -145,6 +145,19 @@ public class TrabajadorService {
     }
 
     /**
+     * El trabajador está asignado a esa obra (por su cuadrilla). Sin esto, un despacho o un préstamo
+     * podía quedar a nombre de alguien de otra obra, o sin cuadrilla, y el kardex perdía el dato que
+     * lo justifica: a quién se le entregó y dónde trabaja.
+     */
+    public void exigirQueSeaDeLaObra(Trabajador trabajador, Long obraId) {
+        Obra asignada = obraAsignada(trabajador);
+        if (!asignada.getId().equals(obraId)) {
+            throw new ConflictoException(ConflictoException.OBRA_NO_ASIGNADA,
+                    "El trabajador no pertenece a esta obra: está asignado a " + asignada.getNombre());
+        }
+    }
+
+    /**
      * La obra desde la que un trabajador puede pedir: la de su cuadrilla. Sin
      * cuadrilla no tiene ninguna, y una solicitud suya no tendría a qué bodega
      * llegar.

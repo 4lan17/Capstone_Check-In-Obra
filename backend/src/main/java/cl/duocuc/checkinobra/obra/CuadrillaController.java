@@ -37,11 +37,13 @@ public class CuadrillaController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public List<CuadrillaResponse> listarPorObra(@RequestParam Long obraId) {
         return cuadrillaService.listarPorObra(obraId).stream().map(CuadrillaResponse::de).toList();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public CuadrillaResponse obtener(@PathVariable Long id) {
         return CuadrillaResponse.de(cuadrillaService.obtener(id));
     }

@@ -40,6 +40,7 @@ public class TrabajadorController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public TrabajadorResponse obtener(@PathVariable Long id) {
         return TrabajadorResponse.de(trabajadorService.obtener(id));
     }

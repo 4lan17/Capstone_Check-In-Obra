@@ -179,7 +179,7 @@ class ImportacionDeCatalogoTest {
 
     @Test
     void unSkuQueYaExisteEnElCatalogoSeReporta() {
-        when(materialRepository.findBySkuIn(anyCollection()))
+        when(materialRepository.findByEmpresaIdAndSkuIn(anyLong(), anyCollection()))
                 .thenReturn(List.of(Material.builder().id(9L).sku("VOL-ST-10").build()));
         when(materialRepository.findByEmpresaIdAndCodigoBarraIn(anyLong(), anyCollection()))
                 .thenReturn(List.of());
@@ -206,9 +206,9 @@ class ImportacionDeCatalogoTest {
                         List.of("OSB-11-120240", "OSB 11,1 mm", "OSB", "12990", "20", "780000000003")),
                 false);
 
-        verify(materialRepository, times(1)).findBySkuIn(anyCollection());
+        verify(materialRepository, times(1)).findByEmpresaIdAndSkuIn(anyLong(), anyCollection());
         verify(materialRepository, times(1)).findByEmpresaIdAndCodigoBarraIn(anyLong(), anyCollection());
-        verify(materialRepository, never()).findBySku(anyString());
+        verify(materialRepository, never()).findByEmpresaIdAndSkuIgnoreCase(anyLong(), anyString());
         verify(materialRepository, never()).findByEmpresaIdAndCodigoBarra(anyLong(), anyString());
     }
 
@@ -230,7 +230,7 @@ class ImportacionDeCatalogoTest {
 
     @Test
     void lasHerramientasImportadasNacenDisponiblesYConElCodigoNormalizado() {
-        when(herramientaRepository.findByCodigoQrIn(anyCollection())).thenReturn(List.of());
+        when(herramientaRepository.findByEmpresaIdAndCodigoQrIn(anyLong(), anyCollection())).thenReturn(List.of());
 
         ResultadoImportacion informe = herramientaService.importar(
                 MI_EMPRESA,
@@ -258,7 +258,7 @@ class ImportacionDeCatalogoTest {
      * archivo —no dos por fila—, así que se simulan una sola vez.
      */
     private void catalogoVacio() {
-        lenient().when(materialRepository.findBySkuIn(anyCollection())).thenReturn(List.of());
+        lenient().when(materialRepository.findByEmpresaIdAndSkuIn(anyLong(), anyCollection())).thenReturn(List.of());
         lenient()
                 .when(materialRepository.findByEmpresaIdAndCodigoBarraIn(anyLong(), anyCollection()))
                 .thenReturn(List.of());

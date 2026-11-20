@@ -89,7 +89,7 @@ public class KardexMovimientoService {
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + usuarioId));
 
-        Trabajador receptor = resolverReceptor(tipo, trabajadorId);
+        Trabajador receptor = resolverReceptor(tipo, trabajadorId, obraId);
 
         if (tipo != TipoMovimiento.RECEPCION) {
             double stockActual = kardexMovimientoRepository.calcularStock(obraId, materialId);
@@ -122,7 +122,7 @@ public class KardexMovimientoService {
      * se gastó en la obra, no que alguien se llevó— y una RECEPCION nunca lo
      * tiene, porque el material entra desde un proveedor.
      */
-    private Trabajador resolverReceptor(TipoMovimiento tipo, Long trabajadorId) {
+    private Trabajador resolverReceptor(TipoMovimiento tipo, Long trabajadorId, Long obraId) {
         if (tipo == TipoMovimiento.RECEPCION) {
             if (trabajadorId != null) {
                 throw new IllegalArgumentException(
@@ -133,7 +133,12 @@ public class KardexMovimientoService {
         if (tipo == TipoMovimiento.DESPACHO && trabajadorId == null) {
             throw new IllegalArgumentException("Un despacho debe indicar a qué trabajador se le entrega");
         }
-        return trabajadorId == null ? null : trabajadorService.obtener(trabajadorId);
+        if (trabajadorId == null) {
+            return null;
+        }
+        Trabajador receptor = trabajadorService.obtener(trabajadorId);
+        trabajadorService.exigirQueSeaDeLaObra(receptor, obraId);
+        return receptor;
     }
 
     /** Stock actual = suma con signo de los movimientos de ese material en esa obra. */

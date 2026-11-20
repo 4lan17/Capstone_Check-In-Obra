@@ -975,7 +975,7 @@ El `UNIQUE` en `usuario_id` es lo que hace que la relación sea 1–1: un
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `sku` | `VARCHAR(50)` | NOT NULL, UNIQUE — interno, el de la guía de despacho |
+| `sku` | `VARCHAR(50)` | NOT NULL, único por empresa (`UNIQUE (empresa_id, sku)`, V13) — interno, el de la guía de despacho |
 | `codigo_barra` | `VARCHAR(50)` | UNIQUE **por empresa**, nullable — el de fábrica, lo que lee el escáner |
 | `nombre` | `VARCHAR(200)` | NOT NULL |
 | `categoria` | `VARCHAR(20)` | NOT NULL — enum `CategoriaMaterial` |
@@ -1042,7 +1042,7 @@ posterior en el catálogo no altera los presupuestos ya armados.
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `codigo_qr` | `VARCHAR(100)` | NOT NULL, UNIQUE |
+| `codigo_qr` | `VARCHAR(100)` | NOT NULL, único por empresa (`UNIQUE (empresa_id, codigo_qr)`, V13) |
 | `nombre` | `VARCHAR(200)` | NOT NULL |
 | `categoria` | `VARCHAR(100)` | NOT NULL — texto libre, no enum |
 | `estado` | `VARCHAR(20)` | NOT NULL — enum `EstadoHerramienta` |
