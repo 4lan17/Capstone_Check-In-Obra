@@ -11,6 +11,7 @@ import '../modelos/importacion.dart';
 import '../modelos/kardex.dart';
 import '../modelos/material.dart';
 import '../modelos/obra.dart';
+import '../modelos/partida.dart';
 import '../modelos/pedido_especial.dart';
 import '../modelos/pedido_herramienta.dart';
 import '../modelos/perfil_trabajador.dart';
@@ -788,6 +789,55 @@ class ImportacionApi {
       _rest.descargar('/api/herramientas/plantilla-importacion');
 }
 
+/// Partidas de una obra y su cubicación. Crear y cubicar son de JEFE_TERRENO o
+/// ADMIN; las lecturas las admite el backend para cualquier rol.
+class PartidasApi {
+  const PartidasApi(this._rest);
+
+  final ClienteRest _rest;
+
+  Future<List<Partida>> porObra(int obraId) => _rest.lista(
+    '/api/partidas',
+    Partida.desdeJson,
+    params: {'obraId': obraId},
+  );
+
+  Future<Partida> crear({
+    required int obraId,
+    required String tipo,
+    required double anchoM,
+    required double altoM,
+    required double separacionMontantes,
+    String? clave,
+  }) => _rest.crear(
+    '/api/partidas',
+    {
+      'obraId': obraId,
+      'tipo': tipo,
+      'anchoM': anchoM,
+      'altoM': altoM,
+      'separacionMontantes': separacionMontantes,
+    },
+    Partida.desdeJson,
+    clave: clave,
+  );
+
+  /// Recalcula y **reemplaza** los ítems anteriores de la partida (RN-21):
+  /// cubicar dos veces no duplica la lista.
+  Future<List<ItemCubicado>> cubicar(int partidaId, {String? clave}) =>
+      _rest.crearLista(
+        '/api/partidas/$partidaId/cubicar',
+        const {},
+        ItemCubicado.desdeJson,
+        clave: clave,
+      );
+
+  Future<List<ItemCubicado>> itemsCubicados(int partidaId) => _rest.lista(
+    '/api/partidas/$partidaId/items-cubicados',
+    ItemCubicado.desdeJson,
+  );
+}
+
 class EmpresaApi {
   const EmpresaApi(this._rest);
 
@@ -835,6 +885,9 @@ final usuariosApiProvider = Provider(
 );
 final trabajadoresApiProvider = Provider(
   (ref) => TrabajadoresApi(ref.watch(clienteRestProvider)),
+);
+final partidasApiProvider = Provider(
+  (ref) => PartidasApi(ref.watch(clienteRestProvider)),
 );
 final empresaApiProvider = Provider(
   (ref) => EmpresaApi(ref.watch(clienteRestProvider)),
