@@ -17,7 +17,7 @@ void main() {
 
     test('acepta https con puerto, ruta y mayúsculas en el esquema', () {
       expect(
-        _url(delEnv: 'HTTPS://api.checkinobra.cl:8443/v1'),
+        _url(definida: 'HTTPS://api.checkinobra.cl:8443/v1'),
         'HTTPS://api.checkinobra.cl:8443/v1',
       );
     });
@@ -63,6 +63,19 @@ void main() {
       );
     });
 
+    test('en release el .env no decide la URL, ni siquiera si es https', () {
+      // El .env viaja dentro del APK y es de desarrollo: un archivo olvidado en
+      // la máquina de quien compila no debe cambiar a qué servidor habla la app.
+      expect(
+        () => _url(delEnv: 'https://api.checkinobra.cl'),
+        throwsA(isA<ConfiguracionInvalida>()),
+      );
+      expect(
+        _url(definida: 'https://api.checkinobra.cl', delEnv: 'https://otro.cl'),
+        'https://api.checkinobra.cl',
+      );
+    });
+
     test('el mensaje dice qué hacer', () {
       expect(
         () => _url(definida: 'http://api.checkinobra.cl'),
@@ -80,6 +93,21 @@ void main() {
   group('URL de la API en desarrollo', () {
     test('sin configurar apunta al emulador', () {
       expect(_url(release: false), 'http://10.0.2.2:8081');
+    });
+
+    test('el .env sigue valiendo en desarrollo', () {
+      expect(
+        _url(release: false, delEnv: 'http://localhost:8081'),
+        'http://localhost:8081',
+      );
+      expect(
+        _url(
+          release: false,
+          definida: 'http://10.0.2.2:9000',
+          delEnv: 'http://localhost:8081',
+        ),
+        'http://10.0.2.2:9000',
+      );
     });
 
     test('permite http, que es lo que usa el emulador', () {
