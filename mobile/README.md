@@ -164,6 +164,18 @@ petición recibe 403 con `codigo: DEBE_CAMBIAR_PIN`—, la raíz de la app muest
 `PUT /api/auth/pin`. Al cambiarla, la sesión nueva que devuelve reemplaza a la
 provisoria. No hay "omitir"; solo cerrar sesión.
 
+**El token dura 30 minutos y se renueva solo.** El login trae también un
+`refreshToken` (7 días sin usarse) que se guarda junto a la sesión, en el mismo
+almacenamiento cifrado. Ante un 401, el interceptor lo canjea en
+`POST /api/auth/refresh` y reintenta la petición **una vez**; nadie lo nota. El
+refresh se **rota**: cada uso entrega uno nuevo y deja inservible el anterior, y
+usar uno ya gastado hace que el servidor cierre todas las sesiones de esa
+persona, por eso `RenovadorDeSesion` hace un solo refresh a la vez y las demás
+peticiones esperan su resultado. La sesión local solo se cierra si el servidor
+dice que ya no vale (`SESION_INVALIDA` o el refresh rechazado): sin señal no se
+cierra nada. Al cerrar sesión, la app revoca el refresh con
+`POST /api/auth/logout`, sin esperarlo ni depender de él.
+
 **Lo que recuerda el teléfono va por empresa y usuario.** Con una base por
 empresa los ids se repiten: la obra 3 o el usuario 4 existen en cada una. Por
 eso el usuario recordado guarda también su `empresaId` (que viaja en

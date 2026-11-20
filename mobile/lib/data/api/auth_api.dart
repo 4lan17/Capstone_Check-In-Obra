@@ -12,6 +12,7 @@ class SesionUsuario {
     required this.rol,
     required this.empresaId,
     this.debeCambiarClave = false,
+    this.refreshToken,
   });
 
   final String token;
@@ -27,6 +28,12 @@ class SesionUsuario {
   /// rechaza todo salvo `PUT /api/auth/pin` con 403 `DEBE_CAMBIAR_PIN`.
   final bool debeCambiarClave;
 
+  /// Para pedir otro token de acceso sin la clave (`POST /api/auth/refresh`).
+  /// El token de acceso dura 30 minutos; esto, hasta 7 días sin usarse. Se
+  /// **rota** en cada uso: hay que guardar el que devuelve cada renovación.
+  /// `null` en una sesión guardada antes de que existiera.
+  final String? refreshToken;
+
   /// La misma sesión, marcada como pendiente de cambio de clave.
   SesionUsuario conCambioPendiente() => SesionUsuario(
     token: token,
@@ -35,6 +42,7 @@ class SesionUsuario {
     rol: rol,
     empresaId: empresaId,
     debeCambiarClave: true,
+    refreshToken: refreshToken,
   );
 
   factory SesionUsuario.desdeJson(Map<String, dynamic> json) => SesionUsuario(
@@ -46,6 +54,7 @@ class SesionUsuario {
     // Ausente en una sesión guardada antes de que existiera, o en un backend
     // que aún no la manda: ahí no hay obligación.
     debeCambiarClave: json['debeCambiarClave'] as bool? ?? false,
+    refreshToken: json['refreshToken'] as String?,
   );
 
   Map<String, dynamic> aJson() => {
@@ -55,6 +64,7 @@ class SesionUsuario {
     'rol': rol,
     'empresaId': empresaId,
     'debeCambiarClave': debeCambiarClave,
+    'refreshToken': refreshToken,
   };
 }
 
@@ -134,6 +144,27 @@ class AuthApi {
       data: {'pinActual': claveActual, 'pinNuevo': claveNueva},
     ),
   );
+
+  /// Canjea un refresh token por una sesión nueva, con otro refresh token. El
+  /// que se manda queda revocado. Un 401 con `SESION_INVALIDA` dice que hay
+  /// que pedir la clave de nuevo.
+  Future<SesionUsuario> renovar(String refreshToken) => _enviarSesion(
+    () => _client.dio.post<Map<String, dynamic>>(
+      '/api/auth/refresh',
+      data: {'refreshToken': refreshToken},
+    ),
+  );
+
+  /// Revoca el refresh token en el servidor (`POST /api/auth/logout`, que
+  /// responde 204 exista o no). Es lo último que se hace al cerrar sesión y no
+  /// debe impedirlo: si falla, la sesión local ya se cerró y el refresh vence
+  /// solo a los 7 días.
+  Future<void> cerrarSesion(String refreshToken) async {
+    await _client.dio.post<dynamic>(
+      '/api/auth/logout',
+      data: {'refreshToken': refreshToken},
+    );
+  }
 
   Future<SesionUsuario> _postLogin(String ruta, Map<String, dynamic> cuerpo) =>
       _enviarSesion(
