@@ -1,5 +1,11 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -31,7 +37,7 @@ public class PedidoEspecialController {
     @PostMapping
     @PreAuthorize("hasRole('TRABAJADOR')")
     @ResponseStatus(HttpStatus.CREATED)
-    public PedidoEspecialResponse crear(@RequestBody CrearPedidoRequest req) {
+    public PedidoEspecialResponse crear(@Valid @RequestBody CrearPedidoRequest req) {
         return PedidoEspecialResponse.de(pedidoEspecialService.crear(
                 SesionActual.usuarioId(), req.tipo(), req.nombre(), req.cantidad(), req.unidad(),
                 req.descripcion(), req.materialId(), req.herramientaId()));
@@ -60,13 +66,13 @@ public class PedidoEspecialController {
 
     @PutMapping("/{id}/gestionar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public PedidoEspecialResponse gestionar(@PathVariable Long id, @RequestBody(required = false) NotaRequest req) {
+    public PedidoEspecialResponse gestionar(@PathVariable Long id, @Valid @RequestBody(required = false) NotaRequest req) {
         return PedidoEspecialResponse.de(pedidoEspecialService.gestionar(id, req == null ? null : req.nota()));
     }
 
     @PutMapping("/{id}/listo")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public PedidoEspecialResponse listo(@PathVariable Long id, @RequestBody(required = false) NotaRequest req) {
+    public PedidoEspecialResponse listo(@PathVariable Long id, @Valid @RequestBody(required = false) NotaRequest req) {
         return PedidoEspecialResponse.de(pedidoEspecialService.marcarListo(id, req == null ? null : req.nota()));
     }
 
@@ -78,7 +84,7 @@ public class PedidoEspecialController {
 
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public PedidoEspecialResponse rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
+    public PedidoEspecialResponse rechazar(@PathVariable Long id, @Valid @RequestBody RechazarRequest req) {
         return PedidoEspecialResponse.de(pedidoEspecialService.rechazar(id, req.motivo()));
     }
 
@@ -95,19 +101,20 @@ public class PedidoEspecialController {
     }
 
     public record CrearPedidoRequest(
-            TipoPedidoEspecial tipo,
-            String nombre,
-            double cantidad,
-            String unidad,
+            @NotNull(message = "Falta el tipo de pedido") TipoPedidoEspecial tipo,
+            @NotBlank(message = "El nombre es obligatorio") @Size(max = 120, message = "El nombre admite hasta 120 caracteres") String nombre,
+            @Positive(message = "La cantidad debe ser mayor que 0") @DecimalMax(value = "1000000", message = "La cantidad es demasiado grande") double cantidad,
+            @Size(max = 20, message = "La unidad admite hasta 20 caracteres") String unidad,
             /** Para qué lo necesita. */
-            String descripcion,
+            @NotBlank(message = "Cuenta para qué lo necesitas") @Size(max = 300, message = "La descripción admite hasta 300 caracteres") String descripcion,
             Long materialId,
             Long herramientaId) {
     }
 
-    public record NotaRequest(String nota) {
+    public record NotaRequest(@Size(max = 300, message = "La nota admite hasta 300 caracteres") String nota) {
     }
 
-    public record RechazarRequest(String motivo) {
+    public record RechazarRequest(
+            @NotBlank(message = "El motivo es obligatorio") @Size(max = 300, message = "El motivo admite hasta 300 caracteres") String motivo) {
     }
 }

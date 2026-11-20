@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deja listas las cuentas de prueba de los cuatro roles, con PIN conocido.
 
-La migración V2 solo trae al administrador. Las demás cuentas se crean a mano
+La base solo trae al administrador. Las demás cuentas se crean a mano
 desde la app, y su PIN no se puede leer después (solo se guarda la huella), así
 que cada integrante del equipo terminaba con cuentas distintas y PINs que nadie
 recordaba.
@@ -18,8 +18,15 @@ haga falta:
 
 Solo usa la biblioteca estándar: corre igual en Ubuntu y en Windows.
 
+La clave del administrador no está en el repositorio. Se toma, en este orden, de
+--admin-clave, de la variable ADMIN_CLAVE o PRIMER_ADMIN_CLAVE, o del .env de la
+raíz (scripts/levantar.sh lo genera). El administrador nace obligado a cambiarla:
+la primera vez, el script la cambia por --nueva-clave-admin y desde entonces la
+clave es esa (pásala con --admin-clave o ADMIN_CLAVE).
+
 Uso:
-    python3 scripts/cuentas_de_prueba.py
+    python3 scripts/cuentas_de_prueba.py --nueva-clave-admin <clave de 8 o más>
+    python3 scripts/cuentas_de_prueba.py                     # las veces siguientes
     python3 scripts/cuentas_de_prueba.py --api http://localhost:8081
     python3 scripts/cuentas_de_prueba.py --renovar-credenciales
 
@@ -28,11 +35,12 @@ Es para la base local. No lo corras contra un servidor real: reemplaza PINs.
 
 import argparse
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
 
-ADMIN = {"email": "admin@arauco-ltda.cl", "pin": "0000"}
+ADMIN_EMAIL = "admin@arauco-ltda.cl"
 
 OBRA = {
     "nombre": "Los Almendros · Torre B",
@@ -42,21 +50,23 @@ OBRA = {
 CUADRILLA = "Cuadrilla 1"
 
 # Los RUT tienen dígito verificador válido. Correo y PIN son los que quedan
-# documentados en el README: si cambias uno acá, cámbialo allá.
+# documentados en el README: si cambias uno acá, cámbialo allá. Jefe de terreno
+# y bodeguero llevan clave de 8 o más caracteres (la API la exige para todo rol
+# que no sea TRABAJADOR); el trabajador, PIN de 4 dígitos.
 CUENTAS = [
     {
         "rol": "JEFE_TERRENO",
         "nombre": "Rodrigo Cárcamo",
         "email": "rodrigo.carcamo@arauco-ltda.cl",
         "rut": "14.109.556-0",
-        "pin": "1111",
+        "pin": "jefe-1111-obra",
     },
     {
         "rol": "BODEGUERO",
         "nombre": "Jorge Reyes",
         "email": "jorge.reyes@arauco-ltda.cl",
         "rut": "16.482.903-0",
-        "pin": "2222",
+        "pin": "bodega-2222-obra",
     },
     {
         "rol": "TRABAJADOR",
@@ -89,6 +99,25 @@ def rut_valido(rut: str) -> bool:
     limpio = rut.replace(".", "").upper()
     cuerpo, _, dv = limpio.partition("-")
     return cuerpo.isdigit() and digito_verificador(cuerpo) == dv
+
+
+def clave_de_admin(argumento):
+    """--admin-clave, ADMIN_CLAVE, PRIMER_ADMIN_CLAVE o el .env de la raíz."""
+    if argumento:
+        return argumento
+    for variable in ("ADMIN_CLAVE", "PRIMER_ADMIN_CLAVE"):
+        if os.environ.get(variable):
+            return os.environ[variable]
+    env = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+    try:
+        with open(env, encoding="utf-8") as f:
+            for linea in f:
+                nombre, _, valor = linea.strip().partition("=")
+                if nombre == "PRIMER_ADMIN_CLAVE" and valor:
+                    return valor
+    except OSError:
+        pass
+    return None
 
 
 class Api:
@@ -133,19 +162,42 @@ def main() -> int:
         "(la anterior deja de valer). Sirve para probar el escaneo escribiendo "
         "el código a mano.",
     )
+    parser.add_argument("--admin-clave", help="clave actual del administrador")
+    parser.add_argument(
+        "--nueva-clave-admin",
+        help="si el administrador debe cambiar su clave (primer ingreso), la cambia por esta",
+    )
     args = parser.parse_args()
 
     for c in CUENTAS:
         assert rut_valido(c["rut"]), f"RUT inválido en la tabla: {c['rut']}"
 
+    clave = clave_de_admin(args.admin_clave)
+    if not clave:
+        print("Falta la clave del administrador: usa --admin-clave, ADMIN_CLAVE o el .env de la raíz.")
+        return 1
+
     api = Api(args.api)
     try:
-        sesion = api.exigir("POST", "/api/auth/login", ADMIN)
+        sesion = api.exigir("POST", "/api/auth/login", {"email": ADMIN_EMAIL, "pin": clave})
     except (RuntimeError, urllib.error.URLError) as e:
         print(f"No se pudo entrar como administrador en {args.api}: {e}")
         print("¿Está arriba el backend? (docker compose up -d)")
         return 1
     api.token = sesion["token"]
+
+    if sesion.get("debeCambiarClave"):
+        if not args.nueva_clave_admin:
+            print("El administrador debe cambiar su clave antes de operar.")
+            print("Vuelve a correr con --nueva-clave-admin <clave de 8 o más caracteres>,")
+            print("o cámbiala desde la app.")
+            return 1
+        sesion = api.exigir(
+            "PUT", "/api/auth/pin",
+            {"pinActual": clave, "pinNuevo": args.nueva_clave_admin},
+        )
+        api.token = sesion["token"]
+        print("Clave del administrador cambiada. Desde ahora usa esa (--admin-clave o ADMIN_CLAVE).")
 
     # Obra y cuadrilla de prueba.
     obras = api.exigir("GET", "/api/obras")
@@ -168,7 +220,7 @@ def main() -> int:
         if "usuarioId" in t
     }
 
-    filas = [("ADMIN", ADMIN["email"], ADMIN["pin"], "")]
+    filas = [("ADMIN", ADMIN_EMAIL, "(la que definiste)", "")]
     for c in CUENTAS:
         u = usuarios.get(c["email"])
         if u is None:
@@ -209,7 +261,7 @@ def main() -> int:
 
     print(f"\nObra de prueba: {obra['nombre']} · {cuadrilla['nombre']}\n")
     ancho = max(len(f[1]) for f in filas)
-    print(f"{'ROL':<13} {'CORREO':<{ancho}}  PIN   ")
+    print(f"{'ROL':<13} {'CORREO':<{ancho}}  PIN / CLAVE")
     for rol, email, pin, nota in filas:
         print(f"{rol:<13} {email:<{ancho}}  {pin}  {nota}")
     return 0

@@ -122,7 +122,7 @@ class EscaneoEnBodegaTest {
         // país. Si el duplicado se buscara en toda la base, la segunda empresa
         // que la registrara se quedaría sin poder hacerlo —y, al importar, con
         // la planilla entera rechazada— por una fila que ni siquiera es suya.
-        when(materialRepository.findBySkuIgnoreCase("VOL-ST-10")).thenReturn(Optional.empty());
+        when(materialRepository.findByEmpresaIdAndSkuIgnoreCase(MI_EMPRESA, "VOL-ST-10")).thenReturn(Optional.empty());
         when(materialRepository.findByEmpresaIdAndCodigoBarra(MI_EMPRESA, "7801234567890"))
                 .thenReturn(Optional.empty());
         when(empresaService.obtener(MI_EMPRESA)).thenReturn(empresa(MI_EMPRESA));
@@ -139,7 +139,7 @@ class EscaneoEnBodegaTest {
         // La app ya lo hacía en su formulario; el servicio no. Un material
         // creado desde Swagger con el SKU en minúsculas quedaba invisible para
         // el escáner, que lo busca normalizado.
-        when(materialRepository.findBySkuIgnoreCase("VOL-ST-10")).thenReturn(Optional.empty());
+        when(materialRepository.findByEmpresaIdAndSkuIgnoreCase(MI_EMPRESA, "VOL-ST-10")).thenReturn(Optional.empty());
         when(empresaService.obtener(MI_EMPRESA)).thenReturn(empresa(MI_EMPRESA));
 
         materialService.crear(
@@ -154,7 +154,7 @@ class EscaneoEnBodegaTest {
     @Test
     void laEtiquetaDeUnaHerramientaSeResuelveEnMayusculas() {
         Herramienta taladro = herramienta("HER-TAL-014", MI_EMPRESA);
-        when(herramientaRepository.findByCodigoQr("HER-TAL-014")).thenReturn(Optional.of(taladro));
+        when(herramientaRepository.findByEmpresaIdAndCodigoQr(MI_EMPRESA, "HER-TAL-014")).thenReturn(Optional.of(taladro));
 
         assertThat(herramientaService.buscarPorCodigoQr(" her-tal-014 ")).isSameAs(taladro);
     }
@@ -163,7 +163,7 @@ class EscaneoEnBodegaTest {
     void unaHerramientaAjenaRespondeLoMismoQueUnaInexistente() {
         // Mismo tipo de excepción y mismo mensaje: distinguirlas permitiría
         // contar las herramientas de la competencia probando códigos (RN-23).
-        when(herramientaRepository.findByCodigoQr("HER-TAL-014"))
+        when(herramientaRepository.findByEmpresaIdAndCodigoQr(MI_EMPRESA, "HER-TAL-014"))
                 .thenReturn(Optional.of(herramienta("HER-TAL-014", OTRA_EMPRESA)));
 
         assertThatThrownBy(() -> herramientaService.buscarPorCodigoQr("HER-TAL-014"))
@@ -175,7 +175,7 @@ class EscaneoEnBodegaTest {
     void darDeAltaDosHerramientasConElMismoCodigoEsUnConflicto() {
         // Antes esto reventaba con una violación de UNIQUE, que llega a la app
         // como un 500 sin explicación.
-        when(herramientaRepository.findByCodigoQr("HER-TAL-014"))
+        when(herramientaRepository.findByEmpresaIdAndCodigoQr(MI_EMPRESA, "HER-TAL-014"))
                 .thenReturn(Optional.of(herramienta("HER-TAL-014", MI_EMPRESA)));
 
         assertThatThrownBy(() -> herramientaService.crear(

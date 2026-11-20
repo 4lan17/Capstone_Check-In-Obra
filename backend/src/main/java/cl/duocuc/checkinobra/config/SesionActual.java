@@ -23,7 +23,13 @@ public final class SesionActual {
     }
 
     public static Long empresaId() {
-        return usuario().empresaId();
+        Long empresa = usuario().empresaId();
+        if (empresa == null) {
+            // Un operador de plataforma no pertenece a ninguna empresa: si llegó a código de empresa,
+            // algo dejó pasar una ruta que no debía.
+            throw new AccesoDenegadoException("Esta petición no pertenece a ninguna empresa");
+        }
+        return empresa;
     }
 
     public static Long usuarioId() {

@@ -380,6 +380,10 @@ HTTP que ve quien llama.
 | RN-30 | El código de barras es único **dentro de la empresa** cuando existe, y el escáner lo resuelve en ese mismo alcance | `MaterialService.buscarPorCodigo` + `uq_materiales_empresa_codigo_barra` | 404 / 409 |
 | RN-31 | Una importación masiva es todo o nada: con una fila inválida no se guarda ninguna | `MaterialService.importar`, `HerramientaService.importar` | 200 con informe |
 | RN-32 | Los códigos que se escanean —SKU de material y código de herramienta— se guardan y se buscan en mayúsculas: «her-014» y «HER-014» son el mismo | `HerramientaService`, `MaterialService.crear`, `V5` | 409 al repetirse |
+| RN-33 | Al aprobar una solicitud de material, lo que se entrega es mayor que 0 y no pasa de lo solicitado (sí puede ser menos) | `SolicitudMaterialService.aprobar` | 400 |
+| RN-34 | Un despacho, un consumo o un préstamo directo solo pueden nombrar a un trabajador asignado, por su cuadrilla, a la obra indicada | `TrabajadorService.exigirQueSeaDeLaObra` | 409 `OBRA_NO_ASIGNADA` o `SIN_CUADRILLA` |
+| RN-35 | El SKU de un material y el código de una herramienta son únicos **por empresa**, no en toda la base | `V13`, `MaterialService.crear`, `HerramientaService.crear` | 409 al repetirse en la misma empresa |
+| RN-36 | Las fichas y listas de trabajadores, las alertas, las partidas y las cuadrillas se leen solo con rol ADMIN, JEFE_TERRENO o BODEGUERO; un TRABAJADOR usa sus rutas «mías» y `/yo` | controladores `obra/`, `control/`, `cubicacion/` | 403 |
 
 > **Sobre RN-31.** La alternativa —importar lo válido y reportar el resto— deja
 > el catálogo a medias y obliga a adivinar qué entró antes de volver a subir el
@@ -448,9 +452,9 @@ Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
 
 ### 9.1 Autenticación
 
-JWT firmado con HMAC-SHA. El token dura **8 horas** (configurable con
+JWT firmado con HMAC-SHA. El token dura **30 minutos** y se renueva con un refresh token (ver el README; configurable con
 `checkinobra.jwt.expiracion-minutos`) y lleva `sub` (id de usuario), `email`,
-`rol` y `empresaId`. No hay refresh: vencido el token, se vuelve a entrar.
+`rol`, `empresaId`, `iss`, `aud` y `tv` (versión de sesión). El refresh token rota en cada uso (`POST /api/auth/refresh`); un refresh reutilizado cierra todas las sesiones del usuario.
 
 Rutas públicas: `/api/auth/**` y la documentación OpenAPI. Todo lo demás exige
 `Authorization: Bearer <token>`.
@@ -502,7 +506,10 @@ app mostrar el informe antes de dejar confirmar sin arriesgarse a que difieran.
 Límites: 2.000 filas y 5 MB por archivo. Las celdas se leen como texto y los
 números se interpretan en formato chileno (`5.980` son cinco mil novecientos
 ochenta); un `.xls`, un `.csv` renombrado o un archivo con contraseña responden
-400 con el motivo.
+400 con el motivo. **Solo se admite `.xlsx`**: el nombre debe terminar en `.xlsx` y el
+contenido debe empezar con la firma de un ZIP (un `.xls` antiguo se rechaza aunque sea un
+Excel válido). Se rechaza también una «bomba de compresión»: una parte del archivo que
+se descomprima más de 50 veces o pase de 20 MB (`ZipSecureFile`).
 
 ### 9.5 Forma de las respuestas
 
@@ -659,7 +666,7 @@ dispositivo.
 | R1 | **Los coeficientes de cubicación son de referencia.** `RecetaCubicacion` los define porque el diagrama no modela recetas; no salen de tablas de rendimiento reales | Un presupuesto calculado con ellos no es defendible ante la constructora | Reemplazarlos por las tablas reales antes de que un presupuesto salga de estas cifras, y documentarlo en el informe |
 | R2 | **Sin cola sin conexión.** `drift` es dependencia pero no hay nada implementado | En obra sin señal no se puede registrar nada | Épica aparte: guardar con hora real, reintentar, resolver conflictos y decidir qué **no** se permite offline (aprobar y congelar exigen confirmar estado en el servidor) |
 | R3 | **La credencial QR es un código portador.** Quien la tenga —una foto de la pantalla ajena sirve— se presenta como ese trabajador (RN-27) | Un tercero podría hacer que le aprueben material a nombre de otro | Renovar la credencial es inmediato (`PUT /api/trabajadores/{id}/credencial`); a futuro, un código que rote por tiempo. Mitiga que aprobar exige un bodeguero autenticado y que el despacho queda a nombre del trabajador, no de quien escaneó |
-| R4 | **Secretos por defecto.** PIN semilla `0000`, `JWT_SECRET` de ejemplo, PostgreSQL `postgres/postgres` | Cualquier despliegue fuera de local queda comprometido | Cambiarlos antes de desplegar; el PIN semilla, en la primera sesión |
+| R4 | **Secretos por defecto.** PIN semilla `0000`, `JWT_SECRET` de ejemplo, PostgreSQL `postgres/postgres` | Cualquier despliegue fuera de local queda comprometido | **Mitigado (SEG1, SEG3, SEG6):** sin valor por defecto en el repo. `JWT_SECRET` y las contraseñas de la base vienen del `.env`; la migración V11 anula el PIN semilla y la clave del primer admin viene de `PRIMER_ADMIN_CLAVE`, con cambio obligatorio en el primer ingreso |
 | R5 | **Cobertura de pruebas del backend.** Las pruebas cuidan la forma de las respuestas, el aislamiento y las reglas de importación y escaneo (RN-30…32), no las del kardex, el préstamo ni el presupuesto | Las reglas RN-01…RN-21 de la §7 pueden romperse en silencio | Pruebas con Testcontainers sobre PostgreSQL real |
 | R6 | **Sin paginación ni endpoints de resumen.** Los contadores de inicio exigen varias llamadas | Degrada con obras largas | `GET /api/obras/{id}/resumen` y paginación en los listados |
 | R7 | **La importación masiva confía en el archivo.** Se valida formato, rangos y duplicados, no que los precios sean los correctos | Un catálogo cargado con precios equivocados se propaga a cada presupuesto | El informe previo obliga a mirar antes de confirmar; queda revisar el catálogo tras importar |

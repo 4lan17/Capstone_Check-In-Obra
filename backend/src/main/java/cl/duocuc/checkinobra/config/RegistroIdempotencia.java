@@ -55,9 +55,11 @@ public class RegistroIdempotencia {
     }
 
     private final JdbcTemplate jdbc;
+    private final ResolutorDeBases resolutor;
 
-    public RegistroIdempotencia(JdbcTemplate jdbc) {
+    public RegistroIdempotencia(JdbcTemplate jdbc, ResolutorDeBases resolutor) {
         this.jdbc = jdbc;
+        this.resolutor = resolutor;
     }
 
     public Reserva reservar(Long usuarioId, UUID clave, String huella, String metodo, String ruta) {
@@ -124,7 +126,18 @@ public class RegistroIdempotencia {
 
     @Scheduled(cron = "0 17 * * * *")
     public void purgarVencidas() {
-        jdbc.update("DELETE FROM claves_idempotencia WHERE creada_en < now() - CAST(? AS INTERVAL)", RETENCION);
+        // Es la única tarea que corre fuera de una petición: no hay empresa en el
+        // contexto, así que recorre las de todas las bases y fija la de cada una. Si una
+        // falla se anota y sigue con las demás.
+        for (Long empresaId : resolutor.empresas()) {
+            try {
+                TenantContext.ejecutarEn(empresaId, () -> jdbc.update(
+                        "DELETE FROM claves_idempotencia WHERE creada_en < now() - CAST(? AS INTERVAL)", RETENCION));
+            } catch (RuntimeException e) {
+                org.slf4j.LoggerFactory.getLogger(RegistroIdempotencia.class)
+                        .error("No se pudo purgar las claves de la empresa {}: {}", empresaId, e.getMessage());
+            }
+        }
     }
 
     private static String recortar(String texto, int largo) {

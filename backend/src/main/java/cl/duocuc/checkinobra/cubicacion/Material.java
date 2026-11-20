@@ -32,7 +32,8 @@ public class Material implements PerteneceAEmpresa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    // Único por empresa: UNIQUE (empresa_id, sku), migración V13.
+    @Column(nullable = false)
     private String sku;
 
     /**

@@ -8,11 +8,13 @@ import java.util.Optional;
 
 public interface HerramientaRepository extends JpaRepository<Herramienta, Long> {
     List<Herramienta> findByEmpresaId(Long empresaId);
-    Optional<Herramienta> findByCodigoQr(String codigoQr);
+
+    /** El código es único dentro de la empresa (V13), no en toda la base. */
+    Optional<Herramienta> findByEmpresaIdAndCodigoQr(Long empresaId, String codigoQr);
 
     /**
      * Los códigos que ya existen de una tanda. Lo usa la importación masiva
      * para resolver en una consulta lo que si no serían cientos.
      */
-    List<Herramienta> findByCodigoQrIn(Collection<String> codigos);
+    List<Herramienta> findByEmpresaIdAndCodigoQrIn(Long empresaId, Collection<String> codigos);
 }

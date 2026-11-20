@@ -106,7 +106,9 @@ public class IdempotenciaFilter extends OncePerRequestFilter {
                 || !METODOS_QUE_ESCRIBEN.contains(request.getMethod())
                 || !ruta.startsWith("/api/")
                 // El login no tiene usuario todavía, y repetirlo no hace daño.
-                || ruta.startsWith("/api/auth/");
+                || ruta.startsWith("/api/auth/")
+                // Plataforma no tiene empresa: no hay base donde guardar la clave.
+                || ruta.startsWith("/api/plataforma/");
     }
 
     @Override

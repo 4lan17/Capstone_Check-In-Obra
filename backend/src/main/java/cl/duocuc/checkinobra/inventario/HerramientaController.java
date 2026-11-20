@@ -1,7 +1,13 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.importacion.PlantillaExcel;
+import cl.duocuc.checkinobra.importacion.LectorPlanilla;
 import cl.duocuc.checkinobra.importacion.ResultadoImportacion;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +43,7 @@ public class HerramientaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public HerramientaResponse crear(@RequestBody CrearHerramientaRequest req) {
+    public HerramientaResponse crear(@Valid @RequestBody CrearHerramientaRequest req) {
         // La empresa sale del token, no de la petición. Mientras el cliente
         // pudiera nombrarla, pedir los datos de otra constructora era cuestión
         // de cambiar un número en la URL.
@@ -45,16 +51,27 @@ public class HerramientaController {
                 SesionActual.empresaId(), req.codigoQr(), req.nombre(), req.categoria(), req.valorReposicion()));
     }
 
+    /**
+     * Cualquier rol lee el catálogo de herramientas, pero el trabajador lo recibe
+     * sin el valor de reposición (S-08).
+     */
     @GetMapping
-    public List<HerramientaResponse> listarPorEmpresa() {
+    public List<HerramientaVista> listarPorEmpresa() {
         return herramientaService.listarPorEmpresa(SesionActual.empresaId()).stream()
-                .map(HerramientaResponse::de)
+                .<HerramientaVista>map(HerramientaController::vista)
                 .toList();
     }
 
     @GetMapping("/{id}")
-    public HerramientaResponse obtener(@PathVariable Long id) {
-        return HerramientaResponse.de(herramientaService.obtener(id));
+    public HerramientaVista obtener(@PathVariable Long id) {
+        return vista(herramientaService.obtener(id));
+    }
+
+    /** Con valor de reposición para quien lo maneja; sin él, para el trabajador. */
+    private static HerramientaVista vista(Herramienta herramienta) {
+        return SesionActual.esTrabajador()
+                ? HerramientaBasicaResponse.de(herramienta)
+                : HerramientaResponse.de(herramienta);
     }
 
     /**
@@ -74,6 +91,7 @@ public class HerramientaController {
         if (archivo.isEmpty()) {
             throw new IllegalArgumentException("La planilla llegó vacía");
         }
+        LectorPlanilla.exigirNombreXlsx(archivo.getOriginalFilename());
         try (var entrada = archivo.getInputStream()) {
             return herramientaService.importar(SesionActual.empresaId(), entrada, confirmar);
         } catch (IOException e) {
@@ -95,11 +113,14 @@ public class HerramientaController {
     }
 
     @GetMapping("/por-codigo/{codigoQr}")
-    public HerramientaResponse buscarPorCodigo(@PathVariable String codigoQr) {
-        return HerramientaResponse.de(herramientaService.buscarPorCodigoQr(codigoQr));
+    public HerramientaVista buscarPorCodigo(@PathVariable String codigoQr) {
+        return vista(herramientaService.buscarPorCodigoQr(codigoQr));
     }
 
     public record CrearHerramientaRequest(
-            String codigoQr, String nombre, String categoria, double valorReposicion) {
+            @NotBlank(message = "El código es obligatorio") @Size(max = 100, message = "El código admite hasta 100 caracteres") String codigoQr,
+            @NotBlank(message = "El nombre es obligatorio") @Size(max = 200, message = "El nombre admite hasta 200 caracteres") String nombre,
+            @NotBlank(message = "La categoría es obligatoria") @Size(max = 100, message = "La categoría admite hasta 100 caracteres") String categoria,
+            @PositiveOrZero(message = "El valor de reposición no puede ser negativo") @DecimalMax(value = "1000000000", message = "El valor de reposición es demasiado grande") double valorReposicion) {
     }
 }

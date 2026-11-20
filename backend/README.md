@@ -40,13 +40,18 @@ docker compose up -d
 | Swagger UI | http://localhost:8081/swagger-ui.html |
 | PostgreSQL | `localhost:5433`, base `checkinobra`, usuario y clave `postgres` |
 
-Flyway aplica las migraciones al arrancar. La `V2` deja un administrador para
-la primera entrada: `admin@arauco-ltda.cl` con PIN `0000`.
+Flyway aplica las migraciones al arrancar. En una base vacía la API crea la primera
+empresa y a su administrador `admin@arauco-ltda.cl` (la `V2` que lo sembraba con el
+PIN `0000` salió de `db/migration`; en las bases que ya la habían aplicado, la `V11`
+anula ese PIN): su clave inicial es `PRIMER_ADMIN_CLAVE` (del `.env` de la raíz, que `scripts/levantar.sh`
+genera) y la cuenta queda obligada a cambiarla con `PUT /api/auth/pin` antes de
+hacer cualquier otra cosa. Detalle en el
+[README de la raíz](../README.md#2-primer-login).
 
 ```bash
 curl -X POST http://localhost:8081/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@arauco-ltda.cl","pin":"0000"}'
+  -d "{\"email\":\"admin@arauco-ltda.cl\",\"pin\":\"$PRIMER_ADMIN_CLAVE\"}"
 ```
 
 Para tener las cuentas de los cuatro roles y una obra de ejemplo:
@@ -68,8 +73,8 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 ```
 
 > **Spring no lee `.env` por su cuenta.** Si arrancas sin exportar las
-> variables, toma el valor por defecto de `application.properties`
-> (`localhost:5432`) y no encuentra la base, que Docker publica en `5433`. En
+> variables, la API no arranca (no hay usuario ni contraseña por defecto) y la
+> URL por defecto es `localhost:5432`, no el `5433` que publica Docker. En
 > IntelliJ, carga el `.env` en la configuración de ejecución (*Environment
 > variables* o el plugin EnvFile).
 
@@ -78,14 +83,31 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 | Variable | Para qué | Valor por defecto |
 |---|---|---|
 | `SPRING_DATASOURCE_URL` | JDBC de PostgreSQL | `jdbc:postgresql://localhost:5432/checkinobra` |
-| `SPRING_DATASOURCE_USERNAME` | Usuario de la base | `postgres` |
-| `SPRING_DATASOURCE_PASSWORD` | Clave de la base | `postgres` |
-| `JWT_SECRET` | Firma de los JWT | Un texto de ejemplo, **no seguro** |
-| `BREVO_SMTP_USER` / `BREVO_SMTP_PASSWORD` | Correo saliente (Brevo SMTP) | Vacío |
+| `SPRING_DATASOURCE_USERNAME` | Usuario de la API: `checkinobra_app`, solo DML. **Obligatorio** | Ninguno |
+| `SPRING_DATASOURCE_PASSWORD` | Su contraseña (`DB_APP_PASSWORD`). **Obligatoria** | Ninguna |
+| `FLYWAY_USER` / `FLYWAY_PASSWORD` | Flyway: `checkinobra_migrador`, dueño del esquema. También migra el catálogo | Los de la API (solo sirve con un único usuario) |
+| `CATALOGO_URL` | JDBC de la base de catálogo (`checkinobra_catalogo`) | `jdbc:postgresql://localhost:5432/checkinobra_catalogo` |
+| `CATALOGO_USER` / `CATALOGO_PASSWORD` | Usuario `checkinobra_plataforma` y su contraseña (`DB_PLATAFORMA_PASSWORD`). **Obligatorios** | Ninguno |
+| `PRIMERA_EMPRESA_RUT` / `PRIMERA_EMPRESA_NOMBRE` | La primera empresa, que nace en una base vacía y es la que se registra en el catálogo | Constructora Arauco Ltda. |
+| `JWT_SECRET` | Firma de los JWT. **Obligatorio**: la API no arranca si falta, tiene menos de 32 bytes o es el valor de ejemplo | Ninguno |
 
-`docker-compose.yml` solo define las tres del datasource. Dentro de Docker la
-API firma los tokens con el `JWT_SECRET` por defecto: sirve en local, pero
-cualquier despliegue real tiene que definirlo.
+### Perfil `prod`
+
+En un despliegue real se arranca con `SPRING_PROFILES_ACTIVE=prod`, que apaga **Swagger y `/v3/api-docs`**
+(`application-prod.properties`): en desarrollo ayudan a probar, y en producción le entregan a cualquiera
+el mapa completo de endpoints y cuerpos. Lo demás es igual. El contenedor declara un `HEALTHCHECK`
+sobre `/actuator/health/liveness`, que es lo único del actuator que se expone (sin detalles; no incluye
+la base de datos, porque hay una por empresa y no hay conexión que probar sin una empresa). La imagen
+corre como un usuario sin privilegios, y sus imágenes base van fijadas por digest.
+
+`docker-compose.yml` define las del datasource y lee `JWT_SECRET` del `.env` de
+la raíz (no se versiona). `scripts/levantar.sh` lo genera la primera vez; a
+mano: copia `.env.example` a `.env` y reemplaza el marcador con
+`openssl rand -base64 48`. Sin él, el backend sale al arrancar con un mensaje que lo
+explica (`docker compose logs backend`). `./mvnw test` y la CI usan un secreto de pruebas definido en el `pom.xml`.
+
+Si una instancia ya corrió con el valor por defecto antiguo, rota el secreto:
+los tokens firmados con él valían.
 
 ---
 
@@ -110,11 +132,31 @@ borran. Para no ensuciar la base con la que pruebas la app, usa una aparte:
 
 ```bash
 docker compose exec db createdb -U postgres checkinobra_test
+docker compose exec -T -e PGDATABASE=checkinobra_test db /docker-entrypoint-initdb.d/01-roles.sh
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/checkinobra_test ./mvnw test
 ```
 
-La CI (`.github/workflows/ci.yml`) corre `./mvnw -B verify` contra un
-PostgreSQL 16 vacío en `localhost:5432`.
+La segunda línea crea los roles en esa base (ver
+[Roles de la base](../README.md#roles-de-la-base)), y con el `.env` de la raíz
+exportado la prueba corre como `checkinobra_app` y migra como
+`checkinobra_migrador`, igual que en producción. `RolesDeBaseDeDatosTest` falla si
+no es así.
+
+Las pruebas **comparten una sola base entre muchas empresas de prueba**: el `pom.xml` define
+`checkinobra.pruebas.conexion-compartida=true` y `ConexionCompartidaParaPruebas` pone un
+resolutor que manda todas a la misma base (ningún despliegue lo trae). El enrutamiento real
+se prueba con dos bases en `TenantRoutingDataSourceTest`, y las pruebas que inician sesión por
+correo registran su empresa y sus usuarios en el catálogo (`CatalogoDePrueba`).
+
+**Pruebas de aislamiento con dos bases** (`AislamientoConDosBasesTest`): registran dos empresas en
+el catálogo, cada una en su base, y usan el enrutador de verdad. Necesitan una segunda base **vacía**,
+`checkinobra_b` (o la de `checkinobra.pruebas.segunda-base`), que crea `db/crear-roles.sh` si se le
+pasa `CHECKINOBRA_BASES_EXTRA=checkinobra_b` (con `docker compose`: `docker compose exec -T -e
+CHECKINOBRA_BASES_EXTRA=checkinobra_b db /docker-entrypoint-initdb.d/01-roles.sh`). La CI lo hace. Las
+tablas las migra `MigradorDeBases` durante la prueba. Sin esa base, la prueba falla diciendo cuál falta.
+
+La CI (`.github/workflows/ci.yml`) crea los roles con `db/crear-roles.sh` sobre un
+PostgreSQL 16 vacío en `localhost:5432` y corre `./mvnw -B verify` con ellos.
 
 ---
 

@@ -71,6 +71,7 @@ public class PrestamoHerramientaService {
                     "La herramienta no está DISPONIBLE (estado actual: " + herramienta.getEstado() + ")");
         }
         Trabajador trabajador = trabajadorService.obtener(trabajadorId);
+        trabajadorService.exigirQueSeaDeLaObra(trabajador, obraId);
         Obra obra = obraService.obtenerAbiertaParaRegistrar(obraId);
         Usuario autorizador = usuarioRepository.findById(autorizadorId)
                 .filter(AccesoEmpresa::esPropio)

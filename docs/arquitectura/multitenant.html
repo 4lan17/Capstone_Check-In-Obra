@@ -574,9 +574,139 @@
     </div>
   </div>
 
+  <section>
+    <h2>Decisiones tomadas en la fase 1 (MT1)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>La tabla <code>empresas</code> de cada base</h3></div>
+      <ul>
+        <li>Cada base conserva <strong>una copia de una fila</strong> de <code>empresas</code>: la de su propia empresa, con el mismo <code>id</code> que tiene en el catálogo</li>
+        <li>Se descartó retirar las FKs: cuatro entidades la referencian (<code>Usuario</code>, <code>Obra</code>, <code>Material</code>, <code>Herramienta</code>) y <code>AccesoEmpresa</code> y la columna <code>empresa_id</code> se mantienen como segunda capa</li>
+        <li>Ese <code>id</code> es el que viaja en el JWT, así que el catálogo no necesita una columna aparte con "el id en la base"</li>
+        <li>Una empresa, una base: <code>nombre_base</code> es único en el catálogo</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Qué hay en <code>checkinobra_catalogo</code></h3></div>
+      <ul>
+        <li>Tablas <code>planes</code>, <code>empresas</code> (rut, nombre, plan, estado, base, usuario y <em>referencia</em> al secreto), <code>operadores</code> e <code>indice_login</code> (correo → empresa, en minúsculas)</li>
+        <li>Sus migraciones están en <code>db/catalogo</code> y las aplica el migrador. La API la usa como <code>checkinobra_plataforma</code>, que solo ve esa base; el rol de una empresa no puede conectarse a ella</li>
+        <li>El catálogo guarda <code>env:NOMBRE_DE_VARIABLE</code>, nunca la contraseña</li>
+        <li>Al arrancar, la API migra el catálogo, registra a la empresa de la base actual (idempotente: no pisa el plan ni el estado que fije la plataforma) y completa el índice sin reasignar un correo que ya sea de otra empresa</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>El primer administrador ya no viene en una migración</h3></div>
+      <ul>
+        <li><code>V2__seed_admin.sql</code> salió de <code>db/migration</code>: el ADMIN se crea al dar de alta la empresa, no en cada base nueva</li>
+        <li>Mientras no exista el módulo de plataforma (fase 4), en una base vacía nace la primera empresa con su ADMIN al arrancar, con la clave de <code>PRIMER_ADMIN_CLAVE</code> y obligado a cambiarla</li>
+        <li>Las bases que ya aplicaron <code>V2</code> la conservan en su historial; Flyway ignora la migración aplicada que ya no está (<code>ignore-migration-patterns=*:missing</code>)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Lo que todavía no hace</h3></div>
+      <ul>
+        <li>La API sigue abriendo una sola base: el catálogo se lee, pero no enruta (fase 2)</li>
+        <li>El índice de login se completa al arrancar; mantenerlo al crear usuarios llega con el login por empresa (MT4)</li>
+        <li>No hay alta de empresas ni su base propia (fase 4)</li>
+      </ul>
+    </div>
+  </div>
+
+  <section>
+    <h2>Decisiones tomadas en la fase 2 (MT2)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>El enrutador</h3></div>
+      <ul>
+        <li><code>JwtAuthFilter</code> llena el <code>TenantContext</code> con la empresa del token y lo limpia en un <code>finally</code> <strong>después</strong> de toda la cadena: <code>IdempotenciaFilter</code> corre más adentro y también usa la base</li>
+        <li><code>TenantRoutingDataSource</code> no tiene base por defecto. Sin empresa en el contexto, o con una sin pool, lanza <code>SinEmpresaEnContextoException</code></li>
+        <li>Un pool por empresa, armado desde el catálogo. La contraseña sale de la referencia <code>env:VARIABLE</code>; una empresa mal registrada se anota y no impide arrancar a las demás</li>
+        <li>Un token sin <code>empresaId</code> (antes, un NPE) o de una empresa sin base o suspendida es un token inválido: 401</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>El login pasa antes del token</h3></div>
+      <ul>
+        <li>Antes de autenticarse no hay empresa en el contexto. <code>/api/auth/login</code> la saca del índice del catálogo; <code>/api/auth/login-pin</code> recibe <code>empresaId</code> junto al id de usuario, porque los ids se repiten entre bases</li>
+        <li>El bloqueo por intentos incluye la empresa en su clave de cuenta por la misma razón</li>
+        <li>Crear un usuario reserva su correo en el catálogo antes de guardarlo, y lo suelta si guardar falla (dos bases, sin transacción compartida). Se compara sin distinguir mayúsculas</li>
+        <li>Mientras exista una sola empresa, <code>login-pin</code> sin <code>empresaId</code> se resuelve a esa: es lo que permite que una app anterior siga entrando</li>
+        <li>Además de abrir la base de la empresa pedida, el login comprueba que el usuario encontrado sea de ella: con una base por empresa siempre lo es, y si una base estuviera mal registrada o compartida, no se entra con la empresa equivocada (MT4)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>Hibernate sin conexión por defecto</h3></div>
+      <ul>
+        <li><code>hibernate.boot.allow_jdbc_metadata_access=false</code>, dialecto PostgreSQL explícito y <code>ddl-auto=none</code>: al arrancar no se abre ninguna conexión</li>
+        <li>Se pierde la validación del mapeo contra el esquema al arrancar. La suite de pruebas la conserva (<code>validate</code> contra su base) y el esquema de cada empresa lo garantizan las migraciones (fase 3)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Lo que sigue sin hacer</h3></div>
+      <ul>
+        <li>Un job que migre una empresa nueva al darla de alta, sin reiniciar la API (fase 4): hoy se migra al arrancar</li>
+        <li>Alta de empresas y de su base (fase 4): hoy la base de una empresa se crea fuera, y solo hay una</li>
+        <li>La purga de claves de idempotencia ya recorre las empresas con base abierta; si una falla, sigue con las demás</li>
+      </ul>
+    </div>
+  </div>
+
+  <section>
+    <h2>Decisiones tomadas en la fase 3 (MT3)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>Flyway por cada base</h3></div>
+      <ul>
+        <li><code>spring.flyway.enabled=false</code>: el Flyway de Spring Boot migra una sola base y necesita una conexión sin empresa. <code>MigradorDeBases</code> corre Flyway programático sobre la base de cada empresa activa del catálogo, con el usuario migrador</li>
+        <li>Todas las bases reciben las mismas migraciones (<code>db/migration</code>), así que quedan en la misma versión. Una base vacía queda con el esquema completo en ese paso; el registro de la base inicial la migra antes de crear su empresa</li>
+        <li>Se mantiene <code>ignore-migration-patterns=*:missing</code> para las bases que aplicaron <code>V2</code>, que ya no está</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Si una base falla</h3></div>
+      <ul>
+        <li>El resultado queda en el catálogo (<code>migracion_estado</code>, <code>migracion_error</code>, <code>migrada_en</code>) y en el log</li>
+        <li>Esa empresa no tiene pool y sus tokens no valen, porque una base a medio migrar no debe servir peticiones. Las demás se migran y arrancan igual</li>
+        <li>Una base nueva empieza <code>PENDIENTE</code> y solo se abre cuando su migración sale <code>OK</code></li>
+        <li>Orden en el arranque: registrar la base actual → migrar todas → abrir pools → crear el administrador → sincronizar el índice de login</li>
+      </ul>
+    </div>
+  </div>
+
+  <section>
+    <h2>Pruebas de aislamiento (MT5)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>Dos bases, de verdad</h3></div>
+      <ul>
+        <li><code>AislamientoConDosBasesTest</code> registra dos empresas en el catálogo, cada una en su base (la de la suite y una segunda, vacía, que se migra en la prueba), con el enrutador real y sin el resolutor compartido que usan las demás pruebas</li>
+        <li>Con el token de A, cada GET por id de un objeto de B responde 404 y cada listado responde 404 o vacío; los listados generales no traen nada de B</li>
+        <li>Sin empresa en el contexto, tocar la base falla por JDBC y por JPA, y una tarea programada sin empresa fijada también</li>
+        <li>Corren en la CI: el paso de roles crea la segunda base con <code>CHECKINOBRA_BASES_EXTRA</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Lo que demuestran</h3></div>
+      <ul>
+        <li>Estos casos pasan <strong>aunque un endpoint olvide filtrar por empresa</strong>: los datos de B no están en la base que abre el token de A. Con una sola base, <code>GET /api/trabajadores?obraId=</code> devolvía nombre y RUT ajenos (S-05); con dos bases, devuelve una lista vacía</li>
+        <li>Se comprobó con una mutación: si el resolutor entrega siempre la misma base, la suite detecta la fuga (con los datos de B en la respuesta de A)</li>
+        <li><code>AccesoEmpresa</code> sigue siendo la segunda capa para una base con más de una empresa (la de las demás pruebas)</li>
+      </ul>
+    </div>
+  </div>
+
   <footer class="footer">
     <span>Check-In-Obra · Propuesta multi-tenant · base por empresa</span>
-    <span>Actualizada el 2026-10-19 tras la observación recibida</span>
+    <span>Actualizada el 2026-11-19: fases 1 a 3 y pruebas de aislamiento</span>
   </footer>
 
 </div>

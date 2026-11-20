@@ -26,6 +26,12 @@ public class ConflictoException extends IllegalStateException {
     public static final String NO_ENTREGADA = "NO_ENTREGADA";
     /** El pedido especial no puede pasar a ese estado desde el que tiene. */
     public static final String TRANSICION_INVALIDA = "TRANSICION_INVALIDA";
+    /** El presupuesto está CONGELADO (RN-12): ya no admite cambios. */
+    public static final String PRESUPUESTO_CONGELADO = "PRESUPUESTO_CONGELADO";
+    /** La partida es de otra obra que el presupuesto al que se quiere agregar. */
+    public static final String PARTIDA_DE_OTRA_OBRA = "PARTIDA_DE_OTRA_OBRA";
+    /** La partida todavía no se cubicó: no hay ítems que agregar. */
+    public static final String PARTIDA_SIN_CUBICAR = "PARTIDA_SIN_CUBICAR";
     /** La solicitud es parte de un pedido con QR: se entrega o se cancela el pedido entero. */
     public static final String EN_PEDIDO = "EN_PEDIDO";
 

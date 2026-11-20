@@ -3,6 +3,7 @@ package cl.duocuc.checkinobra.inventario;
 import cl.duocuc.checkinobra.config.AccesoEmpresa;
 import cl.duocuc.checkinobra.config.Empresa;
 import cl.duocuc.checkinobra.config.EmpresaService;
+import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.importacion.FilaPlanilla;
 import cl.duocuc.checkinobra.importacion.LectorPlanilla;
 import cl.duocuc.checkinobra.importacion.ResultadoImportacion;
@@ -43,7 +44,7 @@ public class HerramientaService {
         if (codigoQr.isEmpty()) {
             throw new IllegalArgumentException("El código de la herramienta es obligatorio");
         }
-        if (herramientaRepository.findByCodigoQr(codigoQr).isPresent()) {
+        if (herramientaRepository.findByEmpresaIdAndCodigoQr(empresaId, codigoQr).isPresent()) {
             // Antes esto reventaba en la base con una violación de UNIQUE, que
             // llega a la app como un 500 sin explicación.
             throw new IllegalStateException("Ya existe una herramienta con ese código");
@@ -75,7 +76,7 @@ public class HerramientaService {
 
     @Transactional(readOnly = true)
     public Herramienta buscarPorCodigoQr(String codigoQr) {
-        return herramientaRepository.findByCodigoQr(codigoQr.trim().toUpperCase())
+        return herramientaRepository.findByEmpresaIdAndCodigoQr(SesionActual.empresaId(), codigoQr.trim().toUpperCase())
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Código no reconocido"));
     }
@@ -119,7 +120,7 @@ public class HerramientaService {
         // Una consulta para todo el archivo, no una por fila.
         Set<String> yaExisten = codigosDelArchivo.isEmpty()
                 ? Set.of()
-                : herramientaRepository.findByCodigoQrIn(codigosDelArchivo).stream()
+                : herramientaRepository.findByEmpresaIdAndCodigoQrIn(empresaId, codigosDelArchivo).stream()
                         .map(Herramienta::getCodigoQr)
                         .collect(Collectors.toSet());
 
