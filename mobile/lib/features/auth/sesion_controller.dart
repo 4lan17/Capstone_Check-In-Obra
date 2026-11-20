@@ -30,6 +30,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
       final sesion = await _api.login(email: email.trim(), pin: pin);
       await _storage.guardar(sesion);
       _recordar();
+      ref.read(avisoDeAccesoProvider.notifier).state = null;
       return sesion;
     });
     _salirDelAcceso();
@@ -49,6 +50,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
       );
       await _storage.guardar(sesion);
       _recordar();
+      ref.read(avisoDeAccesoProvider.notifier).state = null;
       return sesion;
     });
     _salirDelAcceso();
@@ -159,6 +161,21 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
       );
   }
 
+  /// La empresa de quien tiene la sesión está suspendida (el servidor respondió
+  /// 403 `EMPRESA_SUSPENDIDA`). La sesión ya no se puede usar mientras dure la
+  /// suspensión, así que se cierra y la persona queda en el acceso **con el
+  /// aviso a la vista**: un snackbar de cuatro segundos se pierde, y entonces
+  /// no sabría por qué no puede entrar. Varias peticiones en vuelo pueden
+  /// recibir el 403 a la vez; solo la primera actúa.
+  Future<void> suspenderPorEmpresa() async {
+    if (state.valueOrNull == null) return;
+    ref.read(avisoDeAccesoProvider.notifier).state = mensajeEmpresaSuspendida;
+    navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
+    // No se revoca el refresh: el servidor rechaza todo de esta empresa, y esa
+    // llamada tampoco llegaría.
+    await salir(revocar: false);
+  }
+
   /// Olvida también al usuario recordado — el "Cambiar" de la pantalla de PIN.
   Future<void> cambiarDeUsuario() async {
     await _storage.olvidarTodo();
@@ -166,6 +183,10 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
     state = const AsyncValue.data(null);
   }
 }
+
+/// Un aviso para la pantalla de acceso: por qué se llegó ahí. Se muestra hasta
+/// que alguien entra o lo descarta.
+final avisoDeAccesoProvider = StateProvider<String?>((ref) => null);
 
 final sesionProvider = AsyncNotifierProvider<SesionController, SesionUsuario?>(
   SesionController.new,

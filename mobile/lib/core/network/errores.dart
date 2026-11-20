@@ -10,6 +10,8 @@ import '../formato.dart';
 /// nombran directamente.
 String mensajeDeError(Object error) {
   if (error is ApiException) {
+    // Empresa suspendida: no es un "sin permiso" ni algo que reintentar.
+    if (error.empresaSuspendida) return mensajeEmpresaSuspendida;
     // Demasiados intentos fallidos: se dice cuánto esperar. El backend bloquea
     // la cuenta aunque la clave sea la correcta, así que reintentar antes solo
     // alarga la espera.
