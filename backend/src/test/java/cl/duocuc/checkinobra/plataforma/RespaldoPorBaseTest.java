@@ -161,6 +161,40 @@ class RespaldoPorBaseTest {
         }
     }
 
+    /**
+     * pg_dump 17 sobre un servidor 16 escribe un volcado con parámetros que el 16 no conoce y la
+     * restauración falla a mitad (lo que pasó en la CI). Los scripts lo detectan antes de tocar nada.
+     */
+    @Test
+    void siElClienteNoEsDeLaVersionDelServidorLosScriptsSeNieganYNoTocanNada() throws Exception {
+        Path falso = respaldos.resolve("prefijo-falso.sh");
+        Files.writeString(falso, """
+                #!/usr/bin/env bash
+                # Se hace pasar por un cliente de la versión 99; todo lo demás va al prefijo real.
+                case " $* " in
+                  *" pg_dump --version"*|*" pg_restore --version"*) echo "pg_dump (PostgreSQL) 99.0"; exit 0;;
+                esac
+                exec ${REAL_PREFIX:-} "$@"
+                """);
+        falso.toFile().setExecutable(true);
+        String real = System.getenv("CHECKINOBRA_PG_PREFIX");
+        Map<String, String> distinto = Map.of("PG_PREFIX", falso.toString(), "REAL_PREFIX", real == null ? "" : real);
+
+        Resultado respaldo = ejecutarCon(distinto, "respaldar-empresa.sh", base, respaldos.toString());
+        Path dump = Path.of(ejecutar("respaldar-empresa.sh", base, respaldos.toString()).salida.strip());
+        Resultado restauracion = ejecutarCon(distinto, "restaurar-empresa.sh", dump.toString(), base + "_v", usuario);
+
+        assertThat(respaldo.codigo).as(respaldo.salida).isEqualTo(4);
+        assertThat(respaldo.salida).contains("Versiones distintas").contains("99");
+        assertThat(restauracion.codigo).as(restauracion.salida).isEqualTo(4);
+        assertThat(aprovisionador.existeBase(base + "_v")).isFalse();
+        try (Stream<Path> s = Files.list(respaldos)) {
+            // Solo el prefijo falso y el respaldo bueno: el intento con versión distinta no dejó nada.
+            assertThat(s.map(p -> p.getFileName().toString()).filter(n -> n.endsWith(".dump") || n.endsWith(".parcial")))
+                    .hasSize(1);
+        }
+    }
+
     @Test
     void losScriptsRechazanNombresQueNoSonDeBase() throws Exception {
         assertThat(ejecutar("respaldar-empresa.sh", "x; DROP DATABASE y", respaldos.toString()).codigo).isEqualTo(2);
@@ -173,6 +207,10 @@ class RespaldoPorBaseTest {
     }
 
     private Resultado ejecutar(String script, String... argumentos) throws Exception {
+        return ejecutarCon(Map.of(), script, argumentos);
+    }
+
+    private Resultado ejecutarCon(Map<String, String> extra, String script, String... argumentos) throws Exception {
         List<String> comando = new ArrayList<>(List.of("bash", SCRIPTS.resolve(script).toString()));
         comando.addAll(Arrays.asList(argumentos));
         ProcessBuilder pb = new ProcessBuilder(comando).redirectErrorStream(true);
@@ -189,6 +227,7 @@ class RespaldoPorBaseTest {
             env.put("PGHOST", hostDe(urlServidor));
             env.put("PGPORT", puertoDe(urlServidor));
         }
+        env.putAll(extra);
         Process p = pb.start();
         String salida = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(p.waitFor(120, TimeUnit.SECONDS)).as("el script terminó a tiempo").isTrue();
