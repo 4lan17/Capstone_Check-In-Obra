@@ -15,7 +15,8 @@
 --
 --   checkinobra_plataforma  DML sobre el catálogo. No tiene acceso a las bases de empresa.
 --
--- Variables de psql (-v): app_password, migrador_password, plataforma_password.
+-- Variables de psql (-v): app_password, migrador_password, plataforma_password y, opcional,
+-- aprovisionador_password.
 -- Uso: psql -v ON_ERROR_STOP=1 -v app_password=... -v migrador_password=... \
 --           -v plataforma_password=... -f roles.sql
 \set ON_ERROR_STOP on
@@ -34,6 +35,19 @@ ALTER ROLE checkinobra_plataforma NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICAT
 SELECT format('ALTER ROLE checkinobra_plataforma PASSWORD %L', :'plataforma_password') \gexec
 SELECT format('ALTER ROLE checkinobra_app PASSWORD %L', :'app_password') \gexec
 SELECT format('ALTER ROLE checkinobra_migrador PASSWORD %L', :'migrador_password') \gexec
+
+-- MT7 (#110): quien crea la base y el usuario de una empresa nueva. Distinto del de la API y del
+-- migrador. Es opcional: sin aprovisionador_password no se crea y el alta por API no está disponible.
+--   checkinobra_aprovisionador  CREATEDB y CREATEROLE. Puede hacer SET ROLE al migrador (hace falta
+--                               para crear una base cuyo dueño es el migrador) pero no hereda sus
+--                               permisos. No tiene acceso a los datos de ninguna empresa.
+\if :{?aprovisionador_password}
+SELECT 'CREATE ROLE checkinobra_aprovisionador LOGIN'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'checkinobra_aprovisionador') \gexec
+ALTER ROLE checkinobra_aprovisionador NOSUPERUSER CREATEDB CREATEROLE NOREPLICATION NOBYPASSRLS LOGIN;
+SELECT format('ALTER ROLE checkinobra_aprovisionador PASSWORD %L', :'aprovisionador_password') \gexec
+GRANT checkinobra_migrador TO checkinobra_aprovisionador WITH INHERIT FALSE, SET TRUE;
+\endif
 
 -- Conexión y esquema --------------------------------------------------------
 -- Solo estos dos roles se conectan a esta base. Por defecto PUBLIC puede conectarse

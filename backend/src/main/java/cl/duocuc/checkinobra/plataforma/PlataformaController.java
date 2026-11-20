@@ -3,17 +3,21 @@ package cl.duocuc.checkinobra.plataforma;
 import cl.duocuc.checkinobra.config.CatalogoDeEmpresas;
 import cl.duocuc.checkinobra.config.CatalogoDeEmpresas.EmpresaRegistrada;
 import cl.duocuc.checkinobra.config.CatalogoDeEmpresas.OperadorRegistrado;
+import cl.duocuc.checkinobra.config.EventosDeSeguridad;
 import cl.duocuc.checkinobra.config.JwtService;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,12 +35,17 @@ public class PlataformaController {
     private final PlataformaAutenticacionService autenticacion;
     private final CatalogoDeEmpresas catalogo;
     private final JwtService jwtService;
+    private final AltaDeEmpresaService altaDeEmpresa;
+    private final EventosDeSeguridad eventos;
 
     public PlataformaController(
-            PlataformaAutenticacionService autenticacion, CatalogoDeEmpresas catalogo, JwtService jwtService) {
+            PlataformaAutenticacionService autenticacion, CatalogoDeEmpresas catalogo, JwtService jwtService,
+            AltaDeEmpresaService altaDeEmpresa, EventosDeSeguridad eventos) {
         this.autenticacion = autenticacion;
         this.catalogo = catalogo;
         this.jwtService = jwtService;
+        this.altaDeEmpresa = altaDeEmpresa;
+        this.eventos = eventos;
     }
 
     @PostMapping("/auth/login")
@@ -56,6 +65,32 @@ public class PlataformaController {
     @GetMapping("/empresas")
     public List<EmpresaDePlataformaResponse> empresas() {
         return catalogo.listar().stream().map(EmpresaDePlataformaResponse::de).toList();
+    }
+
+    /**
+     * Da de alta una constructora: su base, su usuario de PostgreSQL, el esquema y su primer ADMIN,
+     * que queda obligado a cambiar la clave en su primer ingreso. Si algún paso falla, se deshace todo.
+     */
+    @PostMapping("/empresas")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AltaDeEmpresaResponse darDeAlta(@Valid @RequestBody AltaDeEmpresaRequest req) {
+        var resultado = altaDeEmpresa.dar(
+                req.rut(), req.nombre(), req.adminEmail(), req.adminClave(), Boolean.TRUE.equals(req.copiarCatalogoBase()));
+        eventos.empresaCreada(SesionActual.usuario().usuarioId(), resultado.empresaId());
+        return new AltaDeEmpresaResponse(resultado.empresaId(), resultado.rut(), resultado.nombre(),
+                resultado.adminEmail(), resultado.claveTemporal());
+    }
+
+    public record AltaDeEmpresaRequest(
+            @NotBlank @Size(max = 20) String rut,
+            @NotBlank @Size(max = 200) String nombre,
+            @NotBlank @Email @Size(max = 200) String adminEmail,
+            @Size(min = 8, max = 72) String adminClave,
+            Boolean copiarCatalogoBase) {
+    }
+
+    /** {@code claveTemporal} solo viene si el sistema la generó: es la única vez que se muestra. */
+    public record AltaDeEmpresaResponse(Long id, String rut, String nombre, String adminEmail, String claveTemporal) {
     }
 
     public record LoginDeOperadorRequest(

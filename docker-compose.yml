@@ -28,6 +28,11 @@ services:
       CATALOGO_URL: jdbc:postgresql://db:5432/checkinobra_catalogo
       CATALOGO_USER: checkinobra_plataforma
       CATALOGO_PASSWORD: ${DB_PLATAFORMA_PASSWORD:-}
+      # Alta de empresas por API (MT7): crea la base y el usuario de cada constructora. Credencial
+      # aparte de la de la API y la del migrador. Sin ella el alta por API no está disponible.
+      DB_APROVISIONADOR_PASSWORD: ${DB_APROVISIONADOR_PASSWORD:-}
+      # Contraseñas de las bases que crea la API (referencias file: del catálogo): volumen persistente.
+      SECRETOS_DIR: /secretos
       # Sin valor por defecto: la API no arranca sin un secreto propio (JwtService
       # lo valida y dice qué hacer en el log). Se lee del .env de la raíz, no
       # versionado; scripts/levantar.sh lo genera. A mano: openssl rand -base64 48
@@ -40,6 +45,8 @@ services:
       # Hora de Chile, la misma de la app y de ./mvnw test. La API recibe y
       # devuelve fechas sin zona; en UTC, "hoy 18:00" llegaba como pasada.
       TZ: America/Santiago
+    volumes:
+      - secretos:/secretos
     depends_on:
       db:
         condition: service_healthy
@@ -54,6 +61,7 @@ services:
       CHECKINOBRA_APP_PASSWORD: ${DB_APP_PASSWORD:-}
       CHECKINOBRA_MIGRADOR_PASSWORD: ${DB_MIGRADOR_PASSWORD:-}
       CHECKINOBRA_PLATAFORMA_PASSWORD: ${DB_PLATAFORMA_PASSWORD:-}
+      CHECKINOBRA_APROVISIONADOR_PASSWORD: ${DB_APROVISIONADOR_PASSWORD:-}
       ROLES_SQL: /opt/checkinobra/roles.sql
     # 5433 en el host para no chocar con otro Postgres local.
     # Solo hace falta para conectarse desde fuera de Docker (DBeaver, psql,
@@ -76,3 +84,4 @@ services:
 
 volumes:
   pgdata:
+  secretos:

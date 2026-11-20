@@ -26,10 +26,17 @@ sql="${ROLES_SQL:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/roles.sql}"
 export PGUSER="${PGUSER:-${POSTGRES_USER:-postgres}}"
 export PGDATABASE="${PGDATABASE:-${POSTGRES_DB:-checkinobra}}"
 
+# CHECKINOBRA_APROVISIONADOR_PASSWORD es opcional: con ella se crea el rol que da de alta bases de
+# empresa desde la API (MT7); sin ella el alta por API no está disponible.
+extra=()
+if [[ -n "${CHECKINOBRA_APROVISIONADOR_PASSWORD:-}" ]]; then
+  extra=(-v aprovisionador_password="$CHECKINOBRA_APROVISIONADOR_PASSWORD")
+fi
 psql -X -q -v ON_ERROR_STOP=1 \
   -v app_password="$CHECKINOBRA_APP_PASSWORD" \
   -v migrador_password="$CHECKINOBRA_MIGRADOR_PASSWORD" \
   -v plataforma_password="$CHECKINOBRA_PLATAFORMA_PASSWORD" \
+  "${extra[@]}" \
   -f "$sql"
 echo "Roles y base de catálogo listos."
 
