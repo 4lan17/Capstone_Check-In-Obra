@@ -42,21 +42,23 @@ OBRA = {
 CUADRILLA = "Cuadrilla 1"
 
 # Los RUT tienen dígito verificador válido. Correo y PIN son los que quedan
-# documentados en el README: si cambias uno acá, cámbialo allá.
+# documentados en el README: si cambias uno acá, cámbialo allá. Jefe de terreno
+# y bodeguero llevan clave de 8 o más caracteres (la API la exige para todo rol
+# que no sea TRABAJADOR); el trabajador, PIN de 4 dígitos.
 CUENTAS = [
     {
         "rol": "JEFE_TERRENO",
         "nombre": "Rodrigo Cárcamo",
         "email": "rodrigo.carcamo@arauco-ltda.cl",
         "rut": "14.109.556-0",
-        "pin": "1111",
+        "pin": "jefe-1111-obra",
     },
     {
         "rol": "BODEGUERO",
         "nombre": "Jorge Reyes",
         "email": "jorge.reyes@arauco-ltda.cl",
         "rut": "16.482.903-0",
-        "pin": "2222",
+        "pin": "bodega-2222-obra",
     },
     {
         "rol": "TRABAJADOR",
@@ -209,7 +211,7 @@ def main() -> int:
 
     print(f"\nObra de prueba: {obra['nombre']} · {cuadrilla['nombre']}\n")
     ancho = max(len(f[1]) for f in filas)
-    print(f"{'ROL':<13} {'CORREO':<{ancho}}  PIN   ")
+    print(f"{'ROL':<13} {'CORREO':<{ancho}}  PIN / CLAVE")
     for rol, email, pin, nota in filas:
         print(f"{rol:<13} {email:<{ancho}}  {pin}  {nota}")
     return 0

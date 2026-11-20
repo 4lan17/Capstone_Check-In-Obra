@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -36,6 +37,18 @@ public class ApiExceptionHandler {
 
     /** Un UNIQUE de la base rechazó el dato; repetir la petición da lo mismo. */
     public static final String DATO_DUPLICADO = "DATO_DUPLICADO";
+
+    /**
+     * Login bloqueado por demasiados fallos. {@code Retry-After} va en segundos y
+     * el {@code codigo} deja a la app mostrar la espera sin leer el mensaje.
+     */
+    @ExceptionHandler(DemasiadosIntentosException.class)
+    public ResponseEntity<ErrorBody> demasiadosIntentos(DemasiadosIntentosException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.segundos()))
+                .body(new ErrorBody(Instant.now(), HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage(),
+                        DemasiadosIntentosException.CODIGO));
+    }
 
     @ExceptionHandler(AccesoDenegadoException.class)
     public ResponseEntity<ErrorBody> accesoDenegado(AccesoDenegadoException ex) {
