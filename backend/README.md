@@ -40,9 +40,10 @@ docker compose up -d
 | Swagger UI | http://localhost:8081/swagger-ui.html |
 | PostgreSQL | `localhost:5433`, base `checkinobra`, usuario y clave `postgres` |
 
-Flyway aplica las migraciones al arrancar. La `V2` crea al administrador
-`admin@arauco-ltda.cl` y la `V11` le anula el PIN `0000` que traía: su clave
-inicial es `PRIMER_ADMIN_CLAVE` (del `.env` de la raíz, que `scripts/levantar.sh`
+Flyway aplica las migraciones al arrancar. En una base vacía la API crea la primera
+empresa y a su administrador `admin@arauco-ltda.cl` (la `V2` que lo sembraba con el
+PIN `0000` salió de `db/migration`; en las bases que ya la habían aplicado, la `V11`
+anula ese PIN): su clave inicial es `PRIMER_ADMIN_CLAVE` (del `.env` de la raíz, que `scripts/levantar.sh`
 genera) y la cuenta queda obligada a cambiarla con `PUT /api/auth/pin` antes de
 hacer cualquier otra cosa. Detalle en el
 [README de la raíz](../README.md#2-primer-login).
@@ -84,9 +85,20 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 | `SPRING_DATASOURCE_URL` | JDBC de PostgreSQL | `jdbc:postgresql://localhost:5432/checkinobra` |
 | `SPRING_DATASOURCE_USERNAME` | Usuario de la API: `checkinobra_app`, solo DML. **Obligatorio** | Ninguno |
 | `SPRING_DATASOURCE_PASSWORD` | Su contraseña (`DB_APP_PASSWORD`). **Obligatoria** | Ninguna |
-| `FLYWAY_USER` / `FLYWAY_PASSWORD` | Flyway: `checkinobra_migrador`, dueño del esquema | Los de la API (solo sirve con un único usuario) |
+| `FLYWAY_USER` / `FLYWAY_PASSWORD` | Flyway: `checkinobra_migrador`, dueño del esquema. También migra el catálogo | Los de la API (solo sirve con un único usuario) |
+| `CATALOGO_URL` | JDBC de la base de catálogo (`checkinobra_catalogo`) | `jdbc:postgresql://localhost:5432/checkinobra_catalogo` |
+| `CATALOGO_USER` / `CATALOGO_PASSWORD` | Usuario `checkinobra_plataforma` y su contraseña (`DB_PLATAFORMA_PASSWORD`). **Obligatorios** | Ninguno |
+| `PRIMERA_EMPRESA_RUT` / `PRIMERA_EMPRESA_NOMBRE` | La primera empresa, que nace en una base vacía y es la que se registra en el catálogo | Constructora Arauco Ltda. |
 | `JWT_SECRET` | Firma de los JWT. **Obligatorio**: la API no arranca si falta, tiene menos de 32 bytes o es el valor de ejemplo | Ninguno |
-| `BREVO_SMTP_USER` / `BREVO_SMTP_PASSWORD` | Correo saliente (Brevo SMTP) | Vacío |
+
+### Perfil `prod`
+
+En un despliegue real se arranca con `SPRING_PROFILES_ACTIVE=prod`, que apaga **Swagger y `/v3/api-docs`**
+(`application-prod.properties`): en desarrollo ayudan a probar, y en producción le entregan a cualquiera
+el mapa completo de endpoints y cuerpos. Lo demás es igual. El contenedor declara un `HEALTHCHECK`
+sobre `/actuator/health/liveness`, que es lo único del actuator que se expone (sin detalles; no incluye
+la base de datos, porque hay una por empresa y no hay conexión que probar sin una empresa). La imagen
+corre como un usuario sin privilegios, y sus imágenes base van fijadas por digest.
 
 `docker-compose.yml` define las del datasource y lee `JWT_SECRET` del `.env` de
 la raíz (no se versiona). `scripts/levantar.sh` lo genera la primera vez; a
@@ -129,6 +141,19 @@ La segunda línea crea los roles en esa base (ver
 exportado la prueba corre como `checkinobra_app` y migra como
 `checkinobra_migrador`, igual que en producción. `RolesDeBaseDeDatosTest` falla si
 no es así.
+
+Las pruebas **comparten una sola base entre muchas empresas de prueba**: el `pom.xml` define
+`checkinobra.pruebas.conexion-compartida=true` y `ConexionCompartidaParaPruebas` pone un
+resolutor que manda todas a la misma base (ningún despliegue lo trae). El enrutamiento real
+se prueba con dos bases en `TenantRoutingDataSourceTest`, y las pruebas que inician sesión por
+correo registran su empresa y sus usuarios en el catálogo (`CatalogoDePrueba`).
+
+**Pruebas de aislamiento con dos bases** (`AislamientoConDosBasesTest`): registran dos empresas en
+el catálogo, cada una en su base, y usan el enrutador de verdad. Necesitan una segunda base **vacía**,
+`checkinobra_b` (o la de `checkinobra.pruebas.segunda-base`), que crea `db/crear-roles.sh` si se le
+pasa `CHECKINOBRA_BASES_EXTRA=checkinobra_b` (con `docker compose`: `docker compose exec -T -e
+CHECKINOBRA_BASES_EXTRA=checkinobra_b db /docker-entrypoint-initdb.d/01-roles.sh`). La CI lo hace. Las
+tablas las migra `MigradorDeBases` durante la prueba. Sin esa base, la prueba falla diciendo cuál falta.
 
 La CI (`.github/workflows/ci.yml`) crea los roles con `db/crear-roles.sh` sobre un
 PostgreSQL 16 vacío en `localhost:5432` y corre `./mvnw -B verify` con ellos.

@@ -34,6 +34,9 @@ class RutTest {
     @Mock
     private EmpresaService empresaService;
 
+    @Mock
+    private CatalogoDeEmpresas catalogo;
+
     private UsuarioService usuarioService;
 
     @BeforeEach
@@ -41,7 +44,9 @@ class RutTest {
         var admin = new UsuarioAutenticado(1L, "admin@constructora.cl", RolUsuario.ADMIN, 1L);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(admin, null, List.of()));
-        usuarioService = new UsuarioService(usuarioRepository, empresaService);
+        usuarioService = new UsuarioService(usuarioRepository, empresaService, catalogo,
+                org.mockito.Mockito.mock(SesionService.class), new EventosDeSeguridad());
+        org.mockito.Mockito.lenient().when(catalogo.reservarCorreo(any(), any())).thenReturn(true);
     }
 
     @AfterEach
@@ -86,12 +91,12 @@ class RutTest {
     @Test
     void elUsuarioSeGuardaConElRutNormalizado() {
         when(empresaService.obtener(1L)).thenReturn(Empresa.builder().id(1L).nombre("Constructora").build());
-        when(usuarioRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(usuarioRepository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
 
         usuarioService.crear(1L, "Pedro", "pedro@constructora.cl", "14109556-0", RolUsuario.BODEGUERO, null);
 
         ArgumentCaptor<Usuario> guardado = ArgumentCaptor.forClass(Usuario.class);
-        verify(usuarioRepository).save(guardado.capture());
+        verify(usuarioRepository).saveAndFlush(guardado.capture());
         assertThat(guardado.getValue().getRut()).isEqualTo("14.109.556-0");
     }
 
@@ -104,7 +109,7 @@ class RutTest {
                 1L, "Pedro", "pedro2@constructora.cl", "14109556-0", RolUsuario.BODEGUERO, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Ya existe un usuario con ese RUT");
-        verify(usuarioRepository, never()).save(any());
+        verify(usuarioRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -113,6 +118,6 @@ class RutTest {
                 1L, "Pedro", "pedro@constructora.cl", "14.109.556-2", RolUsuario.BODEGUERO, null))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(usuarioRepository, never()).existsByRut(anyString());
-        verify(usuarioRepository, never()).save(any());
+        verify(usuarioRepository, never()).saveAndFlush(any());
     }
 }

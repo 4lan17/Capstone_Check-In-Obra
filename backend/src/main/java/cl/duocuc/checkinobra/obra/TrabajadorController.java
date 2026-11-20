@@ -62,7 +62,12 @@ public class TrabajadorController {
         return TrabajadorResponse.de(trabajadorService.buscarPorCredencialQr(credencialQr));
     }
 
+    /**
+     * El listado trae nombre y RUT de toda una cuadrilla u obra: es de quien
+     * opera la obra. Un trabajador no lo usa; ve lo suyo por {@code /yo}.
+     */
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO', 'JEFE_TERRENO')")
     public List<TrabajadorResponse> listar(
             @RequestParam(required = false) Long cuadrillaId,
             @RequestParam(required = false) Long obraId) {

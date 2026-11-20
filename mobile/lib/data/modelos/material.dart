@@ -11,6 +11,7 @@ class MaterialObra {
     this.ultimoCostoUnitario,
     this.fechaUltimoCosto,
     this.costoPromedio,
+    this.tienePrecio = true,
   });
 
   final int id;
@@ -25,7 +26,15 @@ class MaterialObra {
 
   /// `CategoriaMaterial`: METALCOM, VOLCANITA, OSB, FIJACION.
   final String categoria;
+
+  /// Precio de catálogo. El backend **no lo manda** al TRABAJADOR (ni los costos
+  /// de abajo): un trabajador pide material, no ve cuánto cuesta. Cuando falta
+  /// queda en 0 y [tienePrecio] en `false`; una pantalla que muestre precios
+  /// tiene que mirar [tienePrecio] antes de mostrar "$0", que no es un precio.
   final double precioUnitario;
+
+  /// `false` si el servidor no envió `precioUnitario` (rol sin acceso a costos).
+  final bool tienePrecio;
   final double stockMinimo;
 
   /// Lo que se pagó por unidad en la última recepción que trajo costo. Nulo
@@ -56,7 +65,8 @@ class MaterialObra {
     codigoBarra: j['codigoBarra'] as String?,
     nombre: j['nombre'] as String,
     categoria: j['categoria'] as String,
-    precioUnitario: (j['precioUnitario'] as num).toDouble(),
+    precioUnitario: (j['precioUnitario'] as num?)?.toDouble() ?? 0,
+    tienePrecio: j['precioUnitario'] != null,
     stockMinimo: (j['stockMinimo'] as num).toDouble(),
     ultimoCostoUnitario: (j['ultimoCostoUnitario'] as num?)?.toDouble(),
     fechaUltimoCosto: j['fechaUltimoCosto'] == null

@@ -10,8 +10,14 @@
 -- en una que ya existía con las tablas a nombre del superusuario (le pasa la
 -- propiedad al migrador). También sincroniza las contraseñas con las del .env.
 --
--- Variables de psql (-v): app_password, migrador_password.
--- Uso: psql -v ON_ERROR_STOP=1 -v app_password=... -v migrador_password=... -f roles.sql
+-- MT1 (#104) suma la base de catálogo, checkinobra_catalogo: guarda qué empresas
+-- existen y cómo conectarse a cada una. La escribe y lee un tercer rol:
+--
+--   checkinobra_plataforma  DML sobre el catálogo. No tiene acceso a las bases de empresa.
+--
+-- Variables de psql (-v): app_password, migrador_password, plataforma_password.
+-- Uso: psql -v ON_ERROR_STOP=1 -v app_password=... -v migrador_password=... \
+--           -v plataforma_password=... -f roles.sql
 \set ON_ERROR_STOP on
 
 -- Roles ---------------------------------------------------------------------
@@ -19,13 +25,20 @@ SELECT 'CREATE ROLE checkinobra_app LOGIN'
 WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'checkinobra_app') \gexec
 SELECT 'CREATE ROLE checkinobra_migrador LOGIN'
 WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'checkinobra_migrador') \gexec
+SELECT 'CREATE ROLE checkinobra_plataforma LOGIN'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'checkinobra_plataforma') \gexec
 
 ALTER ROLE checkinobra_app NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS LOGIN;
 ALTER ROLE checkinobra_migrador NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS LOGIN;
+ALTER ROLE checkinobra_plataforma NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS LOGIN;
+SELECT format('ALTER ROLE checkinobra_plataforma PASSWORD %L', :'plataforma_password') \gexec
 SELECT format('ALTER ROLE checkinobra_app PASSWORD %L', :'app_password') \gexec
 SELECT format('ALTER ROLE checkinobra_migrador PASSWORD %L', :'migrador_password') \gexec
 
 -- Conexión y esquema --------------------------------------------------------
+-- Solo estos dos roles se conectan a esta base. Por defecto PUBLIC puede conectarse
+-- a cualquiera, y checkinobra_plataforma no tiene por qué ver la base de una empresa.
+SELECT format('REVOKE CONNECT ON DATABASE %I FROM PUBLIC', current_database()) \gexec
 SELECT format('GRANT CONNECT ON DATABASE %I TO checkinobra_app, checkinobra_migrador', current_database()) \gexec
 ALTER SCHEMA public OWNER TO checkinobra_migrador;
 GRANT USAGE ON SCHEMA public TO checkinobra_app;
@@ -67,3 +80,25 @@ ALTER DEFAULT PRIVILEGES FOR ROLE checkinobra_migrador IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO checkinobra_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE checkinobra_migrador IN SCHEMA public
     GRANT USAGE, SELECT ON SEQUENCES TO checkinobra_app;
+
+-- Base de catálogo (MT1) ------------------------------------------------------
+-- La crea el migrador como dueño: las migraciones de db/catalogo las aplica él, y
+-- la API solo lee y escribe datos como checkinobra_plataforma. Lo que sigue corre
+-- ya conectado a la base de catálogo.
+SELECT 'CREATE DATABASE checkinobra_catalogo OWNER checkinobra_migrador'
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'checkinobra_catalogo') \gexec
+\c checkinobra_catalogo
+
+-- Al catálogo solo entran el migrador (dueño) y la plataforma; la API de una empresa no.
+REVOKE CONNECT ON DATABASE checkinobra_catalogo FROM PUBLIC;
+GRANT CONNECT ON DATABASE checkinobra_catalogo TO checkinobra_plataforma, checkinobra_migrador;
+ALTER SCHEMA public OWNER TO checkinobra_migrador;
+GRANT USAGE ON SCHEMA public TO checkinobra_plataforma;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO checkinobra_plataforma;
+-- UPDATE además de USAGE y SELECT: al registrar una empresa cuyo id viene de su base,
+-- el catálogo adelanta la secuencia con setval().
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO checkinobra_plataforma;
+ALTER DEFAULT PRIVILEGES FOR ROLE checkinobra_migrador IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO checkinobra_plataforma;
+ALTER DEFAULT PRIVILEGES FOR ROLE checkinobra_migrador IN SCHEMA public
+    GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO checkinobra_plataforma;

@@ -22,6 +22,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_APP_PASSWORD:-}
       FLYWAY_USER: checkinobra_migrador
       FLYWAY_PASSWORD: ${DB_MIGRADOR_PASSWORD:-}
+      # Base de catálogo (MT1): qué empresas existen y cómo conectarse a cada una. La
+      # API conecta como checkinobra_plataforma, que solo ve esa base; sus migraciones
+      # las aplica el migrador.
+      CATALOGO_URL: jdbc:postgresql://db:5432/checkinobra_catalogo
+      CATALOGO_USER: checkinobra_plataforma
+      CATALOGO_PASSWORD: ${DB_PLATAFORMA_PASSWORD:-}
       # Sin valor por defecto: la API no arranca sin un secreto propio (JwtService
       # lo valida y dice qué hacer en el log). Se lee del .env de la raíz, no
       # versionado; scripts/levantar.sh lo genera. A mano: openssl rand -base64 48
@@ -39,7 +45,7 @@ services:
         condition: service_healthy
 
   db:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:1d5b02d3a9941fbd52437db4107f8c52d6297dac553ca1e5c299ebb3756b4857
     environment:
       POSTGRES_DB: checkinobra
       # Superusuario: solo para administrar. La API no lo usa. Sin valor por
@@ -47,6 +53,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
       CHECKINOBRA_APP_PASSWORD: ${DB_APP_PASSWORD:-}
       CHECKINOBRA_MIGRADOR_PASSWORD: ${DB_MIGRADOR_PASSWORD:-}
+      CHECKINOBRA_PLATAFORMA_PASSWORD: ${DB_PLATAFORMA_PASSWORD:-}
       ROLES_SQL: /opt/checkinobra/roles.sql
     # 5433 en el host para no chocar con otro Postgres local.
     # Solo hace falta para conectarse desde fuera de Docker (DBeaver, psql,

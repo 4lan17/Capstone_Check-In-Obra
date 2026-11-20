@@ -14,13 +14,14 @@ class _AuthFalsa implements AuthApi {
   @override
   Future<SesionUsuario> loginPorPin({
     required int usuarioId,
+    required int empresaId,
     required String pin,
   }) async => SesionUsuario(
     token: 't',
     usuarioId: usuarioId,
     nombre: 'Jorge Reyes',
-    rol: 'BODEGUERO',
-    empresaId: 1,
+    rol: 'TRABAJADOR',
+    empresaId: empresaId,
   );
 
   @override
@@ -45,9 +46,19 @@ Future<void> _abrir(WidgetTester tester, {UsuarioRecordado? recordado}) async {
   await tester.pumpAndSettle();
 }
 
+/// El acceso rápido por PIN es solo del TRABAJADOR: el backend rechaza
+/// `login-pin` para los demás roles.
 const _jorge = UsuarioRecordado(
   usuarioId: 7,
+  empresaId: 1,
   nombre: 'Jorge Reyes',
+  rol: 'TRABAJADOR',
+);
+
+const _bodeguera = UsuarioRecordado(
+  usuarioId: 8,
+  empresaId: 1,
+  nombre: 'Marta Soto',
   rol: 'BODEGUERO',
 );
 
@@ -81,6 +92,18 @@ void main() {
     await tester.tap(volver);
     await tester.pumpAndSettle();
     expect(find.text('Entrar con mi PIN'), findsOneWidget);
+  });
+
+  testWidgets('un bodeguero recordado no ve el acceso por PIN: va al correo', (
+    tester,
+  ) async {
+    // `login-pin` es solo del trabajador. Ofrecerlo a un bodeguero terminaría en
+    // un "PIN incorrecto" que no es culpa suya.
+    await _abrir(tester, recordado: _bodeguera);
+
+    expect(find.text('Entrar con mi PIN'), findsNothing);
+    expect(find.text('Correo de empresa'), findsOneWidget);
+    expect(find.textContaining('Volver a entrar como'), findsNothing);
   });
 
   testWidgets('sin nadie recordado va directo al correo', (tester) async {

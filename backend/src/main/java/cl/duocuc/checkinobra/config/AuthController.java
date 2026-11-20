@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,10 +32,16 @@ public class AuthController {
 
     private final AutenticacionService autenticacionService;
     private final JwtService jwtService;
+    private final SesionService sesionService;
+    private final ResolutorDeBases resolutor;
 
-    public AuthController(AutenticacionService autenticacionService, JwtService jwtService) {
+    public AuthController(
+            AutenticacionService autenticacionService, JwtService jwtService,
+            SesionService sesionService, ResolutorDeBases resolutor) {
         this.autenticacionService = autenticacionService;
         this.jwtService = jwtService;
+        this.sesionService = sesionService;
+        this.resolutor = resolutor;
     }
 
     @PostMapping("/login")
@@ -50,7 +57,7 @@ public class AuthController {
     @Operation(summary = "Login por PIN — usuario ya identificado en el teléfono. Solo rol TRABAJADOR. "
             + "Responde 429 con Retry-After tras demasiados intentos fallidos.")
     public ResponseEntity<LoginResponse> loginPin(@Valid @RequestBody LoginPorPinRequest req, HttpServletRequest http) {
-        Usuario usuario = autenticacionService.loginPorPin(req.usuarioId(), req.pin(), http.getRemoteAddr());
+        Usuario usuario = autenticacionService.loginPorPin(req.usuarioId(), req.empresaId(), req.pin(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));
     }
 
@@ -63,14 +70,42 @@ public class AuthController {
         return ResponseEntity.ok(respuestaPara(usuario));
     }
 
+    @PostMapping("/refresh")
+    @Operation(summary = "Canjea un refresh token por un token de acceso nuevo y un refresh token nuevo. "
+            + "El presentado queda revocado; uno ya usado revoca todas las sesiones del usuario. "
+            + "Responde 401 con codigo SESION_INVALIDA si no sirve.")
+    public ResponseEntity<LoginResponse> refrescar(@Valid @RequestBody RefrescarRequest req) {
+        Long empresaId = SesionService.empresaDe(req.refreshToken()).filter(resolutor::conoce)
+                .orElseThrow(SesionInvalidaException::new);
+        SesionService.Rotado rotado = TenantContext.ejecutarEn(empresaId, () -> sesionService.rotar(req.refreshToken()));
+        return ResponseEntity.ok(respuestaPara(rotado.usuario(), rotado.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Cierra la sesión: revoca el refresh token. Siempre responde 204, exista o no.")
+    public ResponseEntity<Void> cerrarSesion(@Valid @RequestBody RefrescarRequest req) {
+        SesionService.empresaDe(req.refreshToken()).filter(resolutor::conoce)
+                .ifPresent(id -> TenantContext.ejecutarEn(id, () -> sesionService.revocar(req.refreshToken())));
+        return ResponseEntity.noContent().build();
+    }
+
     private LoginResponse respuestaPara(Usuario usuario) {
+        String refresh = TenantContext.ejecutarEn(usuario.getEmpresa().getId(), () -> sesionService.emitir(usuario));
+        return respuestaPara(usuario, refresh);
+    }
+
+    private LoginResponse respuestaPara(Usuario usuario, String refreshToken) {
         return new LoginResponse(
                 jwtService.emitir(usuario),
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getRol(),
                 usuario.getEmpresa().getId(),
-                usuario.isDebeCambiarPin());
+                usuario.isDebeCambiarPin(),
+                refreshToken);
+    }
+
+    public record RefrescarRequest(@NotBlank @Size(max = 4000) String refreshToken) {
     }
 
     public record CambiarPinRequest(
@@ -86,14 +121,21 @@ public class AuthController {
             @NotBlank @Size(min = 4, max = 72) @JsonAlias("clave") String pin) {
     }
 
-    public record LoginPorPinRequest(@NotNull Long usuarioId, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {
+    /**
+     * @param empresaId la empresa del usuario recordado en el teléfono; opcional mientras haya una sola
+     */
+    public record LoginPorPinRequest(
+            @NotNull Long usuarioId, Long empresaId, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {
     }
 
     /**
+     * @param refreshToken para pedir otro token de acceso en {@code POST /api/auth/refresh} sin la clave;
+     *     el de acceso dura poco
      * @param debeCambiarClave la clave es provisoria: el token solo sirve para
      *     {@code PUT /api/auth/pin} hasta que la cambie
      */
     public record LoginResponse(
-            String token, Long usuarioId, String nombre, RolUsuario rol, Long empresaId, boolean debeCambiarClave) {
+            String token, Long usuarioId, String nombre, RolUsuario rol, Long empresaId, boolean debeCambiarClave,
+            String refreshToken) {
     }
 }

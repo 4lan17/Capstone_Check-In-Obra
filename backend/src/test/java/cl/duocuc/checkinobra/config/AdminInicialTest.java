@@ -38,6 +38,7 @@ class AdminInicialTest {
     @Autowired private EmpresaRepository empresaRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private PrimerAdminService primerAdminService;
+    @Autowired private CatalogoDePrueba catalogoDePrueba;
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final JsonMapper json = JsonMapper.builder().build();
@@ -49,8 +50,10 @@ class AdminInicialTest {
     void crearAdminSinCredencial() {
         s = UUID.randomUUID().toString().substring(0, 8);
         Empresa empresa = empresaRepository.save(Empresa.builder().nombre("Empresa " + s).rut("R-" + s).build());
+        catalogoDePrueba.registrar(empresa);
         admin = usuarioRepository.save(Usuario.builder()
                 .nombre("admin-" + s).email("admin-" + s + "@test.cl").rol(RolUsuario.ADMIN).empresa(empresa).build());
+        catalogoDePrueba.indexar(admin);
     }
 
     // --- el seed publicado ------------------------------------------------------

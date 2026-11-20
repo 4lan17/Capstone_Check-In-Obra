@@ -110,7 +110,7 @@ void main() {
     test(
       'si el servidor responde, su respuesta manda sobre la copia',
       () async {
-        await SesionStorage().guardarPerfilTrabajador(_perfil);
+        await SesionStorage().guardarPerfilTrabajador(_perfil, empresaId: 1);
         final c = _contenedor(
           _TrabajadoresFalsos(
             error: const ApiException(404, 'No se encontró lo que buscabas.'),
@@ -126,16 +126,25 @@ void main() {
 
     test('nadie ve la credencial guardada de otro usuario', () async {
       final storage = SesionStorage();
-      await storage.guardarPerfilTrabajador(_perfil);
-      expect(await storage.leerPerfilTrabajador(99), isNull);
-      expect(await storage.leerPerfilTrabajador(6), isNotNull);
+      await storage.guardarPerfilTrabajador(_perfil, empresaId: 1);
+      expect(
+        await storage.leerPerfilTrabajador(empresaId: 1, usuarioId: 99),
+        isNull,
+      );
+      expect(
+        await storage.leerPerfilTrabajador(empresaId: 1, usuarioId: 6),
+        isNotNull,
+      );
     });
 
     test('cerrar sesión borra la credencial guardada', () async {
       final storage = SesionStorage();
-      await storage.guardarPerfilTrabajador(_perfil);
+      await storage.guardarPerfilTrabajador(_perfil, empresaId: 1);
       await storage.cerrarSesion();
-      expect(await storage.leerPerfilTrabajador(6), isNull);
+      expect(
+        await storage.leerPerfilTrabajador(empresaId: 1, usuarioId: 6),
+        isNull,
+      );
     });
   });
 

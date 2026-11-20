@@ -311,11 +311,14 @@ Y abrir Swagger UI en **http://localhost:8081/swagger-ui.html**
 
 ### 2. Primer login
 
-La migración `V2` crea un administrador, `admin@arauco-ltda.cl`, **sin
-credencial publicada**: la `V11` anuló el PIN `0000` que traía. Su clave inicial es
-la de `PRIMER_ADMIN_CLAVE` en el `.env` de la raíz (`scripts/levantar.sh` genera
-una; a mano, define la tuya de 8 o más caracteres antes de arrancar). La API la
-aplica al arrancar, solo si la cuenta aún no tiene credencial.
+En una base vacía, al arrancar, la API crea la primera empresa (por defecto
+Constructora Arauco Ltda., `PRIMERA_EMPRESA_RUT` y `PRIMERA_EMPRESA_NOMBRE`) y su
+administrador, `admin@arauco-ltda.cl` (`PRIMER_ADMIN_EMAIL`). **No hay credencial
+publicada**: la migración `V2` que sembraba el PIN `0000` salió de `db/migration`, y
+en las bases que ya la habían aplicado la `V11` lo anuló. Su clave inicial es la de
+`PRIMER_ADMIN_CLAVE` en el `.env` de la raíz (`scripts/levantar.sh` genera una; a
+mano, define la tuya de 8 o más caracteres antes de arrancar). La API la aplica al
+arrancar, solo si la cuenta aún no tiene credencial.
 
 **Ubuntu**
 
@@ -645,7 +648,20 @@ estado vive en memoria, así que se reinicia con la API y no se comparte entre
 instancias; y la IP es la del socket (`getRemoteAddr`), que tras un proxy será la
 del proxy hasta configurar `server.forward-headers-strategy`.
 
-El token dura 8 horas y lleva el id, el rol y la empresa del usuario.
+### Sesión y tokens
+
+- **El token de acceso dura 30 minutos** (`checkinobra.jwt.expiracion-minutos`; antes, 8 horas) y lleva el id, el rol y la empresa del usuario, el emisor (`iss=checkinobra`), la audiencia (`aud=checkinobra-api`) y la versión de sesión (`tv`). Un token sin esos campos, o con otros, no entra.
+- **Se revalida en cada petición**: el usuario tiene que existir y seguir con la misma `token_version` con que se emitió el token. La versión sube al **restablecer la clave** de un usuario o al **cambiar la propia**, y deja sin efecto, de inmediato, todos sus tokens anteriores (y sus refresh tokens).
+- **Refresh token**: cada login (y cada cambio de clave) devuelve también `refreshToken`. `POST /api/auth/refresh` con `{"refreshToken": "..."}` devuelve un par nuevo (acceso y refresh) y deja revocado el presentado (rotación). Dura 7 días sin usarse (`checkinobra.jwt.refresh-dias`). Se guarda solo su hash. **Si se presenta uno ya usado se asume robo y se revocan todas las sesiones del usuario.** Un refresh que no sirve (inexistente, vencido, revocado, mal formado) responde siempre `401` con `codigo: SESION_INVALIDA`, sin decir cuál fue el motivo.
+- `POST /api/auth/logout` con el mismo cuerpo revoca el refresh token y responde siempre `204`.
+
+### Registro de eventos de seguridad
+
+El logger `seguridad` escribe una línea `evento=… clave=valor` por login exitoso, fallido y bloqueado, acceso denegado (403 por rol), clave restablecida o cambiada, usuario creado y uso o reutilización de un refresh token. Lleva el id de usuario y de empresa y la IP; **nunca** claves, tokens ni correos. Se puede enviar aparte configurando ese logger en `logback`.
+
+### Errores
+
+El cuerpo de un error lleva el mensaje solo de las excepciones que escribimos nosotros; las de librerías (`Invalid UUID string: …`, `No value present`) salen con un texto genérico y el original queda en el log.
 
 ### Códigos de respuesta
 
@@ -763,6 +779,7 @@ Ninguno de los tres usuarios que toca el sistema es de uso libre:
 |---|---|---|---|
 | `checkinobra_app` | La API en ejecución | Solo `SELECT`, `INSERT`, `UPDATE` y `DELETE`. No es superusuario y no puede crear, alterar ni borrar tablas | `DB_APP_PASSWORD` |
 | `checkinobra_migrador` | Flyway, al arrancar | Dueño del esquema: aplica las migraciones (DDL). Tampoco es superusuario | `DB_MIGRADOR_PASSWORD` |
+| `checkinobra_plataforma` | La API, para leer y escribir la **base de catálogo** | Solo `SELECT/INSERT/UPDATE/DELETE` en `checkinobra_catalogo`. No puede conectarse a la base de una empresa | `DB_PLATAFORMA_PASSWORD` |
 | `postgres` | Administración | Superusuario. La API no lo usa | `POSTGRES_PASSWORD` |
 
 Los crea `db/crear-roles.sh` (SQL en `db/roles.sql`). `ALTER DEFAULT PRIVILEGES` hace
@@ -771,7 +788,51 @@ escribir un `GRANT` en cada una. Para comprobarlo:
 `SELECT rolsuper FROM pg_roles WHERE rolname = 'checkinobra_app'` devuelve `f`.
 
 Si un fallo de la API la compromete, quien la controla puede leer y escribir datos,
-pero no borrar tablas ni cambiar el esquema.
+pero no borrar tablas ni cambiar el esquema. Cada rol solo puede conectarse a su
+base: `checkinobra_app` a la de la empresa, `checkinobra_plataforma` al catálogo.
+
+### Seguridad de la cadena de entrega
+
+- **CI** (`.github/workflows`): permisos mínimos (`contents: read`), todas las acciones fijadas por SHA, `CodeQL` sobre el backend y revisión de dependencias en cada PR (`dependency-review`, bloquea severidad alta). **Estos dos jobs solo corren si la variable de repositorio `GHAS` vale `true`** (Settings → Secrets and variables → Actions → Variables): exigen GitHub Advanced Security y en un repositorio privado sin ella fallarían en cada PR. Quien lo habilite define la variable y, para `dependency-review`, activa también el grafo de dependencias.
+- **Dependabot** (`.github/dependabot.yml`): maven, pub, github-actions, docker y docker-compose, una vez por semana.
+- **Imágenes** (`backend/Dockerfile`, `docker-compose.yml` y la CI): fijadas por digest; el contenedor del backend no corre como root y tiene `HEALTHCHECK`. Dependabot propone el digest nuevo.
+- springdoc está en la línea 3.x, la de Spring Boot 4.
+
+### Base de catálogo
+
+`checkinobra_catalogo` guarda qué empresas existen y cómo conectarse a la base de
+cada una (tablas `planes`, `empresas`, `operadores` e `indice_login`, esta última
+de correo a empresa). Sus migraciones están en `backend/src/main/resources/db/catalogo`
+y las aplica el migrador al arrancar la API. El catálogo guarda una
+*referencia* al secreto (`env:SPRING_DATASOURCE_PASSWORD`), nunca la contraseña.
+Las decisiones de diseño están en
+[`docs/arquitectura/multitenant.html`](docs/arquitectura/multitenant.html).
+
+### Una base por empresa: el enrutador
+
+Cada petición abre **solo la base de la empresa de su token** (MT2):
+
+1. `JwtAuthFilter` valida el token y deja su `empresaId` en el `TenantContext` (un `ThreadLocal`), que limpia en un `finally` cuando termina toda la cadena. Un token sin `empresaId`, o de una empresa sin base registrada o suspendida, no abre nada y la petición sale como `401`.
+2. `TenantRoutingDataSource` (un `AbstractRoutingDataSource`) entrega la conexión del pool de esa empresa. **No tiene base por defecto**: sin empresa en el contexto, tocar la base lanza `SinEmpresaEnContextoException` (un `500`, no un conflicto).
+3. Hay un pool por empresa, armado al arrancar leyendo el catálogo (`ResolutorPorCatalogo`) con la contraseña que indica la referencia `env:VARIABLE`. Una empresa mal registrada se anota en el log y no impide arrancar a las demás.
+4. En el arranque, `BaseInicialInicializador` registra en el catálogo la base actual con el id de su empresa y, en una base vacía con `PRIMER_ADMIN_CLAVE`, crea la empresa. Fuera de una petición (arranque, tareas programadas) la empresa se fija a mano con `TenantContext.ejecutarEn`.
+
+**El login resuelve la empresa antes de tocar la base.** `POST /api/auth/login` busca el correo en el índice del catálogo; `POST /api/auth/login-pin` recibe `empresaId` junto a `usuarioId` (los ids de usuario se repiten entre bases; si falta y hay una sola empresa se usa esa). Un correo o empresa desconocidos se tratan como una cuenta que no existe, y un usuario encontrado en la base pedida solo vale si es de esa empresa (segunda comprobación, además de abrir su base). Crear un usuario reserva su correo en el catálogo, donde es único en todo el sistema.
+
+**Hibernate ya no valida el esquema al arrancar**: no hay una base a la cual conectarse sin empresa. El dialecto se fija a mano y `ddl-auto=none`; la suite de pruebas sí valida el mapeo contra una base.
+
+### Flyway por base
+
+Las migraciones de `db/migration` las corre `MigradorDeBases` (Flyway programático; el de Spring Boot está desactivado porque migra una sola base) **sobre la base de cada empresa del catálogo**, con el usuario migrador y una por una:
+
+- Al arrancar recorre las empresas activas. Una base **vacía** registrada en el catálogo queda con el esquema completo y en la última versión en ese mismo paso; una ya migrada no cambia.
+- El resultado de cada base queda en el catálogo (`empresas.migracion_estado`: `PENDIENTE`, `OK` o `ERROR`, con `migracion_error` y `migrada_en`).
+- **Una base que falla queda anotada, sin abrir (su empresa no tiene pool y sus tokens no valen) y no impide arrancar a las demás.** Una base nueva empieza `PENDIENTE` y solo se abre cuando su migración sale `OK`.
+- `RegistroIdempotencia.purgarVencidas`, la única tarea programada, recorre las empresas con base abierta y fija la de cada una (MT2).
+
+La base de una empresa tiene que existir antes y el migrador, poder conectarse y crear tablas en ella; crearla es parte del alta de empresas (fase 4). `db/crear-base-de-empresa.sql` hace ese paso de infraestructura (la base vacía, con el migrador de dueño y la API con permiso de conexión y de DML) y es lo que usan las pruebas de aislamiento para tener una segunda base.
+
+
 
 ### Conectarse con un cliente SQL
 
@@ -797,7 +858,7 @@ solo verifica que las entidades calcen con las tablas).
 | Archivo | Qué hace |
 |---|---|
 | `V1__init_schema.sql` | Crea las 17 tablas con sus llaves foráneas e índices |
-| `V2__seed_admin.sql` | Inserta una empresa y el admin de arranque (su PIN `0000` lo anula la `V11`) |
+| `V2__seed_admin.sql` | **Ya no está** (MT1): sembraba la empresa y el admin con el PIN `0000`. Las bases que la aplicaron la conservan en su historial; la `V11` anuló su PIN |
 | `V3__rut_en_usuario_...sql` | Sube el RUT a `usuarios`, agrega el jefe de la obra y el receptor del despacho |
 | `V4__codigo_de_barra_en_materiales.sql` | Agrega `materiales.codigo_barra` (único **por empresa**) para el escáner |
 | `V5__normaliza_codigos_a_mayusculas.sql` | Pasa a mayúsculas los SKU y códigos de herramienta existentes |
