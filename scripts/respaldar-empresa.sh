@@ -42,6 +42,24 @@ pg() {
   fi
 }
 
+# pg_dump y pg_restore deben ser de la MISMA versión mayor que el servidor: uno más nuevo escribe un
+# volcado con parámetros que un servidor más viejo no conoce (p. ej. transaction_timeout en 17 sobre 16)
+# y la restauración falla a mitad; uno más viejo se niega a volcar. Se comprueba antes de tocar nada.
+verificar_versiones() {
+  local herramienta="$1" servidor cliente
+  servidor="$(pg psql -X -q -At -h "$host" -p "$puerto" -U checkinobra_migrador -d postgres \
+    -c 'SHOW server_version_num')" || { echo "No se pudo consultar la versión del servidor." >&2; exit 1; }
+  servidor=$((servidor / 10000))
+  cliente="$(pg "$herramienta" --version | sed -E 's/[^0-9]*([0-9]+).*/\1/')"
+  if [[ "$cliente" != "$servidor" ]]; then
+    echo "Versiones distintas: $herramienta es la $cliente y el servidor es la $servidor. Usa las herramientas" >&2
+    echo "de la versión $servidor (con PG_PREFIX, las del contenedor de la base)." >&2
+    exit 4
+  fi
+}
+
+verificar_versiones pg_dump
+
 umask 077
 mkdir -p "$directorio"
 archivo="$directorio/${base}-$(date +%Y%m%d-%H%M%S).dump"
