@@ -385,6 +385,16 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
       setState(() => _error = 'Escribe una cantidad mayor a cero.');
       return;
     }
+    // Entregar de menos es una entrega parcial y se permite; de más, no: el
+    // backend lo rechaza con un 400 (S-17).
+    if (_valor > widget.solicitud.cantidad) {
+      setState(
+        () => _error =
+            'No puedes entregar más de lo pedido '
+            '(${Formato.cantidad(widget.solicitud.cantidad)}).',
+      );
+      return;
+    }
 
     setState(() {
       _enviando = true;
@@ -414,8 +424,10 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
         ),
       );
     } catch (e) {
-      // Un 409 acá es stock insuficiente: el backend no deja el saldo negativo
-      // aunque la solicitud sea legítima.
+      // Un 409 acá es stock insuficiente (el backend no deja el saldo
+      // negativo aunque la solicitud sea legítima) o que el trabajador no es de
+      // la obra (`OBRA_NO_ASIGNADA`, `SIN_CUADRILLA`). Ninguno se arregla
+      // reintentando: se muestra el mensaje del servidor.
       if (!mounted) return;
       if (_yaResuelta(context, ref, e)) return;
       setState(() => _error = mensajeDeError(e));

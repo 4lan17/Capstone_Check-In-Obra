@@ -92,19 +92,26 @@ public class MaterialController {
                 .body(planilla);
     }
 
+    /**
+     * El catálogo lo lee cualquier rol, pero el trabajador lo recibe sin precios ni
+     * costos (S-08): son del administrador, según la matriz de permisos.
+     */
     @GetMapping
-    public List<MaterialResponse> listar(@RequestParam(required = false) CategoriaMaterial categoria) {
+    public List<MaterialVista> listar(@RequestParam(required = false) CategoriaMaterial categoria) {
         Long empresaId = SesionActual.empresaId();
         List<Material> materiales = categoria == null
                 ? materialService.listarPorEmpresa(empresaId)
                 : materialService.listarPorEmpresaYCategoria(empresaId, categoria);
+        if (SesionActual.esTrabajador()) {
+            return materiales.stream().<MaterialVista>map(MaterialBasicoResponse::de).toList();
+        }
         Map<Long, CostoMaterial> costos = materialService.costosPorMaterial(empresaId);
-        return materiales.stream().map(m -> MaterialResponse.de(m, costos.get(m.getId()))).toList();
+        return materiales.stream().<MaterialVista>map(m -> MaterialResponse.de(m, costos.get(m.getId()))).toList();
     }
 
     @GetMapping("/{id}")
-    public MaterialResponse obtener(@PathVariable Long id) {
-        return conCosto(materialService.obtener(id));
+    public MaterialVista obtener(@PathVariable Long id) {
+        return vista(materialService.obtener(id));
     }
 
     /**
@@ -113,8 +120,8 @@ public class MaterialController {
      * a una etiqueta no sabe cuál de los dos está leyendo.
      */
     @GetMapping("/por-codigo/{codigo}")
-    public MaterialResponse buscarPorCodigo(@PathVariable String codigo) {
-        return conCosto(materialService.buscarPorCodigo(SesionActual.empresaId(), codigo));
+    public MaterialVista buscarPorCodigo(@PathVariable String codigo) {
+        return vista(materialService.buscarPorCodigo(SesionActual.empresaId(), codigo));
     }
 
     @PutMapping("/{id}/precio")
@@ -125,6 +132,11 @@ public class MaterialController {
 
     private MaterialResponse conCosto(Material material) {
         return MaterialResponse.de(material, materialService.costoDe(material));
+    }
+
+    /** Con costos para quien los maneja; sin ellos, para el trabajador. */
+    private MaterialVista vista(Material material) {
+        return SesionActual.esTrabajador() ? MaterialBasicoResponse.de(material) : conCosto(material);
     }
 
     public record CrearMaterialRequest(
