@@ -197,6 +197,27 @@ if (DockerResponde) {
     Bien 'Docker Desktop responde.'
 }
 
+# --- 2b. secreto JWT --------------------------------------------------------
+# La API no arranca sin JWT_SECRET (ni con el valor de ejemplo) y compose lo
+# lee del .env de la raiz, que no se versiona. Se genera una sola vez y no se
+# imprime.
+Paso 'Secreto JWT'
+$envRaiz = Join-Path $Raiz '.env'
+$lineas = @()
+if (Test-Path $envRaiz) { $lineas = @(Get-Content $envRaiz) }
+$valido = $lineas | Where-Object { $_ -match '^JWT_SECRET=\S{32,}$' -and $_ -notmatch '^JWT_SECRET=(?i)cambiar' }
+if ($valido) {
+    Bien 'JWT_SECRET ya definido en .env.'
+} else {
+    $bytes = New-Object byte[] 48
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $rng.GetBytes($bytes)
+    $rng.Dispose()
+    $resto = @($lineas | Where-Object { $_ -notmatch '^JWT_SECRET=' })
+    Set-Content -Path $envRaiz -Value ($resto + ('JWT_SECRET=' + [Convert]::ToBase64String($bytes))) -Encoding ascii
+    Bien 'Generado un JWT_SECRET nuevo en .env (no se versiona).'
+}
+
 # --- 3. imagenes y contenedores --------------------------------------------
 Paso 'Construyendo las imagenes'
 if ($SinCache) { & docker compose build --no-cache } else { & docker compose build }

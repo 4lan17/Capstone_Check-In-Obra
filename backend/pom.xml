@@ -142,6 +142,17 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<environmentVariables>
+						<!-- La API no arranca sin JWT_SECRET (SEG1). Este valor es solo de pruebas:
+						     no firma nada fuera de ./mvnw test y de la CI. -->
+						<JWT_SECRET>solo-para-pruebas-no-usar-fuera-de-mvn-test-0123456789</JWT_SECRET>
+					</environmentVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<executions>
 					<execution>

@@ -262,6 +262,22 @@ else
   bien "Docker Desktop responde (contexto $(docker context show 2>/dev/null))."
 fi
 
+# --- 2b. secreto JWT ----------------------------------------------------------
+# La API no arranca sin JWT_SECRET (ni con el valor de ejemplo) y compose lo
+# lee del .env de la raiz, que no se versiona. Se genera una sola vez y no se
+# imprime.
+paso "Secreto JWT"
+if grep -Eq '^JWT_SECRET=[^[:space:]]{32,}$' .env 2>/dev/null \
+   && ! grep -Eiq '^JWT_SECRET=cambiar' .env; then
+  bien "JWT_SECRET ya definido en .env."
+else
+  secreto="$(head -c 48 /dev/urandom | base64 | tr -d '\n')"
+  [[ -f .env ]] && sed -i.bak '/^JWT_SECRET=/d' .env && rm -f .env.bak
+  printf 'JWT_SECRET=%s\n' "$secreto" >> .env
+  unset secreto
+  bien "Generado un JWT_SECRET nuevo en .env (no se versiona)."
+fi
+
 # --- 3. imagenes y contenedores --------------------------------------------
 paso "Construyendo las imagenes"
 if (( sin_cache )); then

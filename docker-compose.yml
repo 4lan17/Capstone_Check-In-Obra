@@ -15,6 +15,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/checkinobra
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      # Sin valor por defecto: la API no arranca sin un secreto propio (JwtService
+      # lo valida y dice qué hacer en el log). Se lee del .env de la raíz, no
+      # versionado; scripts/levantar.sh lo genera. A mano: openssl rand -base64 48
+      # Vacío permitido a propósito: con ":?" compose fallaba hasta en "down" y "ps".
+      JWT_SECRET: ${JWT_SECRET:-}
       # Hora de Chile, la misma de la app y de ./mvnw test. La API recibe y
       # devuelve fechas sin zona; en UTC, "hoy 18:00" llegaba como pasada.
       TZ: America/Santiago
