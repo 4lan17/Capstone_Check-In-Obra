@@ -67,6 +67,18 @@ class InfraestructuraDelRepositorioTest {
     void laCiTieneAnalisisDeCodigoYRevisionDeDependenciasYDependabotCubreCadaEcosistema() throws Exception {
         assertThat(leer(".github/workflows/codeql.yml")).contains("codeql-action/analyze");
         assertThat(leer(".github/workflows/dependencias.yml")).contains("dependency-review-action");
+    }
+
+    /** Sin GHAS (repo privado) estos dos jobs fallan en cada PR: corren solo con la variable GHAS=true. */
+    @Test
+    void codeqlYLaRevisionDeDependenciasSoloCorrenConLaVariableGhas() throws Exception {
+        for (String workflow : List.of("codeql.yml", "dependencias.yml")) {
+            assertThat(leer(".github/workflows/" + workflow)).as(workflow).contains("if: vars.GHAS == 'true'");
+        }
+    }
+
+    @Test
+    void dependabotCubreCadaEcosistema() throws Exception {
 
         String dependabot = leer(".github/dependabot.yml");
         for (String ecosistema : List.of("maven", "pub", "github-actions", "docker")) {

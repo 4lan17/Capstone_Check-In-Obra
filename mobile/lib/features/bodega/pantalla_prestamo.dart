@@ -199,6 +199,9 @@ class _PantallaPrestamoState extends ConsumerState<PantallaPrestamo> {
         ),
       );
     } catch (e) {
+      // Un 409 `OBRA_NO_ASIGNADA` o `SIN_CUADRILLA` es que el trabajador no es de
+      // esta obra o no tiene cuadrilla: se muestra el mensaje del servidor y no
+      // se reintenta, porque la respuesta no cambia hasta elegir a otro.
       if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
