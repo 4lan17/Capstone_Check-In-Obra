@@ -9,6 +9,7 @@ import cl.duocuc.checkinobra.obra.Trabajador;
 import cl.duocuc.checkinobra.obra.TrabajadorService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,7 +88,17 @@ public class PedidoHerramientasService {
         for (Long herramientaId : herramientaIds) {
             pedido.agregar(solicitudHerramientaService.nueva(trabajador, herramientaId, paraQue));
         }
-        return pedidoHerramientasRepository.save(pedido);
+        return conSolicitudes(pedidoHerramientasRepository.save(pedido));
+    }
+
+    /**
+     * La respuesta recorre {@code solicitudes}, que es perezosa. Con
+     * {@code open-in-view=false} la sesión ya se cerró cuando el controlador arma
+     * la respuesta, así que se carga aquí, dentro de la transacción.
+     */
+    private static PedidoHerramientas conSolicitudes(PedidoHerramientas pedido) {
+        Hibernate.initialize(pedido.getSolicitudes());
+        return pedido;
     }
 
     /** Bodega escaneó el QR: aprueba lo pendiente y crea un préstamo por herramienta. */
@@ -114,7 +125,7 @@ public class PedidoHerramientasService {
                         bodega.getId(),
                         fechaDevolEsperada))
                 .toList();
-        return new Entrega(pedidoHerramientasRepository.save(pedido), prestamos);
+        return new Entrega(conSolicitudes(pedidoHerramientasRepository.save(pedido)), prestamos);
     }
 
     /** El trabajador lo retira. {@code obtener} ya exige que sea suyo. */
@@ -123,7 +134,7 @@ public class PedidoHerramientasService {
         entityManager.refresh(pedido, LockModeType.PESSIMISTIC_WRITE);
         pedido.getSolicitudes().forEach(s -> entityManager.refresh(s, LockModeType.PESSIMISTIC_WRITE));
         pedido.cancelar();
-        return pedidoHerramientasRepository.save(pedido);
+        return conSolicitudes(pedidoHerramientasRepository.save(pedido));
     }
 
     /**
@@ -138,9 +149,9 @@ public class PedidoHerramientasService {
         if (codigo.startsWith(PREFIJO_QR)) {
             codigo = codigo.substring(PREFIJO_QR.length());
         }
-        return pedidoHerramientasRepository.findByCodigoQr(codigo)
+        return conSolicitudes(pedidoHerramientasRepository.findByCodigoQr(codigo)
                 .filter(AccesoEmpresa::esPropio)
-                .orElseThrow(() -> new NoSuchElementException("Pedido no encontrado"));
+                .orElseThrow(() -> new NoSuchElementException("Pedido no encontrado")));
     }
 
     /** Si quien llama es trabajador, además tiene que ser suyo. */
@@ -150,7 +161,7 @@ public class PedidoHerramientasService {
                 .filter(AccesoEmpresa::esPropio)
                 .orElseThrow(() -> new NoSuchElementException("Pedido no encontrado: " + id));
         trabajadorService.exigirQueSeaPropio(pedido.getTrabajador().getId());
-        return pedido;
+        return conSolicitudes(pedido);
     }
 
     /** Los de quien llama: primero los pendientes, que son los que tienen un QR vigente. */
@@ -161,6 +172,7 @@ public class PedidoHerramientasService {
         // lo conserva dentro de cada grupo.
         return pedidoHerramientasRepository.findByTrabajadorIdOrderByFechaSolicitudDescIdDesc(yo.getId()).stream()
                 .sorted(Comparator.comparing(p -> p.getEstado() != EstadoPedidoHerramientas.PENDIENTE))
+                .map(PedidoHerramientasService::conSolicitudes)
                 .toList();
     }
 

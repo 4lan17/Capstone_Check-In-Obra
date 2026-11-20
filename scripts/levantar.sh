@@ -262,21 +262,30 @@ else
   bien "Docker Desktop responde (contexto $(docker context show 2>/dev/null))."
 fi
 
-# --- 2b. secreto JWT ----------------------------------------------------------
-# La API no arranca sin JWT_SECRET (ni con el valor de ejemplo) y compose lo
-# lee del .env de la raiz, que no se versiona. Se genera una sola vez y no se
-# imprime.
-paso "Secreto JWT"
-if grep -Eq '^JWT_SECRET=[^[:space:]]{32,}$' .env 2>/dev/null \
-   && ! grep -Eiq '^JWT_SECRET=cambiar' .env; then
-  bien "JWT_SECRET ya definido en .env."
-else
-  secreto="$(head -c 48 /dev/urandom | base64 | tr -d '\n')"
-  [[ -f .env ]] && sed -i.bak '/^JWT_SECRET=/d' .env && rm -f .env.bak
-  printf 'JWT_SECRET=%s\n' "$secreto" >> .env
-  unset secreto
-  bien "Generado un JWT_SECRET nuevo en .env (no se versiona)."
-fi
+# --- 2b. secretos ------------------------------------------------------------
+# La API no arranca sin JWT_SECRET ni sin las contrasenas de la base, y compose las
+# lee del .env de la raiz, que no se versiona. Se generan una sola vez, nunca se
+# imprimen, y se reemplaza cualquier valor de ejemplo ("CAMBIAR_...").
+paso "Secretos (.env)"
+asegurar_secreto() {
+  local var="$1" bytes="$2" valor
+  if grep -Eq "^${var}=[^[:space:]]{32,}\$" .env 2>/dev/null \
+     && ! grep -Eiq "^${var}=cambiar" .env; then
+    bien "$var ya definido en .env."
+    return 0
+  fi
+  valor="$(head -c "$bytes" /dev/urandom | base64 | tr -d '+/=\n')"
+  if [[ -f .env ]]; then
+    sed -i.bak "/^${var}=/d" .env
+    rm -f .env.bak
+  fi
+  printf '%s=%s\n' "$var" "$valor" >> .env
+  bien "Generado $var nuevo en .env (no se versiona)."
+}
+asegurar_secreto JWT_SECRET 48
+asegurar_secreto POSTGRES_PASSWORD 36
+asegurar_secreto DB_APP_PASSWORD 36
+asegurar_secreto DB_MIGRADOR_PASSWORD 36
 
 # --- 3. imagenes y contenedores --------------------------------------------
 paso "Construyendo las imagenes"
@@ -285,6 +294,14 @@ if (( sin_cache )); then
 else
   docker compose build
 fi
+
+paso "Levantando la base y creando sus roles"
+# La API conecta como checkinobra_app (solo DML) y Flyway como checkinobra_migrador.
+# En un volumen nuevo los crea el entrypoint de Postgres; en uno anterior a esto no
+# corre solo, asi que se ejecuta siempre: es idempotente, y de paso sincroniza las
+# contrasenas con las del .env y le pasa las tablas viejas al migrador.
+docker compose up -d --wait db
+docker compose exec -T db /docker-entrypoint-initdb.d/01-roles.sh
 
 paso "Levantando los contenedores"
 docker compose up -d
@@ -339,7 +356,7 @@ fi
 paso "Listo"
 info "API          $API"
 info "Swagger      $API/swagger-ui.html"
-info "PostgreSQL   localhost:5433  (postgres / postgres)"
+info "PostgreSQL   127.0.0.1:5433  (usuario checkinobra_app; la clave esta en .env como DB_APP_PASSWORD)"
 info "Admin        admin@arauco-ltda.cl  PIN 0000"
 if (( ! sin_emulador )); then
   info "Emulador     $DISPOSITIVO"
