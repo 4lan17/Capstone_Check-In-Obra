@@ -125,6 +125,7 @@ class _Montaje {
       dio: _dio(servidor),
       storage: storage,
       alExpirar: () => expiraciones++,
+      alEmpresaSuspendida: () => suspensiones++,
       renovar: (token) => renovador.renovar(tokenQueFallo: token),
     );
   }
@@ -135,6 +136,7 @@ class _Montaje {
   late final ApiClient cliente;
   final renovadas = <SesionUsuario>[];
   int expiraciones = 0;
+  int suspensiones = 0;
 
   Future<Response<dynamic>> pedirObras() =>
       cliente.dio.get<dynamic>('/api/obras');
@@ -354,6 +356,54 @@ void main() {
       expect(guardada?.refreshToken, 'refresh-1');
     });
 
+    test('una empresa suspendida al renovar cierra con su aviso, no con el de expirada', () async {
+      final servidor = _Servidor()
+        ..statusRefresh = 403
+        ..cuerpoRefresh = {
+          'codigo': 'EMPRESA_SUSPENDIDA',
+          'mensaje': 'La empresa está suspendida',
+        };
+      final m = await _montar(servidor: servidor);
+
+      final respuesta = await m.pedirObras();
+
+      expect(respuesta.statusCode, 401);
+      expect(m.suspensiones, 1);
+      // Es el aviso de suspensión, no el de "tu sesión expiró".
+      expect(m.expiraciones, 0);
+      expect(servidor.refrescos, 1);
+    });
+
+    test(
+      'el renovador lo informa como suspendida, no como fallo pasajero',
+      () async {
+        final servidor = _Servidor()
+          ..statusRefresh = 403
+          ..cuerpoRefresh = {'codigo': 'EMPRESA_SUSPENDIDA', 'mensaje': 'x'};
+        final m = await _montar(servidor: servidor);
+
+        expect(
+          await m.renovador.renovar(tokenQueFallo: 'viejo'),
+          ResultadoRenovacion.empresaSuspendida,
+        );
+      },
+    );
+
+    test(
+      'un 403 del refresh sin ese código sigue sin cerrar la sesión',
+      () async {
+        final servidor = _Servidor()
+          ..statusRefresh = 403
+          ..cuerpoRefresh = {'mensaje': 'sin permiso'};
+        final m = await _montar(servidor: servidor);
+
+        await m.pedirObras();
+
+        expect(m.suspensiones, 0);
+        expect(m.expiraciones, 0);
+      },
+    );
+
     test('un bloqueo temporal (429) del refresh tampoco la cierra', () async {
       final servidor = _Servidor()
         ..statusRefresh = 429
@@ -465,6 +515,37 @@ void main() {
       // Cada renovación (cada ~30 minutos) no debe tirar el caché de todas las
       // pantallas: es la misma persona.
       expect(identical(c.read(clienteRestProvider), antes), isTrue);
+    });
+  });
+
+  group('Empresa suspendida al renovar, con la app cableada', () {
+    test('cierra la sesión local y deja el aviso de suspensión', () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final storage = SesionStorage();
+      await storage.guardar(_sesion());
+      final servidor = _Servidor()
+        ..statusRefresh = 403
+        ..cuerpoRefresh = {'codigo': 'EMPRESA_SUSPENDIDA', 'mensaje': 'x'};
+      final c = ProviderContainer(
+        overrides: [
+          sesionStorageProvider.overrideWithValue(storage),
+          authApiSinTokenProvider.overrideWithValue(
+            AuthApi(ApiClient(dio: _dio(servidor))),
+          ),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(sesionProvider.future);
+      c.read(apiClientProvider).dio.httpClientAdapter = servidor;
+
+      // El token vence (401) y al renovar el servidor dice que la empresa está
+      // suspendida.
+      await c.read(apiClientProvider).dio.get<dynamic>('/api/obras');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(c.read(sesionProvider).valueOrNull, isNull);
+      expect(await storage.leer(), isNull);
+      expect(c.read(avisoDeAccesoProvider), contains('suspendida'));
     });
   });
 

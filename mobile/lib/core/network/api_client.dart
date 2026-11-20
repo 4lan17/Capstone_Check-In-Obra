@@ -151,6 +151,9 @@ class _InterceptorToken extends Interceptor {
       case ResultadoRenovacion.sesionInvalida:
         _alExpirar?.call();
         handler.next(response);
+      case ResultadoRenovacion.empresaSuspendida:
+        _alEmpresaSuspendida?.call();
+        handler.next(response);
       case ResultadoRenovacion.noDisponible:
         // La petición falla con su 401, pero la sesión sigue: se puede
         // reintentar cuando vuelva la señal.

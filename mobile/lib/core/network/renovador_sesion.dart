@@ -12,6 +12,11 @@ enum ResultadoRenovacion {
   /// que pedir la clave de nuevo.
   sesionInvalida,
 
+  /// La empresa está suspendida: el servidor rechaza hasta la renovación con
+  /// 403 `EMPRESA_SUSPENDIDA`. Hay que cerrar la sesión **con ese aviso**, no
+  /// con el de "tu sesión expiró".
+  empresaSuspendida,
+
   /// No se pudo saber —sin señal, el servidor caído, un bloqueo temporal—. La
   /// sesión sigue en pie: perder la conexión no es motivo para cerrarla.
   noDisponible,
@@ -74,6 +79,9 @@ class RenovadorDeSesion {
       alRenovar(nueva);
       return ResultadoRenovacion.renovada;
     } on ApiException catch (e) {
+      // Antes que lo demás: es un 403, que de otro modo se leería como un fallo
+      // pasajero y la sesión nunca se cerraría.
+      if (e.empresaSuspendida) return ResultadoRenovacion.empresaSuspendida;
       final rechazado =
           e.statusCode == 401 ||
           e.statusCode == 400 ||
