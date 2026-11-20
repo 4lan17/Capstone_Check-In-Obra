@@ -30,6 +30,15 @@ public class EventosDeSeguridad {
         log.warn("evento=LOGIN_FALLO usuarioId={} ip={}", usuarioId == null ? "desconocido" : usuarioId, ip);
     }
 
+    /** Login de un operador de plataforma: sin empresa, con el id del operador. */
+    public void plataformaLoginExitoso(Long operadorId, String ip) {
+        log.info("evento=PLATAFORMA_LOGIN_OK operadorId={} ip={}", operadorId, ip);
+    }
+
+    public void plataformaLoginFallido(Long operadorId, String ip) {
+        log.warn("evento=PLATAFORMA_LOGIN_FALLO operadorId={} ip={}", operadorId == null ? "desconocido" : operadorId, ip);
+    }
+
     public void loginBloqueado(String ip) {
         log.warn("evento=LOGIN_BLOQUEADO ip={}", ip);
     }

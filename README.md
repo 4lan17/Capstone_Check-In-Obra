@@ -798,6 +798,17 @@ base: `checkinobra_app` a la de la empresa, `checkinobra_plataforma` al catálog
 - **Imágenes** (`backend/Dockerfile`, `docker-compose.yml` y la CI): fijadas por digest; el contenedor del backend no corre como root y tiene `HEALTHCHECK`. Dependabot propone el digest nuevo.
 - springdoc está en la línea 3.x, la de Spring Boot 4.
 
+### Operadores de plataforma (rol `PLATAFORMA`)
+
+El personal de la plataforma entra por `POST /api/plataforma/auth/login` (`{"email","clave"}`) y no pertenece a ninguna empresa: vive en la tabla `operadores` del catálogo, y su token lleva `rol=PLATAFORMA` y **no lleva `empresaId`**. Se revalida en cada petición contra el catálogo (el operador debe estar activo y con la `token_version` del token). Tiene las mismas defensas de login que una empresa (bloqueo por cuenta e IP, mismo error para clave equivocada, correo inexistente y operador desactivado) y una clave de **12 a 72 caracteres**.
+
+- `/api/plataforma/**` exige `PLATAFORMA`: un token de empresa recibe **403**.
+- Toda ruta de empresa (también las que solo piden "estar autenticado", como `PUT /api/auth/pin`) rechaza un token de plataforma con **403**.
+- Un token de empresa sin `empresaId` es **401** (no 500), y uno de plataforma que además trae `empresaId` también.
+- `PLATAFORMA` no se puede asignar a un usuario de empresa (`UsuarioService.crear` lo rechaza).
+- Rutas por ahora: `GET /api/plataforma/yo` y `GET /api/plataforma/empresas` (sin usuario de base ni referencia al secreto).
+- **Primer operador**: si el catálogo no tiene ninguno y se definen `PLATAFORMA_OPERADOR_EMAIL` y `PLATAFORMA_OPERADOR_CLAVE`, se crea al arrancar. Con operadores ya creados las variables se ignoran.
+
 ### Base de catálogo
 
 `checkinobra_catalogo` guarda qué empresas existen y cómo conectarse a la base de

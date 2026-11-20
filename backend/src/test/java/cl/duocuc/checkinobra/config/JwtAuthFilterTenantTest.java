@@ -53,7 +53,7 @@ class JwtAuthFilterTenantTest {
     /** Un usuario con sesión vigente: la revalidación contra la base no es lo que se prueba acá. */
     private final ValidadorDeSesion validador = org.mockito.Mockito.mock(ValidadorDeSesion.class);
 
-    private final JwtAuthFilter filtro = new JwtAuthFilter(jwt, resolutor, validador);
+    private final JwtAuthFilter filtro = new JwtAuthFilter(jwt, resolutor, validador, org.mockito.Mockito.mock(ValidadorDeOperador.class));
 
     @org.junit.jupiter.api.BeforeEach
     void sesionVigente() {

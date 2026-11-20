@@ -30,6 +30,9 @@ public class UsuarioService {
     public Usuario crear(
             Long empresaId, String nombre, String email, String rut, RolUsuario rol, String pinInicial) {
         AccesoEmpresa.exigirEmpresa(empresaId);
+        if (rol == RolUsuario.PLATAFORMA) {
+            throw new IllegalArgumentException("PLATAFORMA no es un rol de empresa");
+        }
         // Sin distinguir mayúsculas: el índice de login guarda el correo en minúsculas, y dos usuarios
         // de una misma empresa que solo difieran en eso no se podrían distinguir al entrar.
         if (usuarioRepository.existsByEmailIgnoreCase(email)) {
