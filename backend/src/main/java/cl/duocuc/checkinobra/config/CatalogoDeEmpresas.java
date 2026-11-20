@@ -43,8 +43,6 @@ public class CatalogoDeEmpresas implements DisposableBean {
 
     private final HikariDataSource pool;
     private final JdbcClient catalogo;
-    private final EmpresaRepository empresaRepository;
-    private final UsuarioRepository usuarioRepository;
     private final String nombreBaseActual;
     private final String usuarioBaseActual;
 
@@ -55,9 +53,7 @@ public class CatalogoDeEmpresas implements DisposableBean {
             @Value("${spring.flyway.user}") String migradorUsuario,
             @Value("${spring.flyway.password}") String migradorClave,
             @Value("${spring.datasource.url}") String urlBaseActual,
-            @Value("${spring.datasource.username}") String usuarioBaseActual,
-            EmpresaRepository empresaRepository,
-            UsuarioRepository usuarioRepository) {
+            @Value("${spring.datasource.username}") String usuarioBaseActual) {
         // Las migraciones del catálogo van con el migrador, igual que las de cada empresa.
         Flyway.configure()
                 .dataSource(url, migradorUsuario, migradorClave)
@@ -73,8 +69,6 @@ public class CatalogoDeEmpresas implements DisposableBean {
         config.setMaximumPoolSize(3);
         this.pool = new HikariDataSource(config);
         this.catalogo = JdbcClient.create(pool);
-        this.empresaRepository = empresaRepository;
-        this.usuarioRepository = usuarioRepository;
         this.nombreBaseActual = nombreDeBase(urlBaseActual);
         this.usuarioBaseActual = usuarioBaseActual;
     }
@@ -94,40 +88,71 @@ public class CatalogoDeEmpresas implements DisposableBean {
                 .list();
     }
 
+    /** Los datos con que la base actual se registra: su nombre, su usuario y la referencia a su secreto. */
+    public String nombreBaseActual() {
+        return nombreBaseActual;
+    }
+
+    public String usuarioBaseActual() {
+        return usuarioBaseActual;
+    }
+
+    public String secretoBaseActual() {
+        return SECRETO_BASE_ACTUAL;
+    }
+
+    public Optional<EmpresaRegistrada> buscarPorBase(String nombreBase) {
+        return listar().stream().filter(e -> e.nombreBase().equals(nombreBase)).findFirst();
+    }
+
+    public Optional<EmpresaRegistrada> buscarPorRut(String rut) {
+        return listar().stream().filter(e -> e.rut().equals(rut)).findFirst();
+    }
+
     /**
-     * Registra en el catálogo a la empresa de la base actual y deja al día el índice
-     * de login con los correos de sus usuarios. Es idempotente.
+     * Registra una empresa y su base. Es idempotente por {@code id}: si ya está, deja al
+     * día el nombre y los datos de conexión, pero no el plan ni el estado, que los fija la
+     * plataforma y no el arranque.
      *
-     * <p>Solo se registra la empresa pedida: la base actual nació compartida y puede
-     * traer otras que no son suyas. El plan y el estado no se tocan si ya existe: los
-     * fija la plataforma, no el arranque.
-     *
-     * @return la empresa registrada, o vacío si no está en la base actual
+     * @param id el que ya tiene la empresa en su base, o nulo para que el catálogo asigne uno
+     * @return el id de la empresa en el catálogo
      */
-    public Optional<EmpresaRegistrada> registrarBaseActual(String rut) {
-        Optional<Empresa> empresa = empresaRepository.findByRut(rut);
-        if (empresa.isEmpty()) {
-            return Optional.empty();
-        }
-        Empresa e = empresa.get();
-        catalogo.sql("""
+    public long registrar(
+            Long id, String rut, String nombre, String nombreBase, String usuarioBase, String secretoRef) {
+        long asignado = catalogo.sql("""
                         INSERT INTO empresas (id, rut, nombre, plan_id, nombre_base, usuario_base, secreto_ref)
-                        VALUES (:id, :rut, :nombre, (SELECT id FROM planes WHERE codigo = 'ESTANDAR'),
-                                :base, :usuario, :secreto)
+                        VALUES (COALESCE(:id, nextval(pg_get_serial_sequence('empresas', 'id'))), :rut, :nombre,
+                                (SELECT id FROM planes WHERE codigo = 'ESTANDAR'), :base, :usuario, :secreto)
                         ON CONFLICT (id) DO UPDATE
                            SET nombre = EXCLUDED.nombre, nombre_base = EXCLUDED.nombre_base,
                                usuario_base = EXCLUDED.usuario_base, secreto_ref = EXCLUDED.secreto_ref
+                        RETURNING id
                         """)
-                .param("id", e.getId()).param("rut", e.getRut()).param("nombre", e.getNombre())
-                .param("base", nombreBaseActual).param("usuario", usuarioBaseActual)
-                .param("secreto", SECRETO_BASE_ACTUAL)
-                .update();
-        // El id lo trae la base de la empresa: la secuencia del catálogo se adelanta
-        // para que la próxima alta no choque con él.
+                .param("id", id).param("rut", rut).param("nombre", nombre)
+                .param("base", nombreBase).param("usuario", usuarioBase).param("secreto", secretoRef)
+                .query(Long.class).single();
+        // El id puede venir de la base de la empresa: la secuencia se adelanta para que
+        // la próxima alta no choque con él.
         catalogo.sql("SELECT setval(pg_get_serial_sequence('empresas', 'id'), (SELECT max(id) FROM empresas))")
                 .query().singleValue();
-        sincronizarIndiceDeLogin(e.getId());
-        return listar().stream().filter(r -> r.id().equals(e.getId())).findFirst();
+        return asignado;
+    }
+
+    /**
+     * Reserva un correo para una empresa. Es único en todo el sistema: si ya es de otra,
+     * no se pisa y devuelve {@code false}.
+     */
+    public boolean reservarCorreo(String email, Long empresaId) {
+        String correo = normalizar(email);
+        catalogo.sql("INSERT INTO indice_login (email, empresa_id) VALUES (:email, :empresa) ON CONFLICT (email) DO NOTHING")
+                .param("email", correo).param("empresa", empresaId).update();
+        return empresaDeCorreo(correo).equals(Optional.of(empresaId));
+    }
+
+    /** Suelta un correo reservado, solo si es de esa empresa (compensa un alta que falló). */
+    public void liberarCorreo(String email, Long empresaId) {
+        catalogo.sql("DELETE FROM indice_login WHERE email = :email AND empresa_id = :empresa")
+                .param("email", normalizar(email)).param("empresa", empresaId).update();
     }
 
     /** ¿De qué empresa es este correo? Vacío si no está en el índice. */
@@ -141,31 +166,7 @@ public class CatalogoDeEmpresas implements DisposableBean {
                 .optional();
     }
 
-    /**
-     * Agrega al índice los correos de la empresa que todavía no están. Un correo que
-     * ya es de otra empresa no se pisa: el correo es único en todo el sistema, y
-     * reasignarlo en silencio le daría a una constructora el acceso de otra.
-     */
-    private void sincronizarIndiceDeLogin(Long empresaId) {
-        int enConflicto = 0;
-        for (Usuario u : usuarioRepository.findByEmpresaId(empresaId)) {
-            String correo = normalizar(u.getEmail());
-            int agregado = catalogo.sql("""
-                            INSERT INTO indice_login (email, empresa_id) VALUES (:email, :empresa)
-                            ON CONFLICT (email) DO NOTHING
-                            """)
-                    .param("email", correo).param("empresa", empresaId).update();
-            if (agregado == 0 && !empresaDeCorreo(correo).equals(Optional.of(empresaId))) {
-                enConflicto++;
-            }
-        }
-        if (enConflicto > 0) {
-            log.warn("{} correo(s) de la empresa {} ya pertenecen a otra empresa en el catálogo y no se tocaron.",
-                    enConflicto, empresaId);
-        }
-    }
-
-    private static String normalizar(String email) {
+    static String normalizar(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 

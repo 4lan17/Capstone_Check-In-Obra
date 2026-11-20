@@ -134,6 +134,12 @@ exportado la prueba corre como `checkinobra_app` y migra como
 `checkinobra_migrador`, igual que en producción. `RolesDeBaseDeDatosTest` falla si
 no es así.
 
+Las pruebas **comparten una sola base entre muchas empresas de prueba**: el `pom.xml` define
+`checkinobra.pruebas.conexion-compartida=true` y `ConexionCompartidaParaPruebas` pone un
+resolutor que manda todas a la misma base (ningún despliegue lo trae). El enrutamiento real
+se prueba con dos bases en `TenantRoutingDataSourceTest`, y las pruebas que inician sesión por
+correo registran su empresa y sus usuarios en el catálogo (`CatalogoDePrueba`).
+
 La CI (`.github/workflows/ci.yml`) crea los roles con `db/crear-roles.sh` sobre un
 PostgreSQL 16 vacío en `localhost:5432` y corre `./mvnw -B verify` con ellos.
 

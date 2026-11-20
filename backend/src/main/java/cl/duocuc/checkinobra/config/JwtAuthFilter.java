@@ -19,9 +19,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final ResolutorDeBases resolutor;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, ResolutorDeBases resolutor) {
         this.jwtService = jwtService;
+        this.resolutor = resolutor;
     }
 
     /** La única llamada que una cuenta con clave provisoria puede hacer. */
@@ -63,6 +65,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     return;
                 }
                 String rol = claims.get("rol", String.class);
+                // Un token sin empresa no vale: antes daba un NullPointerException aquí
+                // (un 500); ahora es un token inválido, y la petición sale como 401.
+                Number empresaClaim = claims.get("empresaId", Number.class);
+                if (empresaClaim == null) {
+                    throw new IllegalArgumentException("El token no trae empresa");
+                }
+                long empresaId = empresaClaim.longValue();
+                // La empresa tiene que tener una base abierta: un token de una empresa
+                // que no está en el catálogo (o está suspendida) no abre nada.
+                if (!resolutor.conoce(empresaId)) {
+                    throw new IllegalArgumentException("La empresa del token no tiene base registrada");
+                }
                 // El principal es el usuario completo, no solo su id: el
                 // empresaId viaja firmado en el token y es lo que después
                 // decide a qué datos puede llegar esta petición.
@@ -70,16 +84,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         Long.valueOf(claims.getSubject()),
                         claims.get("email", String.class),
                         RolUsuario.valueOf(rol),
-                        claims.get("empresaId", Number.class).longValue());
+                        empresaId);
                 var authToken = new UsernamePasswordAuthenticationToken(
                         usuario,
                         null,
                         List.of(new SimpleGrantedAuthority("ROLE_" + rol)));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-            } catch (JwtException | IllegalArgumentException ex) {
+                // Desde acá, y hasta que termine la petición, la base es la de esta empresa.
+                TenantContext.fijar(empresaId);
+            } catch (JwtException | IllegalArgumentException | ClassCastException ex) {
                 SecurityContextHolder.clearContext();
             }
         }
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // En un finally y después de toda la cadena: IdempotenciaFilter corre más
+            // adentro y también usa la base, así que limpiar antes se la quitaría.
+            TenantContext.limpiar();
+        }
     }
 }

@@ -49,7 +49,7 @@ public class AuthController {
     @Operation(summary = "Login por PIN — usuario ya identificado en el teléfono. Solo rol TRABAJADOR. "
             + "Responde 429 con Retry-After tras demasiados intentos fallidos.")
     public ResponseEntity<LoginResponse> loginPin(@RequestBody LoginPorPinRequest req, HttpServletRequest http) {
-        Usuario usuario = autenticacionService.loginPorPin(req.usuarioId(), req.pin(), http.getRemoteAddr());
+        Usuario usuario = autenticacionService.loginPorPin(req.usuarioId(), req.empresaId(), req.pin(), http.getRemoteAddr());
         return ResponseEntity.ok(respuestaPara(usuario));
     }
 
@@ -85,7 +85,11 @@ public class AuthController {
             @NotBlank @Size(min = 4, max = 72) @JsonAlias("clave") String pin) {
     }
 
-    public record LoginPorPinRequest(@NotNull Long usuarioId, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {
+    /**
+     * @param empresaId la empresa del usuario recordado en el teléfono; opcional mientras haya una sola
+     */
+    public record LoginPorPinRequest(
+            @NotNull Long usuarioId, Long empresaId, @NotBlank @Pattern(regexp = "\\d{4}") String pin) {
     }
 
     /**

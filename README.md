@@ -783,12 +783,23 @@ base: `checkinobra_app` a la de la empresa, `checkinobra_plataforma` al catálog
 `checkinobra_catalogo` guarda qué empresas existen y cómo conectarse a la base de
 cada una (tablas `planes`, `empresas`, `operadores` e `indice_login`, esta última
 de correo a empresa). Sus migraciones están en `backend/src/main/resources/db/catalogo`
-y las aplica el migrador al arrancar la API. Hoy hay una sola empresa y una sola
-base, así que la API **lee** el catálogo pero sigue abriendo esa base como antes;
-elegir la base por empresa llega con el enrutador (MT2). El catálogo guarda una
+y las aplica el migrador al arrancar la API. El catálogo guarda una
 *referencia* al secreto (`env:SPRING_DATASOURCE_PASSWORD`), nunca la contraseña.
 Las decisiones de diseño están en
 [`docs/arquitectura/multitenant.html`](docs/arquitectura/multitenant.html).
+
+### Una base por empresa: el enrutador
+
+Cada petición abre **solo la base de la empresa de su token** (MT2):
+
+1. `JwtAuthFilter` valida el token y deja su `empresaId` en el `TenantContext` (un `ThreadLocal`), que limpia en un `finally` cuando termina toda la cadena. Un token sin `empresaId`, o de una empresa sin base registrada o suspendida, no abre nada y la petición sale como `401`.
+2. `TenantRoutingDataSource` (un `AbstractRoutingDataSource`) entrega la conexión del pool de esa empresa. **No tiene base por defecto**: sin empresa en el contexto, tocar la base lanza `SinEmpresaEnContextoException` (un `500`, no un conflicto).
+3. Hay un pool por empresa, armado al arrancar leyendo el catálogo (`ResolutorPorCatalogo`) con la contraseña que indica la referencia `env:VARIABLE`. Una empresa mal registrada se anota en el log y no impide arrancar a las demás.
+4. En el arranque, `BaseInicialInicializador` registra en el catálogo la base actual con el id de su empresa y, en una base vacía con `PRIMER_ADMIN_CLAVE`, crea la empresa. Fuera de una petición (arranque, tareas programadas) la empresa se fija a mano con `TenantContext.ejecutarEn`.
+
+**El login resuelve la empresa antes de tocar la base.** `POST /api/auth/login` busca el correo en el índice del catálogo; `POST /api/auth/login-pin` recibe `empresaId` junto a `usuarioId` (los ids de usuario se repiten entre bases; si falta y hay una sola empresa se usa esa). Un correo o empresa desconocidos se tratan como una cuenta que no existe. Crear un usuario reserva su correo en el catálogo, donde es único en todo el sistema.
+
+**Hibernate ya no valida el esquema al arrancar**: no hay una base a la cual conectarse sin empresa. El dialecto se fija a mano y `ddl-auto=none`; la suite de pruebas sí valida el mapeo contra una base. Flyway sigue migrando la base actual (migrar la de cada empresa es MT3).
 
 
 ### Conectarse con un cliente SQL
