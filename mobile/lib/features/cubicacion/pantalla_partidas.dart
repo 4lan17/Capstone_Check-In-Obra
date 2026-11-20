@@ -79,9 +79,19 @@ class PantallaPartidas extends ConsumerWidget {
 }
 
 class FilaPartida extends StatelessWidget {
-  const FilaPartida({super.key, required this.partida});
+  const FilaPartida({
+    super.key,
+    required this.partida,
+    this.alTocar,
+    this.etiqueta = 'Ver y cubicar',
+  });
 
   final Partida partida;
+
+  /// Por defecto abre el detalle de la partida; otras pantallas (agregar al
+  /// presupuesto) reusan la fila con su propia acción.
+  final VoidCallback? alTocar;
+  final String etiqueta;
 
   String get medidas =>
       '${Formato.cantidad(partida.anchoM)} × ${Formato.cantidad(partida.altoM)} m'
@@ -90,12 +100,14 @@ class FilaPartida extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PanelTocable(
-      semanticLabel: '${partida.nombreDelTipo}, $medidas. Ver y cubicar',
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => PantallaDetallePartida(partida: partida),
-        ),
-      ),
+      semanticLabel: '${partida.nombreDelTipo}, $medidas. $etiqueta',
+      onTap:
+          alTocar ??
+          () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => PantallaDetallePartida(partida: partida),
+            ),
+          ),
       child: Row(
         children: [
           Expanded(

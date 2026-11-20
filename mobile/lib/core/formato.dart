@@ -13,6 +13,7 @@ abstract final class Formato {
   static final _hora = DateFormat('HH:mm', 'es_CL');
   static final _fechaCorta = DateFormat('dd MMM', 'es_CL');
   static final _fechaHora = DateFormat('dd MMM HH:mm', 'es_CL');
+  static final _fechaCompleta = DateFormat('dd MMM yyyy', 'es_CL');
 
   static String pesos(double v) => '\$${_enteros.format(v)}';
 
@@ -47,6 +48,9 @@ abstract final class Formato {
   }
 
   static String fechaHora(DateTime d) => _fechaHora.format(d);
+
+  /// "05 sep 2026" — una fecha sin hora, con el año.
+  static String fecha(DateTime d) => _fechaCompleta.format(d);
 
   /// "hoy 09:02", "ayer 15:41" o "22 ago" — como en el mockup del kardex.
   static String relativa(DateTime d) {
