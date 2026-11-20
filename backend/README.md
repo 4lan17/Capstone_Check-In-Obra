@@ -90,7 +90,15 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 | `CATALOGO_USER` / `CATALOGO_PASSWORD` | Usuario `checkinobra_plataforma` y su contraseña (`DB_PLATAFORMA_PASSWORD`). **Obligatorios** | Ninguno |
 | `PRIMERA_EMPRESA_RUT` / `PRIMERA_EMPRESA_NOMBRE` | La primera empresa, que nace en una base vacía y es la que se registra en el catálogo | Constructora Arauco Ltda. |
 | `JWT_SECRET` | Firma de los JWT. **Obligatorio**: la API no arranca si falta, tiene menos de 32 bytes o es el valor de ejemplo | Ninguno |
-| `BREVO_SMTP_USER` / `BREVO_SMTP_PASSWORD` | Correo saliente (Brevo SMTP) | Vacío |
+
+### Perfil `prod`
+
+En un despliegue real se arranca con `SPRING_PROFILES_ACTIVE=prod`, que apaga **Swagger y `/v3/api-docs`**
+(`application-prod.properties`): en desarrollo ayudan a probar, y en producción le entregan a cualquiera
+el mapa completo de endpoints y cuerpos. Lo demás es igual. El contenedor declara un `HEALTHCHECK`
+sobre `/actuator/health/liveness`, que es lo único del actuator que se expone (sin detalles; no incluye
+la base de datos, porque hay una por empresa y no hay conexión que probar sin una empresa). La imagen
+corre como un usuario sin privilegios, y sus imágenes base van fijadas por digest.
 
 `docker-compose.yml` define las del datasource y lee `JWT_SECRET` del `.env` de
 la raíz (no se versiona). `scripts/levantar.sh` lo genera la primera vez; a

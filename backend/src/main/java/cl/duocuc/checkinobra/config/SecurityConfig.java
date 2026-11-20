@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,9 +22,13 @@ public class SecurityConfig {
     private final ResolutorDeBases resolutor;
     private final ValidadorDeSesion validador;
     private final EventosDeSeguridad eventos;
+    private final boolean documentacionPublica;
 
     public SecurityConfig(
-            JwtService jwtService, ResolutorDeBases resolutor, ValidadorDeSesion validador, EventosDeSeguridad eventos) {
+            JwtService jwtService, ResolutorDeBases resolutor, ValidadorDeSesion validador, EventosDeSeguridad eventos,
+            @org.springframework.beans.factory.annotation.Value("${springdoc.api-docs.enabled:true}")
+            boolean documentacionPublica) {
+        this.documentacionPublica = documentacionPublica;
         this.jwtService = jwtService;
         this.resolutor = resolutor;
         this.validador = validador;
@@ -58,12 +63,12 @@ public class SecurityConfig {
                         // Cambiar la propia clave exige estar autenticado: va antes
                         // del permitAll de /api/auth/**.
                         .requestMatchers(HttpMethod.PUT, "/api/auth/pin").authenticated()
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll()
+                        .requestMatchers("/api/auth/**", "/actuator/health/**").permitAll()
+                        // La documentación de la API es pública solo donde está encendida: en el
+                        // perfil prod (springdoc.api-docs.enabled=false) estas rutas pasan a exigir
+                        // autenticación y, además, springdoc ya no las sirve (S-12).
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                        .access((autenticacion, contexto) -> new AuthorizationDecision(documentacionPublica))
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthFilter(jwtService, resolutor, validador), UsernamePasswordAuthenticationFilter.class);
         return http.build();
