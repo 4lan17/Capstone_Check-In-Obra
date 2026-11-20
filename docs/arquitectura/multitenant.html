@@ -171,23 +171,21 @@
       <ul>
         <li><code>empresa_id</code> en <code>usuarios</code>, <code>obras</code>, <code>materiales</code> y <code>herramientas</code></li>
         <li>Claim <code>empresaId</code> firmado en el JWT</li>
-        <li><code>PerteneceAEmpresa</code> en las 17 entidades y un guardián único</li>
+        <li><code>PerteneceAEmpresa</code> en las 20 entidades y un guardián único</li>
         <li>Código de barras único por empresa, no global (V4)</li>
       </ul>
     </div>
     <div class="card">
       <div class="card-header"><span class="dot accent"></span><h3>Lo que falta</h3></div>
       <ul>
-        <li>Dar de alta empresas: hoy solo existe la que siembra <code>V2__seed_admin.sql</code></li>
-        <li>Una base por empresa y algo que elija cuál abrir en cada petición</li>
-        <li>Flyway corre sobre una sola base</li>
-        <li>La API conecta como <code>postgres</code>, un superusuario</li>
+        <li><em>Al redactar la propuesta (2026-10-19).</em> Hoy, a 2026-11-20, están implementadas las fases 0 a 4 (en PR encadenados, aún no integrados a <code>develop</code>): usuarios de base, catálogo, enrutador, Flyway por base y plataforma (alta, suspensión y respaldo)</li>
+        <li>Falta la fase 5, la app: base local y cola de sincronización por empresa</li>
       </ul>
     </div>
     <div class="card">
       <div class="card-header"><span class="dot soft"></span><h3>Por qué importa</h3></div>
       <ul>
-        <li>48 comprobaciones a mano repartidas en 16 archivos</li>
+        <li>43 comprobaciones a mano repartidas en 17 archivos</li>
         <li>Basta un endpoint nuevo sin <code>esPropio</code> para filtrar datos</li>
         <li>Los costos unitarios (V8) son información comercial sensible</li>
       </ul>
@@ -706,7 +704,7 @@
 
   <footer class="footer">
     <span>Check-In-Obra · Propuesta multi-tenant · base por empresa</span>
-    <span>Actualizada el 2026-11-19: fases 1 a 3 y pruebas de aislamiento</span>
+    <span>Actualizada el 2026-11-20: fases 0 a 4 implementadas; falta la fase 5 (app)</span>
   </footer>
 
 </div>
