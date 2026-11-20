@@ -39,6 +39,10 @@ public class EventosDeSeguridad {
         log.warn("evento=PLATAFORMA_LOGIN_FALLO operadorId={} ip={}", operadorId == null ? "desconocido" : operadorId, ip);
     }
 
+    public void empresaCambiaDeEstado(Long operadorId, Long empresaId, String estado) {
+        log.warn("evento=EMPRESA_ESTADO operadorId={} empresaId={} estado={}", operadorId, empresaId, estado);
+    }
+
     public void empresaCreada(Long operadorId, Long empresaId) {
         log.info("evento=EMPRESA_CREADA operadorId={} empresaId={}", operadorId, empresaId);
     }

@@ -16,6 +16,11 @@ public interface ResolutorDeBases {
     /** ¿Hay una base abierta para esta empresa? Es lo que decide si un token vale. */
     boolean conoce(Long empresaId);
 
+    /** ¿La empresa existe en el catálogo pero está suspendida? Su token no abre nada: se responde 403. */
+    default boolean suspendida(Long empresaId) {
+        return false;
+    }
+
     /** Las empresas con base abierta, para las tareas que recorren a todas. */
     Collection<Long> empresas();
 

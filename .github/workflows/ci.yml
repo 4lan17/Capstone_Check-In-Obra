@@ -81,6 +81,10 @@ jobs:
           CHECKINOBRA_BASES_EXTRA="checkinobra_b" \
             ./db/crear-roles.sh
 
+      # El respaldo por base (MT8) se prueba con los scripts de verdad y necesita pg_dump y psql.
+      - name: Verificar las herramientas de PostgreSQL
+        run: pg_dump --version && psql --version && pg_restore --version
+
       - name: Compilar y testear
         working-directory: backend
         env:
@@ -97,6 +101,8 @@ jobs:
           CATALOGO_PASSWORD: ${{ env.DB_PLATAFORMA_PASSWORD }}
           DB_APROVISIONADOR_PASSWORD: ${{ env.DB_APROVISIONADOR_PASSWORD }}
           SECRETOS_DIR: ${{ runner.temp }}/secretos
+          # En la CI la prueba del respaldo falla (no se omite) si faltan las herramientas.
+          CHECKINOBRA_EXIGIR_RESPALDO: "true"
         run: ./mvnw -B verify
 
       - name: Publicar reportes de test
