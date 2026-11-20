@@ -115,6 +115,13 @@ public class AprovisionadorDeBases {
         ejecutar(conectar("postgres", usuario, clave), "SELECT format('DROP ROLE IF EXISTS %I', ?::text)", usuarioBase);
     }
 
+    /** Borra solo una base (la de una restauración de prueba, por ejemplo); el usuario se deja. */
+    public void eliminarBase(String base) {
+        exigirNombres(base, null);
+        ejecutar(conectar("postgres", migradorUsuario, migradorClave),
+                "SELECT format('DROP DATABASE IF EXISTS %I', ?::text)", base);
+    }
+
     public boolean existeBase(String base) {
         exigirNombres(base, null);
         return Boolean.TRUE.equals(conectar("postgres", usuario, clave)

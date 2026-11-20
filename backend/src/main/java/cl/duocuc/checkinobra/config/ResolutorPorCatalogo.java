@@ -34,6 +34,8 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
     private final UrlsDeBases urls;
     private final int tamanoPool;
     private final ConcurrentHashMap<Long, HikariDataSource> pools = new ConcurrentHashMap<>();
+    /** Las empresas suspendidas según el catálogo, para responder 403 sin abrir su base (MT8). */
+    private volatile Set<Long> suspendidas = Set.of();
 
     /**
      * @param urlDelServidor cualquier URL JDBC del servidor; solo se usa su parte de host y
@@ -57,6 +59,8 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
     public synchronized void refrescar() {
         List<CatalogoDeEmpresas.EmpresaRegistrada> activas = catalogo.listar().stream()
                 .filter(CatalogoDeEmpresas.EmpresaRegistrada::abierta).toList();
+        suspendidas = Set.copyOf(catalogo.listar().stream()
+                .filter(e -> "SUSPENDIDA".equals(e.estado())).map(CatalogoDeEmpresas.EmpresaRegistrada::id).toList());
         Set<Long> vigentes = Set.copyOf(activas.stream().map(CatalogoDeEmpresas.EmpresaRegistrada::id).toList());
         pools.keySet().removeIf(id -> {
             if (vigentes.contains(id)) {
@@ -118,6 +122,11 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
             throw new SinEmpresaEnContextoException("La empresa " + empresaId + " no tiene una base registrada");
         }
         return pool;
+    }
+
+    @Override
+    public boolean suspendida(Long empresaId) {
+        return empresaId != null && suspendidas.contains(empresaId);
     }
 
     @Override

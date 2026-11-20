@@ -132,6 +132,19 @@ public class CatalogoDeEmpresas implements DisposableBean {
         return SECRETO_BASE_ACTUAL;
     }
 
+    /**
+     * Suspende o reactiva una empresa. No toca su base ni sus datos.
+     *
+     * @return {@code false} si no existe
+     */
+    public boolean cambiarEstadoDeEmpresa(long id, String estado) {
+        if (!"ACTIVA".equals(estado) && !"SUSPENDIDA".equals(estado)) {
+            throw new IllegalArgumentException("El estado debe ser ACTIVA o SUSPENDIDA");
+        }
+        return catalogo.sql("UPDATE empresas SET estado = :estado WHERE id = :id")
+                .param("estado", estado).param("id", id).update() > 0;
+    }
+
     public Optional<EmpresaRegistrada> buscarPorBase(String nombreBase) {
         return listar().stream().filter(e -> e.nombreBase().equals(nombreBase)).findFirst();
     }

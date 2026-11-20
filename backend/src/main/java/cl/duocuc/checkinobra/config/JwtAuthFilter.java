@@ -68,6 +68,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 + "\"codigo\":\"" + DEBE_CAMBIAR_PIN + "\"}");
     }
 
+    /** Valor de {@code codigo} cuando la empresa del token está suspendida. */
+    public static final String EMPRESA_SUSPENDIDA = "EMPRESA_SUSPENDIDA";
+
+    private static void responderEmpresaSuspendida(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"instante\":\"" + java.time.Instant.now() + "\",\"status\":403,"
+                + "\"mensaje\":\"Tu empresa está suspendida: comunícate con la plataforma\","
+                + "\"codigo\":\"" + EMPRESA_SUSPENDIDA + "\"}");
+    }
+
     /** Valor de {@code codigo} cuando la cuenta debe cambiar su clave primero. */
     public static final String DEBE_CAMBIAR_PIN = "DEBE_CAMBIAR_PIN";
 
@@ -94,6 +106,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     throw new IllegalArgumentException("El token no trae empresa");
                 }
                 long empresaId = empresaClaim.longValue();
+                // Una empresa suspendida no abre nada: 403 con su código, sin tocar su base (MT8).
+                if (resolutor.suspendida(empresaId)) {
+                    SecurityContextHolder.clearContext();
+                    TenantContext.limpiar();
+                    responderEmpresaSuspendida(response);
+                    return;
+                }
                 // La empresa tiene que tener una base abierta: un token de una empresa
                 // que no está en el catálogo (o está suspendida) no abre nada.
                 if (!resolutor.conoce(empresaId)) {
