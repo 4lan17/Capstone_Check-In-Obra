@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/errores.dart';
+import '../../core/politica_clave.dart';
 import '../../core/storage/sesion_storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_forma.dart';
@@ -33,7 +34,11 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
       if (!mounted) return;
       await ref
           .read(sesionProvider.notifier)
-          .entrarConPin(usuarioId: usuario.usuarioId, pin: _pin);
+          .entrarConPin(
+            usuarioId: usuario.usuarioId,
+            empresaId: usuario.empresaId,
+            pin: _pin,
+          );
       // Si falló, se limpia para reintentar.
       if (mounted && ref.read(sesionProvider).hasError) {
         setState(() => _pin = '');
@@ -71,8 +76,10 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
             ),
           ),
           data: (usuario) {
-            if (usuario == null) {
-              // Sin usuario recordado no hay a quién autenticar: se vuelve.
+            if (usuario == null || !PoliticaClave.esPin(usuario.rol)) {
+              // Sin usuario recordado, o con uno que no es trabajador (el
+              // backend solo acepta `login-pin` para ese rol), no hay a quién
+              // autenticar por PIN: se vuelve.
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) Navigator.of(context).maybePop();
               });

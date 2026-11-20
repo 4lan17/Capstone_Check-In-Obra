@@ -21,7 +21,7 @@ public record MaterialResponse(
         Long empresaId,
         BigDecimal ultimoCostoUnitario,
         LocalDateTime fechaUltimoCosto,
-        BigDecimal costoPromedio) {
+        BigDecimal costoPromedio) implements MaterialVista {
 
     /** Un material sin compras registradas: recién creado, o sin facturas. */
     public static MaterialResponse de(Material m) {

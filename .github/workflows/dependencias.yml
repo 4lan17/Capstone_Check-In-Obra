@@ -11,6 +11,9 @@ permissions:
 jobs:
   revisar:
     name: Dependency review
+    # Solo corre con la variable de repositorio GHAS=true: exige GitHub Advanced Security
+    # (o un repositorio público) y fallaría en uno privado que no lo tenga.
+    if: vars.GHAS == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

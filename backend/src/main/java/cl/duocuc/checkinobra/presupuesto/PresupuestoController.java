@@ -37,11 +37,13 @@ public class PresupuestoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public PresupuestoResponse obtener(@PathVariable Long id) {
         return PresupuestoResponse.de(presupuestoService.obtener(id));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public PresupuestoResponse obtenerPorObra(@RequestParam Long obraId) {
         return PresupuestoResponse.de(presupuestoService.obtenerPorObra(obraId));
     }
@@ -53,7 +55,22 @@ public class PresupuestoController {
         return PresupuestoItemResponse.de(presupuestoService.agregarItem(id, req.materialId(), req.cantidad()));
     }
 
+    /**
+     * Agrega de una vez los ítems cubicados de una partida (D5). Atómico: o
+     * entran todos o ninguno.
+     */
+    @PostMapping("/{id}/items/desde-partida")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<PresupuestoItemResponse> agregarItemsDePartida(
+            @PathVariable Long id, @RequestBody AgregarItemsDePartidaRequest req) {
+        return presupuestoService.agregarItemsDePartida(id, req.partidaId()).stream()
+                .map(PresupuestoItemResponse::de)
+                .toList();
+    }
+
     @GetMapping("/{id}/items")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public List<PresupuestoItemResponse> listarItems(@PathVariable Long id) {
         return presupuestoService.listarItems(id).stream().map(PresupuestoItemResponse::de).toList();
     }
@@ -72,11 +89,15 @@ public class PresupuestoController {
     }
 
     @GetMapping("/{id}/desviacion")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public ReporteDesviacion desviacion(@PathVariable Long id) {
         return comparadorPresupuestoService.compararVsEjecutado(presupuestoService.obtener(id));
     }
 
     public record CrearPresupuestoRequest(Long obraId) {
+    }
+
+    public record AgregarItemsDePartidaRequest(Long partidaId) {
     }
 
     public record AgregarItemRequest(Long materialId, double cantidad) {

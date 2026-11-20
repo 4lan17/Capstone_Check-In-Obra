@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/formato.dart';
+import '../../core/politica_clave.dart';
 import '../../core/network/errores.dart';
 import '../../core/network/idempotencia.dart';
 import '../../core/theme/app_colors.dart';
@@ -91,7 +92,8 @@ class _FilaUsuarioState extends ConsumerState<_FilaUsuario> {
   Future<void> _restablecerPin() async {
     final nuevo = await showDialog<String>(
       context: context,
-      builder: (_) => _DialogoPin(nombre: widget.usuario.nombre),
+      builder: (_) =>
+          _DialogoPin(nombre: widget.usuario.nombre, rol: widget.usuario.rol),
     );
 
     if (nuevo == null || !mounted) return;
@@ -100,8 +102,14 @@ class _FilaUsuarioState extends ConsumerState<_FilaUsuario> {
           .read(usuariosApiProvider)
           .redefinirPin(widget.usuario.id, nuevo);
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('PIN restablecido')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${PoliticaClave.esPin(widget.usuario.rol) ? 'PIN' : 'Clave'} '
+            'restablecido',
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -306,24 +314,36 @@ class _PantallaNuevoUsuarioState extends ConsumerState<PantallaNuevoUsuario> {
               ],
               const SizedBox(height: 10),
               CampoConEtiqueta(
-                etiqueta: 'PIN inicial',
+                etiqueta: PoliticaClave.esPin(_rol)
+                    ? 'PIN inicial'
+                    : 'Clave inicial',
                 campo: CampoTexto(
                   controlador: _pin,
-                  hint: '••••',
+                  hint: PoliticaClave.esPin(_rol)
+                      ? '••••'
+                      : 'Mínimo 8 caracteres',
                   icono: Icons.lock_outline,
                   mono: true,
                   oculto: true,
-                  maxLength: 4,
-                  teclado: TextInputType.number,
-                  formatters: [FilteringTextInputFormatter.digitsOnly],
-                  habilitado: !_enviando,
-                  validador: (v) => (v == null || v.length != 4)
-                      ? 'El PIN son 4 dígitos'
+                  maxLength: PoliticaClave.esPin(_rol)
+                      ? PoliticaClave.largoPin
+                      : PoliticaClave.maximoClave,
+                  teclado: PoliticaClave.esPin(_rol)
+                      ? TextInputType.number
+                      : TextInputType.visiblePassword,
+                  formatters: PoliticaClave.esPin(_rol)
+                      ? [FilteringTextInputFormatter.digitsOnly]
                       : null,
+                  habilitado: !_enviando,
+                  validador: (v) => PoliticaClave.error(v ?? '', rol: _rol),
                 ),
-                ayuda:
-                    'Entrégaselo en persona y pídele que lo cambie. El sistema '
-                    'guarda solo su huella: ni tú ni nadie puede volver a verlo.',
+                ayuda: PoliticaClave.esPin(_rol)
+                    ? 'Entrégaselo en persona y pídele que lo cambie. El '
+                          'sistema guarda solo su huella: ni tú ni nadie puede '
+                          'volver a verlo.'
+                    : 'De 8 a 72 caracteres. Entrégasela en persona: tendrá '
+                          'que cambiarla al entrar. El sistema guarda solo su '
+                          'huella: ni tú ni nadie puede volver a verla.',
               ),
               if (_error != null) ...[
                 const SizedBox(height: 16),
@@ -418,9 +438,13 @@ class _OpcionRol extends StatelessWidget {
 /// usado después de liberado. "Restablecer" además solo se habilita con cuatro
 /// dígitos: antes se podía tocar con tres y no pasaba nada, sin decir por qué.
 class _DialogoPin extends StatefulWidget {
-  const _DialogoPin({required this.nombre});
+  const _DialogoPin({required this.nombre, required this.rol});
 
   final String nombre;
+
+  /// Del rol depende qué se acepta: PIN de 4 dígitos para el trabajador,
+  /// clave de 8 a 72 caracteres para el resto.
+  final String rol;
 
   @override
   State<_DialogoPin> createState() => _DialogoPinState();
@@ -444,7 +468,7 @@ class _DialogoPinState extends State<_DialogoPin> {
     super.dispose();
   }
 
-  bool get _completo => _pin.text.length == 4;
+  bool get _completo => PoliticaClave.error(_pin.text, rol: widget.rol) == null;
 
   void _confirmar() {
     if (_completo) Navigator.of(context).pop(_pin.text);
@@ -453,31 +477,41 @@ class _DialogoPinState extends State<_DialogoPin> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('PIN de ${widget.nombre}'),
+      title: Text(
+        '${PoliticaClave.esPin(widget.rol) ? 'PIN' : 'Clave'} de ${widget.nombre}',
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'El PIN anterior no se puede recuperar: el sistema solo guarda '
-            'su huella. Define uno nuevo y entrégaselo en persona.',
+            'La anterior no se puede recuperar: el sistema solo guarda su '
+            'huella. Define una nueva y entrégasela en persona.',
             style: TextStyle(fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 16),
           CampoTexto(
             controlador: _pin,
-            hint: '••••',
+            hint: PoliticaClave.esPin(widget.rol)
+                ? '••••'
+                : 'Mínimo 8 caracteres',
             icono: Icons.lock_outline,
             mono: true,
-            maxLength: 4,
-            teclado: TextInputType.number,
-            formatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: PoliticaClave.esPin(widget.rol)
+                ? PoliticaClave.largoPin
+                : PoliticaClave.maximoClave,
+            teclado: PoliticaClave.esPin(widget.rol)
+                ? TextInputType.number
+                : TextInputType.visiblePassword,
+            formatters: PoliticaClave.esPin(widget.rol)
+                ? [FilteringTextInputFormatter.digitsOnly]
+                : null,
             alEnviar: (_) => _confirmar(),
           ),
           const SizedBox(height: 6),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '${_pin.text.length} de 4 dígitos',
+              PoliticaClave.progreso(_pin.text, rol: widget.rol),
               style: const TextStyle(fontSize: 12, color: AppColors.secondary),
             ),
           ),

@@ -6,7 +6,7 @@ import cl.duocuc.checkinobra.config.ConflictoException;
 import cl.duocuc.checkinobra.config.RolUsuario;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.config.Usuario;
-import cl.duocuc.checkinobra.config.UsuarioRepository;
+import cl.duocuc.checkinobra.config.UsuarioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,21 +19,26 @@ import java.util.UUID;
 public class TrabajadorService {
 
     private final TrabajadorRepository trabajadorRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
     private final CuadrillaService cuadrillaService;
+    private final ObraService obraService;
 
     public TrabajadorService(
             TrabajadorRepository trabajadorRepository,
-            UsuarioRepository usuarioRepository,
-            CuadrillaService cuadrillaService) {
+            UsuarioService usuarioService,
+            CuadrillaService cuadrillaService,
+            ObraService obraService) {
         this.trabajadorRepository = trabajadorRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.usuarioService = usuarioService;
         this.cuadrillaService = cuadrillaService;
+        this.obraService = obraService;
     }
 
     public Trabajador crear(Long usuarioId, Long cuadrillaId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado: " + usuarioId));
+        // Por el servicio y no por el repositorio: así un usuario de otra empresa
+        // da el mismo 404 que uno inexistente. Con findById, un ADMIN ajeno creaba
+        // la ficha de un usuario que no era suyo y recibía su credencial QR (S-06).
+        Usuario usuario = usuarioService.obtener(usuarioId);
         if (usuario.getRol() != RolUsuario.TRABAJADOR) {
             throw new IllegalStateException("Solo un Usuario con rol TRABAJADOR puede extenderse a Trabajador");
         }
@@ -71,11 +76,15 @@ public class TrabajadorService {
 
     @Transactional(readOnly = true)
     public List<Trabajador> listarPorCuadrilla(Long cuadrillaId) {
+        // Se valida la cuadrilla antes de consultar: una ajena responde como una
+        // que no existe en vez de devolver nombre y RUT de otra empresa (S-05).
+        cuadrillaService.obtener(cuadrillaId);
         return trabajadorRepository.findByCuadrillaId(cuadrillaId);
     }
 
     @Transactional(readOnly = true)
     public List<Trabajador> listarPorObra(Long obraId) {
+        obraService.obtener(obraId);
         return trabajadorRepository.findByCuadrilla_ObraId(obraId);
     }
 

@@ -71,7 +71,17 @@ API_BASE_URL=http://10.0.2.2:8081
 | Dónde corre la app | Valor |
 |---|---|
 | Emulador de Android | `http://10.0.2.2:8081`, que es el localhost del computador visto desde el emulador |
-| Celular físico | `http://<IP del computador en la WiFi>:8081`, por ejemplo `http://192.168.1.50:8081` |
+| Celular físico por USB | `http://localhost:8081` con `adb reverse` (lo hace `scripts/levantar.sh --telefono`) |
+| Producción (release) | `https://…`, pasada al compilar con `--dart-define=API_BASE_URL=https://…` |
+
+**Sin tráfico en claro.** Android bloquea todo HTTP salvo, en las compilaciones
+de *debug*, hacia `10.0.2.2`, `localhost` y `127.0.0.1`
+(`android/app/src/debug/res/xml/network_security_config.xml`). Por eso ya no
+sirve apuntar el `.env` a la IP del computador en la WiFi
+(`http://192.168.1.50:8081`): la petición se corta antes de salir. Para un
+teléfono físico usa el cable y `adb reverse`. En **release** la app además
+rechaza al arrancar cualquier `API_BASE_URL` que no empiece con `https://`, y
+no cae al valor del emulador si falta.
 
 El `.env` no se versiona porque la IP cambia según la máquina y la red. Si
 falta, la app arranca igual con el valor del emulador. Una URL pasada al
@@ -150,6 +160,42 @@ teléfono → API → base. Hoy no se llega a ella desde ninguna pantalla.
 usuario en `flutter_secure_storage`. El PIN no se guarda nunca: el acceso
 rápido del trabajador vuelve a mandarlo al servidor (`/api/auth/login-pin`).
 
+**Quién entra con qué.** El TRABAJADOR entra con un PIN de 4 dígitos, y solo él
+usa el acceso rápido por PIN (`login-pin`). ADMIN, JEFE_TERRENO y BODEGUERO
+entran con correo y una clave de 8 a 72 caracteres; el teléfono no les ofrece
+el acceso rápido aunque los recuerde. Tras 5 intentos fallidos el servidor
+bloquea la cuenta (aunque la clave sea la correcta) y responde 429 con
+`Retry-After`: la app dice cuánto esperar. La regla de la clave está en
+`core/politica_clave.dart`, igual a la del backend.
+
+**Clave provisoria.** Si el login responde `debeCambiarClave: true` —o cualquier
+petición recibe 403 con `codigo: DEBE_CAMBIAR_PIN`—, la raíz de la app muestra
+`PantallaCambiarClave` en vez de la app: el servidor rechaza todo salvo
+`PUT /api/auth/pin`. Al cambiarla, la sesión nueva que devuelve reemplaza a la
+provisoria. No hay "omitir"; solo cerrar sesión.
+
+**El token dura 30 minutos y se renueva solo.** El login trae también un
+`refreshToken` (7 días sin usarse) que se guarda junto a la sesión, en el mismo
+almacenamiento cifrado. Ante un 401, el interceptor lo canjea en
+`POST /api/auth/refresh` y reintenta la petición **una vez**; nadie lo nota. El
+refresh se **rota**: cada uso entrega uno nuevo y deja inservible el anterior, y
+usar uno ya gastado hace que el servidor cierre todas las sesiones de esa
+persona, por eso `RenovadorDeSesion` hace un solo refresh a la vez y las demás
+peticiones esperan su resultado. La sesión local solo se cierra si el servidor
+dice que ya no vale (`SESION_INVALIDA` o el refresh rechazado): sin señal no se
+cierra nada. Al cerrar sesión, la app revoca el refresh con
+`POST /api/auth/logout`, sin esperarlo ni depender de él.
+
+**Lo que recuerda el teléfono va por empresa y usuario.** Con una base por
+empresa los ids se repiten: la obra 3 o el usuario 4 existen en cada una. Por
+eso el usuario recordado guarda también su `empresaId` (que viaja en
+`login-pin` junto al `usuarioId`), y la obra activa y la copia de la
+credencial se guardan bajo `obra_activa:<empresa>:<usuario>` y
+`perfil_trabajador:<empresa>:<usuario>`. Al entrar otra cuenta, la obra
+activa se reconstruye con la identidad nueva: no hereda la de la anterior.
+Lo guardado en el formato viejo (sin empresa) se descarta al entrar, y quien
+tenía un usuario recordado sin empresa vuelve a escribir su correo una vez.
+
 **Los timeouts son de 8 segundos.** En la obra la señal es mala, y conviene
 más que el usuario reintente pronto a que quede esperando 30 segundos.
 
@@ -213,9 +259,24 @@ resultado.
 libsqlite3…`.** Es una descarga corrupta del binario de `sqlite3` en el runner
 de GitHub, no un problema del código. Relanza el job.
 
-**Antes de generar un APK de release.** El permiso `INTERNET` está solo en los
-manifiestos `debug` y `profile`. El de `main` declara solo `CAMERA`, así que
-un APK de release no podría llamar a la API. Agrega
-`<uses-permission android:name="android.permission.INTERNET"/>` en
-`android/app/src/main/AndroidManifest.xml`. Además, el release necesita un
-keystore de firma, que no está en el repo.
+**Generar un APK de release.** Usa `scripts/release-apk.sh` desde la raíz (o
+el workflow manual *APK de release* del CI). Hace tres cosas que `flutter build
+apk --release` a secas no hace:
+
+- exige `API_BASE_URL=https://…` y la pasa con `--dart-define` (en release la
+  app **no** lee el `.env`);
+- firma con tu keystore, tomado de `CHECKINOBRA_KEYSTORE_FILE`,
+  `CHECKINOBRA_KEYSTORE_PASSWORD`, `CHECKINOBRA_KEY_ALIAS` y
+  `CHECKINOBRA_KEY_PASSWORD`, o de `android/key.properties`
+  (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; no se versiona).
+  Sin keystore el build se detiene con un mensaje: ya no firma con la clave de
+  debug;
+- ofusca el código (`--obfuscate`) y deja los símbolos en `build/debug-info/`.
+  Guárdalos junto a cada versión que publiques: sin ellos un stack trace del
+  APK no se puede leer.
+
+En el CI, el workflow toma el keystore de los secretos del repositorio
+(`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+`ANDROID_KEY_PASSWORD`) y la URL de la variable `API_BASE_URL`. El keystore
+nunca se sube al repo. La app tampoco se respalda en Google ni se copia a otro
+teléfono (`allowBackup="false"` y reglas de extracción).
