@@ -221,6 +221,7 @@ AsegurarSecreto 'JWT_SECRET' 48
 AsegurarSecreto 'POSTGRES_PASSWORD' 36
 AsegurarSecreto 'DB_APP_PASSWORD' 36
 AsegurarSecreto 'DB_MIGRADOR_PASSWORD' 36
+AsegurarSecreto 'DB_PLATAFORMA_PASSWORD' 36
 # Clave inicial del administrador: corta a proposito (se copia a mano en la app, que
 # pide cambiarla en el primer ingreso). La migracion V11 anulo el PIN 0000.
 AsegurarSecreto 'PRIMER_ADMIN_CLAVE' 12 12

@@ -40,9 +40,10 @@ docker compose up -d
 | Swagger UI | http://localhost:8081/swagger-ui.html |
 | PostgreSQL | `localhost:5433`, base `checkinobra`, usuario y clave `postgres` |
 
-Flyway aplica las migraciones al arrancar. La `V2` crea al administrador
-`admin@arauco-ltda.cl` y la `V11` le anula el PIN `0000` que traía: su clave
-inicial es `PRIMER_ADMIN_CLAVE` (del `.env` de la raíz, que `scripts/levantar.sh`
+Flyway aplica las migraciones al arrancar. En una base vacía la API crea la primera
+empresa y a su administrador `admin@arauco-ltda.cl` (la `V2` que lo sembraba con el
+PIN `0000` salió de `db/migration`; en las bases que ya la habían aplicado, la `V11`
+anula ese PIN): su clave inicial es `PRIMER_ADMIN_CLAVE` (del `.env` de la raíz, que `scripts/levantar.sh`
 genera) y la cuenta queda obligada a cambiarla con `PUT /api/auth/pin` antes de
 hacer cualquier otra cosa. Detalle en el
 [README de la raíz](../README.md#2-primer-login).
@@ -84,7 +85,10 @@ set -a; source .env; set +a      # exporta las variables a esta terminal
 | `SPRING_DATASOURCE_URL` | JDBC de PostgreSQL | `jdbc:postgresql://localhost:5432/checkinobra` |
 | `SPRING_DATASOURCE_USERNAME` | Usuario de la API: `checkinobra_app`, solo DML. **Obligatorio** | Ninguno |
 | `SPRING_DATASOURCE_PASSWORD` | Su contraseña (`DB_APP_PASSWORD`). **Obligatoria** | Ninguna |
-| `FLYWAY_USER` / `FLYWAY_PASSWORD` | Flyway: `checkinobra_migrador`, dueño del esquema | Los de la API (solo sirve con un único usuario) |
+| `FLYWAY_USER` / `FLYWAY_PASSWORD` | Flyway: `checkinobra_migrador`, dueño del esquema. También migra el catálogo | Los de la API (solo sirve con un único usuario) |
+| `CATALOGO_URL` | JDBC de la base de catálogo (`checkinobra_catalogo`) | `jdbc:postgresql://localhost:5432/checkinobra_catalogo` |
+| `CATALOGO_USER` / `CATALOGO_PASSWORD` | Usuario `checkinobra_plataforma` y su contraseña (`DB_PLATAFORMA_PASSWORD`). **Obligatorios** | Ninguno |
+| `PRIMERA_EMPRESA_RUT` / `PRIMERA_EMPRESA_NOMBRE` | La primera empresa, que nace en una base vacía y es la que se registra en el catálogo | Constructora Arauco Ltda. |
 | `JWT_SECRET` | Firma de los JWT. **Obligatorio**: la API no arranca si falta, tiene menos de 32 bytes o es el valor de ejemplo | Ninguno |
 | `BREVO_SMTP_USER` / `BREVO_SMTP_PASSWORD` | Correo saliente (Brevo SMTP) | Vacío |
 

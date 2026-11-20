@@ -286,6 +286,7 @@ asegurar_secreto JWT_SECRET 48
 asegurar_secreto POSTGRES_PASSWORD 36
 asegurar_secreto DB_APP_PASSWORD 36
 asegurar_secreto DB_MIGRADOR_PASSWORD 36
+asegurar_secreto DB_PLATAFORMA_PASSWORD 36
 # Clave inicial del administrador: corta a proposito (se copia a mano en la app, que
 # pide cambiarla en el primer ingreso). La migracion V11 anulo el PIN 0000.
 asegurar_secreto PRIMER_ADMIN_CLAVE 12 12
