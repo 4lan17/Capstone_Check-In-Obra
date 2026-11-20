@@ -25,6 +25,7 @@ public class AlertaController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE_TERRENO', 'BODEGUERO')")
     public List<AlertaResponse> listar(
             @RequestParam Long obraId, @RequestParam(required = false, defaultValue = "false") boolean soloSinResolver) {
         List<Alerta> alertas =

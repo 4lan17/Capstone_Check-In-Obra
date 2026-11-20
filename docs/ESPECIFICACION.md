@@ -380,6 +380,10 @@ HTTP que ve quien llama.
 | RN-30 | El código de barras es único **dentro de la empresa** cuando existe, y el escáner lo resuelve en ese mismo alcance | `MaterialService.buscarPorCodigo` + `uq_materiales_empresa_codigo_barra` | 404 / 409 |
 | RN-31 | Una importación masiva es todo o nada: con una fila inválida no se guarda ninguna | `MaterialService.importar`, `HerramientaService.importar` | 200 con informe |
 | RN-32 | Los códigos que se escanean —SKU de material y código de herramienta— se guardan y se buscan en mayúsculas: «her-014» y «HER-014» son el mismo | `HerramientaService`, `MaterialService.crear`, `V5` | 409 al repetirse |
+| RN-33 | Al aprobar una solicitud de material, lo que se entrega es mayor que 0 y no pasa de lo solicitado (sí puede ser menos) | `SolicitudMaterialService.aprobar` | 400 |
+| RN-34 | Un despacho, un consumo o un préstamo directo solo pueden nombrar a un trabajador asignado, por su cuadrilla, a la obra indicada | `TrabajadorService.exigirQueSeaDeLaObra` | 409 `OBRA_NO_ASIGNADA` o `SIN_CUADRILLA` |
+| RN-35 | El SKU de un material y el código de una herramienta son únicos **por empresa**, no en toda la base | `V13`, `MaterialService.crear`, `HerramientaService.crear` | 409 al repetirse en la misma empresa |
+| RN-36 | Las fichas y listas de trabajadores, las alertas, las partidas y las cuadrillas se leen solo con rol ADMIN, JEFE_TERRENO o BODEGUERO; un TRABAJADOR usa sus rutas «mías» y `/yo` | controladores `obra/`, `control/`, `cubicacion/` | 403 |
 
 > **Sobre RN-31.** La alternativa —importar lo válido y reportar el resto— deja
 > el catálogo a medias y obliga a adivinar qué entró antes de volver a subir el
@@ -502,7 +506,10 @@ app mostrar el informe antes de dejar confirmar sin arriesgarse a que difieran.
 Límites: 2.000 filas y 5 MB por archivo. Las celdas se leen como texto y los
 números se interpretan en formato chileno (`5.980` son cinco mil novecientos
 ochenta); un `.xls`, un `.csv` renombrado o un archivo con contraseña responden
-400 con el motivo.
+400 con el motivo. **Solo se admite `.xlsx`**: el nombre debe terminar en `.xlsx` y el
+contenido debe empezar con la firma de un ZIP (un `.xls` antiguo se rechaza aunque sea un
+Excel válido). Se rechaza también una «bomba de compresión»: una parte del archivo que
+se descomprima más de 50 veces o pase de 20 MB (`ZipSecureFile`).
 
 ### 9.5 Forma de las respuestas
 
