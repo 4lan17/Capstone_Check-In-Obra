@@ -150,6 +150,16 @@ teléfono → API → base. Hoy no se llega a ella desde ninguna pantalla.
 usuario en `flutter_secure_storage`. El PIN no se guarda nunca: el acceso
 rápido del trabajador vuelve a mandarlo al servidor (`/api/auth/login-pin`).
 
+**Lo que recuerda el teléfono va por empresa y usuario.** Con una base por
+empresa los ids se repiten: la obra 3 o el usuario 4 existen en cada una. Por
+eso el usuario recordado guarda también su `empresaId` (que viaja en
+`login-pin` junto al `usuarioId`), y la obra activa y la copia de la
+credencial se guardan bajo `obra_activa:<empresa>:<usuario>` y
+`perfil_trabajador:<empresa>:<usuario>`. Al entrar otra cuenta, la obra
+activa se reconstruye con la identidad nueva: no hereda la de la anterior.
+Lo guardado en el formato viejo (sin empresa) se descarta al entrar, y quien
+tenía un usuario recordado sin empresa vuelve a escribir su correo una vez.
+
 **Los timeouts son de 8 segundos.** En la obra la señal es mala, y conviene
 más que el usuario reintente pronto a que quede esperando 30 segundos.
 

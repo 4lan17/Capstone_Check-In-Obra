@@ -35,11 +35,16 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
 
   Future<void> entrarConPin({
     required int usuarioId,
+    required int empresaId,
     required String pin,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final sesion = await _api.loginPorPin(usuarioId: usuarioId, pin: pin);
+      final sesion = await _api.loginPorPin(
+        usuarioId: usuarioId,
+        empresaId: empresaId,
+        pin: pin,
+      );
       await _storage.guardar(sesion);
       _recordar();
       return sesion;

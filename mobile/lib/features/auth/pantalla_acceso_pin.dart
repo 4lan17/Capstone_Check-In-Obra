@@ -33,7 +33,11 @@ class _PantallaAccesoPinState extends ConsumerState<PantallaAccesoPin> {
       if (!mounted) return;
       await ref
           .read(sesionProvider.notifier)
-          .entrarConPin(usuarioId: usuario.usuarioId, pin: _pin);
+          .entrarConPin(
+            usuarioId: usuario.usuarioId,
+            empresaId: usuario.empresaId,
+            pin: _pin,
+          );
       // Si falló, se limpia para reintentar.
       if (mounted && ref.read(sesionProvider).hasError) {
         setState(() => _pin = '');
