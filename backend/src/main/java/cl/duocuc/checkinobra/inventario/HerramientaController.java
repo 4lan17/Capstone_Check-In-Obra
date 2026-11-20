@@ -46,16 +46,27 @@ public class HerramientaController {
                 SesionActual.empresaId(), req.codigoQr(), req.nombre(), req.categoria(), req.valorReposicion()));
     }
 
+    /**
+     * Cualquier rol lee el catálogo de herramientas, pero el trabajador lo recibe
+     * sin el valor de reposición (S-08).
+     */
     @GetMapping
-    public List<HerramientaResponse> listarPorEmpresa() {
+    public List<HerramientaVista> listarPorEmpresa() {
         return herramientaService.listarPorEmpresa(SesionActual.empresaId()).stream()
-                .map(HerramientaResponse::de)
+                .<HerramientaVista>map(HerramientaController::vista)
                 .toList();
     }
 
     @GetMapping("/{id}")
-    public HerramientaResponse obtener(@PathVariable Long id) {
-        return HerramientaResponse.de(herramientaService.obtener(id));
+    public HerramientaVista obtener(@PathVariable Long id) {
+        return vista(herramientaService.obtener(id));
+    }
+
+    /** Con valor de reposición para quien lo maneja; sin él, para el trabajador. */
+    private static HerramientaVista vista(Herramienta herramienta) {
+        return SesionActual.esTrabajador()
+                ? HerramientaBasicaResponse.de(herramienta)
+                : HerramientaResponse.de(herramienta);
     }
 
     /**
@@ -97,8 +108,8 @@ public class HerramientaController {
     }
 
     @GetMapping("/por-codigo/{codigoQr}")
-    public HerramientaResponse buscarPorCodigo(@PathVariable String codigoQr) {
-        return HerramientaResponse.de(herramientaService.buscarPorCodigoQr(codigoQr));
+    public HerramientaVista buscarPorCodigo(@PathVariable String codigoQr) {
+        return vista(herramientaService.buscarPorCodigoQr(codigoQr));
     }
 
     public record CrearHerramientaRequest(

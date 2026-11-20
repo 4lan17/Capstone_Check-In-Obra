@@ -15,6 +15,11 @@ permissions:
 jobs:
   analizar:
     name: CodeQL (Java)
+    # Solo corre cuando el dueño lo habilita con la variable de repositorio GHAS=true
+    # (Settings → Secrets and variables → Actions → Variables). Un repositorio privado sin
+    # GitHub Advanced Security no puede ejecutarlo y fallaría en cada PR; uno privado con GHAS
+    # sí, y por eso es una variable y no github.event.repository.private.
+    if: vars.GHAS == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

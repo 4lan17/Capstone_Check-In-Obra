@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,11 +12,27 @@ import 'diagnostico_conexion.dart';
 /// No es una pantalla del producto — es una herramienta de diagnóstico para
 /// el equipo, que valida la cadena completa teléfono → WiFi → Docker → Postgres
 /// antes de empezar a construir las pantallas reales.
+///
+/// **Solo existe fuera de release.** Muestra la URL del servidor, el contenido
+/// del `.env` y el comienzo del token de sesión: útil para armar el entorno,
+/// información de más en el teléfono de un usuario (hallazgo S-29). En release
+/// la pantalla no se dibuja aunque alguien la abra.
 class PantallaDiagnostico extends ConsumerWidget {
-  const PantallaDiagnostico({super.key});
+  const PantallaDiagnostico({super.key, this.disponible});
+
+  /// Solo para probar: por defecto la pantalla está disponible fuera de release.
+  final bool? disponible;
+
+  /// Si el diagnóstico se puede mostrar en este modo de compilación.
+  static bool get disponibleEnEstaCompilacion => !kReleaseMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!(disponible ?? disponibleEnEstaCompilacion)) {
+      return const Scaffold(
+        body: Center(child: Text('Esta pantalla no está disponible.')),
+      );
+    }
     final estado = ref.watch(diagnosticoConexionProvider);
     final envCargado = ref.watch(envCargadoProvider);
 
