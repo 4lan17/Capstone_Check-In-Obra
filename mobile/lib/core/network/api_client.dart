@@ -17,6 +17,7 @@ class ApiClient {
     SesionStorage? storage,
     void Function()? alExpirar,
     void Function()? alDebeCambiarClave,
+    void Function()? alEmpresaSuspendida,
     Future<ResultadoRenovacion> Function(String tokenQueFallo)? renovar,
   }) : dio = dio ?? _crearDio() {
     if (storage != null) {
@@ -27,6 +28,7 @@ class ApiClient {
           alExpirar,
           alDebeCambiarClave,
           renovar,
+          alEmpresaSuspendida,
         ),
       );
     }
@@ -67,6 +69,7 @@ class _InterceptorToken extends Interceptor {
     this._alExpirar,
     this._alDebeCambiarClave,
     this._renovar,
+    this._alEmpresaSuspendida,
   );
 
   final Dio _dio;
@@ -74,6 +77,7 @@ class _InterceptorToken extends Interceptor {
   final void Function()? _alExpirar;
   final void Function()? _alDebeCambiarClave;
   final Future<ResultadoRenovacion> Function(String tokenQueFallo)? _renovar;
+  final void Function()? _alEmpresaSuspendida;
 
   static const _marcaReintento = 'reintentado_tras_renovar';
 
@@ -91,14 +95,17 @@ class _InterceptorToken extends Interceptor {
       await _alRecibir401(response, handler, autorizacion);
       return;
     }
-    // Cuenta con clave provisoria: el servidor responde 403 a todo salvo al
-    // cambio de clave. No es un "sin permiso" que mostrar como error, sino una
-    // orden de llevar a la persona a cambiarla.
     if (response.statusCode == 403 && !esAuth && llevabaToken) {
       final cuerpo = response.data;
-      if (cuerpo is Map && cuerpo['codigo'] == 'DEBE_CAMBIAR_PIN') {
-        _alDebeCambiarClave?.call();
-      }
+      final codigo = cuerpo is Map ? cuerpo['codigo'] : null;
+      // Cuenta con clave provisoria: el servidor responde 403 a todo salvo al
+      // cambio de clave. No es un "sin permiso" que mostrar como error, sino una
+      // orden de llevar a la persona a cambiarla.
+      if (codigo == 'DEBE_CAMBIAR_PIN') _alDebeCambiarClave?.call();
+      // Empresa suspendida: el servidor responde 403 con este código a todo, y
+      // seguir con la sesión no sirve. Se distingue solo por el código; un 403
+      // por falta de permiso pasa de largo y se muestra como siempre.
+      if (codigo == codigoEmpresaSuspendida) _alEmpresaSuspendida?.call();
     }
     handler.next(response);
   }
@@ -182,6 +189,8 @@ final apiClientProvider = Provider<ApiClient>(
     renovar: (tokenQueFallo) => ref
         .read(renovadorDeSesionProvider)
         .renovar(tokenQueFallo: tokenQueFallo),
+    alEmpresaSuspendida: () =>
+        ref.read(sesionProvider.notifier).suspenderPorEmpresa(),
   ),
 );
 

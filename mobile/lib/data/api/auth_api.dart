@@ -68,6 +68,14 @@ class SesionUsuario {
   };
 }
 
+/// El `codigo` con que el backend rechaza a una empresa suspendida.
+const codigoEmpresaSuspendida = 'EMPRESA_SUSPENDIDA';
+
+/// Lo que se le dice a quien trabaja en una empresa suspendida. No hay nada que
+/// la persona pueda hacer en la app: es una decisión de la plataforma.
+const mensajeEmpresaSuspendida =
+    'Tu empresa está suspendida. Habla con la plataforma.';
+
 /// Se lanza cuando el servidor respondió pero rechazó la petición
 /// (por ejemplo, credenciales incorrectas).
 class ApiException implements Exception {
@@ -96,6 +104,13 @@ class ApiException implements Exception {
   /// el bloqueo.
   bool get demasiadosIntentos =>
       statusCode == 429 || codigo == 'DEMASIADOS_INTENTOS';
+
+  /// La empresa de quien entró está suspendida: el servidor responde 403
+  /// `EMPRESA_SUSPENDIDA` a todo. Se distingue **solo por el código**: un 403 es
+  /// también "tu rol no permite esto" y, en otro flujo, `DEBE_CAMBIAR_PIN`, y
+  /// ninguno de esos significa que haya que cerrar la sesión.
+  bool get empresaSuspendida =>
+      statusCode == 403 && codigo == codigoEmpresaSuspendida;
 
   /// La operación ya estaba hecha: otro bodeguero se adelantó o el reintento
   /// llegó después de un éxito cuya respuesta se perdió. No es un error que

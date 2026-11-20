@@ -67,6 +67,7 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
   @override
   Widget build(BuildContext context) {
     final sesion = ref.watch(sesionProvider);
+    final aviso = ref.watch(avisoDeAccesoProvider);
     final recordado = ref.watch(usuarioRecordadoProvider).valueOrNull;
     // El acceso rápido por PIN es solo del TRABAJADOR: el backend rechaza
     // `login-pin` para los demás roles, que entran con correo y clave.
@@ -131,15 +132,34 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
                       // Cambiar de cara es un fundido corto: sin él, el formulario
                       // aparece de golpe en el lugar de la tarjeta y parece otra
                       // pantalla.
-                      child: AnimatedSwitcher(
-                        duration: duracion,
-                        switchInCurve: Movimiento.salida,
-                        switchOutCurve: Movimiento.salida,
-                        layoutBuilder: (actual, anteriores) => Stack(
-                          alignment: Alignment.topCenter,
-                          children: [...anteriores, ?actual],
-                        ),
-                        child: cuerpo,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Por qué se llegó acá (hoy: la empresa quedó
+                          // suspendida). Se queda hasta que se descarta o se
+                          // entra.
+                          if (aviso != null) ...[
+                            _AvisoDeAcceso(
+                              mensaje: aviso,
+                              alDescartar: () =>
+                                  ref
+                                          .read(avisoDeAccesoProvider.notifier)
+                                          .state =
+                                      null,
+                            ),
+                            const SizedBox(height: AppEspacio.md),
+                          ],
+                          AnimatedSwitcher(
+                            duration: duracion,
+                            switchInCurve: Movimiento.salida,
+                            switchOutCurve: Movimiento.salida,
+                            layoutBuilder: (actual, anteriores) => Stack(
+                              alignment: Alignment.topCenter,
+                              children: [...anteriores, ?actual],
+                            ),
+                            child: cuerpo,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -494,6 +514,62 @@ class _Version extends StatelessWidget {
       'Check-In-Obra, versión 1.0',
       textAlign: TextAlign.center,
       style: AppTexto.dato,
+    );
+  }
+}
+
+/// Un aviso fijo sobre el acceso, con la salida de descartarlo.
+class _AvisoDeAcceso extends StatelessWidget {
+  const _AvisoDeAcceso({required this.mensaje, required this.alDescartar});
+
+  final String mensaje;
+  final VoidCallback alDescartar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Panel(
+        color: AppColors.warningTint,
+        borderColor: AppColors.warning,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ExcludeSemantics(
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: AppColors.warningDark,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    mensaje,
+                    style: AppTexto.cuerpoChico.copyWith(
+                      fontSize: 14,
+                      color: AppColors.warningInk,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: alDescartar,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.warningDark,
+                ),
+                child: const Text('Entendido'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
