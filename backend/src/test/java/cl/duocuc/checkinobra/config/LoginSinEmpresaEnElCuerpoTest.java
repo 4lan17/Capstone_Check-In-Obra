@@ -55,7 +55,8 @@ class LoginSinEmpresaEnElCuerpoTest {
     private AutenticacionService servicio(ResolutorDeBases resolutor) {
         var limite = new LimitadorDeIntentos(
                 5, Duration.ofMinutes(1), Duration.ofHours(1), Duration.ofDays(1), Clock.systemUTC());
-        return new AutenticacionService(usuarioRepository, catalogo, resolutor, limite, limite);
+        return new AutenticacionService(usuarioRepository, catalogo, resolutor, new EventosDeSeguridad(),
+                    org.mockito.Mockito.mock(SesionService.class), limite, limite);
     }
 
     private Usuario obrero(long empresaId) {

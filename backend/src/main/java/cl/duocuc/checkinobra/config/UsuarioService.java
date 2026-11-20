@@ -13,12 +13,17 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final EmpresaService empresaService;
     private final CatalogoDeEmpresas catalogo;
+    private final SesionService sesionService;
+    private final EventosDeSeguridad eventos;
 
     public UsuarioService(
-            UsuarioRepository usuarioRepository, EmpresaService empresaService, CatalogoDeEmpresas catalogo) {
+            UsuarioRepository usuarioRepository, EmpresaService empresaService, CatalogoDeEmpresas catalogo,
+            SesionService sesionService, EventosDeSeguridad eventos) {
         this.usuarioRepository = usuarioRepository;
         this.empresaService = empresaService;
         this.catalogo = catalogo;
+        this.sesionService = sesionService;
+        this.eventos = eventos;
     }
 
     /** Corresponde a Empresa.registrarUsuario(u) del diagrama, orquestado desde el servicio. */
@@ -59,7 +64,9 @@ public class UsuarioService {
             throw new IllegalStateException("Ya existe un usuario con ese correo");
         }
         try {
-            return usuarioRepository.saveAndFlush(usuario);
+            Usuario creado = usuarioRepository.saveAndFlush(usuario);
+            eventos.usuarioCreado(actorId(), creado.getId(), creado.getRol());
+            return creado;
         } catch (RuntimeException e) {
             catalogo.liberarCorreo(email, empresaId);
             throw e;
@@ -88,6 +95,21 @@ public class UsuarioService {
     public Usuario redefinirPin(Long usuarioId, String nuevoPin) {
         Usuario usuario = obtener(usuarioId);
         usuario.definirPin(nuevoPin);
-        return usuarioRepository.save(usuario);
+        // Restablecer la clave cierra las sesiones abiertas del usuario: su token deja de valer
+        // (sube la versión) y sus refresh tokens se revocan.
+        usuario.invalidarSesiones();
+        Usuario guardado = usuarioRepository.save(usuario);
+        sesionService.revocarTodos(guardado.getId());
+        eventos.claveRestablecida(actorId(), guardado.getId());
+        return guardado;
+    }
+
+    /** Quién actúa, para el registro de eventos; nulo si no hay sesión (una tarea interna). */
+    private static Long actorId() {
+        try {
+            return SesionActual.usuarioId();
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 }

@@ -28,12 +28,15 @@ public class JwtService {
      */
     private static final String PREFIJO_DE_EJEMPLO = "cambiar";
 
+    public static final String EMISOR = "checkinobra";
+    public static final String AUDIENCIA = "checkinobra-api";
+
     private final SecretKey key;
     private final long expiracionMinutos;
 
     public JwtService(
             @Value("${checkinobra.jwt.secret}") String secret,
-            @Value("${checkinobra.jwt.expiracion-minutos:480}") long expiracionMinutos) {
+            @Value("${checkinobra.jwt.expiracion-minutos:30}") long expiracionMinutos) {
         this.key = Keys.hmacShaKeyFor(exigirSecretoSeguro(secret).getBytes(StandardCharsets.UTF_8));
         this.expiracionMinutos = expiracionMinutos;
     }
@@ -72,6 +75,13 @@ public class JwtService {
                 .claim("email", usuario.getEmail())
                 .claim("rol", usuario.getRol().name())
                 .claim("empresaId", usuario.getEmpresa().getId())
+                // La versión de sesión con que se emite: si el usuario la sube (clave restablecida),
+                // este token deja de valer aunque no haya vencido.
+                .claim("tv", usuario.getTokenVersion())
+                // Quién lo emitió y para quién: un token firmado con la misma clave pero para otro
+                // servicio no se acepta acá.
+                .issuer(EMISOR)
+                .audience().add(AUDIENCIA).and()
                 // Solo viaja cuando es verdadero: la cuenta está limitada a cambiar su clave.
                 .claim("cambiarPin", usuario.isDebeCambiarPin() ? Boolean.TRUE : null)
                 .issuedAt(ahora)
@@ -83,6 +93,8 @@ public class JwtService {
     public Claims validarYExtraer(String token) {
         return Jwts.parser()
                 .verifyWith(key)
+                .requireIssuer(EMISOR)
+                .requireAudience(AUDIENCIA)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

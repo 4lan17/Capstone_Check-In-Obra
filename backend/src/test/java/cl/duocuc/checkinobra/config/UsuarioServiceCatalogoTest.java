@@ -37,7 +37,8 @@ class UsuarioServiceCatalogoTest {
         var admin = new UsuarioAutenticado(1L, "admin@x.cl", RolUsuario.ADMIN, 1L);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(admin, null, List.of()));
-        servicio = new UsuarioService(usuarioRepository, empresaService, catalogo);
+        servicio = new UsuarioService(usuarioRepository, empresaService, catalogo,
+                org.mockito.Mockito.mock(SesionService.class), new EventosDeSeguridad());
         org.mockito.Mockito.lenient().when(empresaService.obtener(1L))
                 .thenReturn(Empresa.builder().id(1L).nombre("E").rut("1-9").build());
     }

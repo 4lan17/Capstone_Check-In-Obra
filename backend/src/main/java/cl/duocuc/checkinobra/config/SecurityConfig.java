@@ -19,10 +19,15 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
     private final ResolutorDeBases resolutor;
+    private final ValidadorDeSesion validador;
+    private final EventosDeSeguridad eventos;
 
-    public SecurityConfig(JwtService jwtService, ResolutorDeBases resolutor) {
+    public SecurityConfig(
+            JwtService jwtService, ResolutorDeBases resolutor, ValidadorDeSesion validador, EventosDeSeguridad eventos) {
         this.jwtService = jwtService;
         this.resolutor = resolutor;
+        this.validador = validador;
+        this.eventos = eventos;
     }
 
     @Bean
@@ -35,7 +40,13 @@ public class SecurityConfig {
                 // formulario era 403, igual que un rol insuficiente, y la app no
                 // podía distinguir "vuelve a entrar con tu PIN" de "tu rol no
                 // permite esto". El 403 queda solo para lo segundo.
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        // Un rol que no alcanza (@PreAuthorize) sigue siendo 403, y ahora queda registrado.
+                        .accessDeniedHandler((request, response, denegado) -> {
+                            eventos.accesoDenegado(request.getMethod(), request.getRequestURI());
+                            response.sendError(HttpStatus.FORBIDDEN.value());
+                        }))
                 .authorizeHttpRequests(auth -> auth
                         // Cuando algo falla, Spring reenvía internamente a
                         // /error. Ese reenvío pasa otra vez por esta cadena y,
@@ -54,7 +65,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html")
                         .permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthFilter(jwtService, resolutor), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthFilter(jwtService, resolutor, validador), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

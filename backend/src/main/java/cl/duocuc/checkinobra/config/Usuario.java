@@ -77,9 +77,22 @@ public class Usuario implements PerteneceAEmpresa {
     @Column(name = "debe_cambiar_pin", nullable = false)
     private boolean debeCambiarPin;
 
+    /**
+     * La versión de sesión: el token lleva la que tenía el usuario al emitirse y el filtro la
+     * compara con esta. Sube cuando cambia lo que un token da por hecho (clave restablecida,
+     * rol cambiado) y deja sin efecto, de golpe, todos los tokens anteriores del usuario.
+     */
+    @Column(name = "token_version", nullable = false)
+    private int tokenVersion;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
+
+    /** Invalida todos los tokens emitidos hasta ahora para este usuario. */
+    public void invalidarSesiones() {
+        this.tokenVersion++;
+    }
 
     /** Largo mínimo de la clave de ADMIN, JEFE_TERRENO y BODEGUERO. */
     public static final int CLAVE_MIN = 8;

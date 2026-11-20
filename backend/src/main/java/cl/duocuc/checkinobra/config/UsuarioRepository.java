@@ -11,6 +11,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByEmailIgnoreCase(String email);
     boolean existsByRut(String rut);
     boolean existsByEmpresaIdAndRol(Long empresaId, RolUsuario rol);
+
+    /** Solo la versión de sesión, para revalidar un token en cada petición sin cargar al usuario. */
+    @org.springframework.data.jpa.repository.Query("select u.tokenVersion from Usuario u where u.id = :id")
+    Optional<Integer> findTokenVersionById(Long id);
     List<Usuario> findByEmpresaId(Long empresaId);
     List<Usuario> findByEmpresaIdAndRol(Long empresaId, RolUsuario rol);
 }

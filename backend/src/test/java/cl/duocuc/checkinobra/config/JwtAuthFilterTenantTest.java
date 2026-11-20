@@ -50,7 +50,16 @@ class JwtAuthFilterTenantTest {
         }
     };
 
-    private final JwtAuthFilter filtro = new JwtAuthFilter(jwt, resolutor);
+    /** Un usuario con sesión vigente: la revalidación contra la base no es lo que se prueba acá. */
+    private final ValidadorDeSesion validador = org.mockito.Mockito.mock(ValidadorDeSesion.class);
+
+    private final JwtAuthFilter filtro = new JwtAuthFilter(jwt, resolutor, validador);
+
+    @org.junit.jupiter.api.BeforeEach
+    void sesionVigente() {
+        org.mockito.Mockito.when(validador.vigente(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(true);
+    }
 
     @AfterEach
     void limpiar() {
@@ -60,7 +69,8 @@ class JwtAuthFilterTenantTest {
 
     private String token(Object empresaId) {
         SecretKey clave = Keys.hmacShaKeyFor(SECRETO.getBytes(StandardCharsets.UTF_8));
-        var b = Jwts.builder().subject("7").claim("email", "a@b.cl").claim("rol", "ADMIN")
+        var b = Jwts.builder().subject("7").claim("email", "a@b.cl").claim("rol", "ADMIN").claim("tv", 0)
+                .issuer("checkinobra").audience().add("checkinobra-api").and()
                 .issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + 60_000));
         if (empresaId != null) {
             b.claim("empresaId", empresaId);
@@ -145,7 +155,8 @@ class JwtAuthFilterTenantTest {
     void unTokenConClavePendienteNoLlenaLaEmpresa() throws Exception {
         SecretKey clave = Keys.hmacShaKeyFor(SECRETO.getBytes(StandardCharsets.UTF_8));
         String provisorio = Jwts.builder().subject("7").claim("email", "a@b.cl").claim("rol", "ADMIN")
-                .claim("empresaId", 5).claim("cambiarPin", true)
+                .claim("empresaId", 5).claim("cambiarPin", true).claim("tv", 0)
+                .issuer("checkinobra").audience().add("checkinobra-api").and()
                 .expiration(new Date(System.currentTimeMillis() + 60_000)).signWith(clave).compact();
         MockHttpServletResponse res = new MockHttpServletResponse();
         AtomicReference<Boolean> llegoALaCadena = new AtomicReference<>(false);
