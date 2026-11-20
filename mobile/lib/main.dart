@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'data/api/auth_api.dart';
 import 'features/admin/shell_admin.dart';
 import 'features/auth/pantalla_acceso.dart';
+import 'features/auth/pantalla_cambiar_clave.dart';
 import 'features/auth/sesion_controller.dart';
 import 'features/bodega/shell_bodega.dart';
 import 'features/inicio/pantalla_rol_pendiente.dart';
@@ -70,6 +71,10 @@ class _Raiz extends ConsumerWidget {
     return switch (sesion) {
       // Primera carga: aún no sabemos si hay sesión guardada.
       AsyncLoading() when !sesion.hasValue => const _Cargando(),
+      // Con clave provisoria no hay app que mostrar: el servidor rechaza todo
+      // salvo el cambio de clave.
+      AsyncValue(value: final s?) when s.debeCambiarClave =>
+        PantallaCambiarClave(sesion: s),
       AsyncValue(value: final s?) => _paraElRol(s),
       _ => const PantallaAcceso(),
     };

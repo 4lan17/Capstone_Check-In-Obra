@@ -158,6 +158,12 @@ bloquea la cuenta (aunque la clave sea la correcta) y responde 429 con
 `Retry-After`: la app dice cuánto esperar. La regla de la clave está en
 `core/politica_clave.dart`, igual a la del backend.
 
+**Clave provisoria.** Si el login responde `debeCambiarClave: true` —o cualquier
+petición recibe 403 con `codigo: DEBE_CAMBIAR_PIN`—, la raíz de la app muestra
+`PantallaCambiarClave` en vez de la app: el servidor rechaza todo salvo
+`PUT /api/auth/pin`. Al cambiarla, la sesión nueva que devuelve reemplaza a la
+provisoria. No hay "omitir"; solo cerrar sesión.
+
 **Lo que recuerda el teléfono va por empresa y usuario.** Con una base por
 empresa los ids se repiten: la obra 3 o el usuario 4 existen en cada una. Por
 eso el usuario recordado guarda también su `empresaId` (que viaja en

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../core/network/api_client.dart';
 
 /// Respuesta de `POST /api/auth/login` — refleja
@@ -9,6 +11,7 @@ class SesionUsuario {
     required this.nombre,
     required this.rol,
     required this.empresaId,
+    this.debeCambiarClave = false,
   });
 
   final String token;
@@ -19,12 +22,30 @@ class SesionUsuario {
   final String rol;
   final int empresaId;
 
+  /// La cuenta entró con una clave provisoria (la primera del administrador,
+  /// o una que otra persona le definió): mientras no la cambie, el servidor
+  /// rechaza todo salvo `PUT /api/auth/pin` con 403 `DEBE_CAMBIAR_PIN`.
+  final bool debeCambiarClave;
+
+  /// La misma sesión, marcada como pendiente de cambio de clave.
+  SesionUsuario conCambioPendiente() => SesionUsuario(
+    token: token,
+    usuarioId: usuarioId,
+    nombre: nombre,
+    rol: rol,
+    empresaId: empresaId,
+    debeCambiarClave: true,
+  );
+
   factory SesionUsuario.desdeJson(Map<String, dynamic> json) => SesionUsuario(
     token: json['token'] as String,
     usuarioId: json['usuarioId'] as int,
     nombre: json['nombre'] as String,
     rol: json['rol'] as String,
     empresaId: json['empresaId'] as int,
+    // Ausente en una sesión guardada antes de que existiera, o en un backend
+    // que aún no la manda: ahí no hay obligación.
+    debeCambiarClave: json['debeCambiarClave'] as bool? ?? false,
   );
 
   Map<String, dynamic> aJson() => {
@@ -33,6 +54,7 @@ class SesionUsuario {
     'nombre': nombre,
     'rol': rol,
     'empresaId': empresaId,
+    'debeCambiarClave': debeCambiarClave,
   };
 }
 
@@ -99,14 +121,29 @@ class AuthApi {
     'pin': pin,
   });
 
-  Future<SesionUsuario> _postLogin(
-    String ruta,
-    Map<String, dynamic> cuerpo,
+  /// Cambia la clave de quien tiene la sesión (`PUT /api/auth/pin`). El
+  /// servidor exige la actual con el mismo bloqueo por intentos que el login, y
+  /// devuelve una sesión nueva, ya sin la obligación de cambiarla: esa es la
+  /// que hay que usar de ahí en adelante.
+  Future<SesionUsuario> cambiarClave({
+    required String claveActual,
+    required String claveNueva,
+  }) => _enviarSesion(
+    () => _client.dio.put<Map<String, dynamic>>(
+      '/api/auth/pin',
+      data: {'pinActual': claveActual, 'pinNuevo': claveNueva},
+    ),
+  );
+
+  Future<SesionUsuario> _postLogin(String ruta, Map<String, dynamic> cuerpo) =>
+      _enviarSesion(
+        () => _client.dio.post<Map<String, dynamic>>(ruta, data: cuerpo),
+      );
+
+  Future<SesionUsuario> _enviarSesion(
+    Future<Response<Map<String, dynamic>>> Function() enviar,
   ) async {
-    final respuesta = await _client.dio.post<Map<String, dynamic>>(
-      ruta,
-      data: cuerpo,
-    );
+    final respuesta = await enviar();
 
     final codigo = respuesta.statusCode ?? 0;
     if (codigo == 200 && respuesta.data != null) {
