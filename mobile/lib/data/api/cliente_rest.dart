@@ -219,7 +219,14 @@ class ClienteRest {
     final mensaje = cuerpo is Map && cuerpo['mensaje'] is String
         ? cuerpo['mensaje'] as String
         : _porDefecto(codigo);
-    throw ApiException(codigo, mensaje, codigo: _codigoDe(cuerpo));
+    throw ApiException(
+      codigo,
+      mensaje,
+      codigo: _codigoDe(cuerpo),
+      reintentarEnSegundos: AuthApi.segundosDeEspera(
+        r.headers.value('retry-after'),
+      ),
+    );
   }
 
   /// `codigo` del cuerpo de error: `{instante, status, mensaje, codigo}`.

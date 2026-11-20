@@ -15,6 +15,18 @@ import '../../shared_widgets/opcion.dart';
 import '../../shared_widgets/panel.dart';
 import '../bodega/bodega_providers.dart';
 
+/// Solo `.xlsx`. El backend (S-21) no lee el formato `.xls` antiguo: lo rechaza
+/// con un 400 aunque sea un Excel válido, porque su estructura no se puede
+/// acotar como la de un `.xlsx`.
+const extensionesDePlanilla = ['xlsx'];
+
+const mensajePlanillaNoXlsx =
+    'La planilla tiene que ser un archivo .xlsx. Si la tienes en .xls, ábrela '
+    'en Excel y guárdala como "Libro de Excel (.xlsx)".';
+
+/// Si el nombre del archivo es de una planilla que el servidor acepta.
+bool esPlanillaXlsx(String nombre) => nombre.toLowerCase().endsWith('.xlsx');
+
 /// Qué catálogo se está cargando. Son dos planillas distintas —columnas
 /// distintas— y mezclarlas es el error más caro posible acá.
 enum CatalogoImportable {
@@ -157,9 +169,23 @@ class _PantallaImportacionState extends ConsumerState<PantallaImportacion> {
     final archivo = await FilePicker.pickFile(
       dialogTitle: 'Planilla de ${_catalogo.titulo.toLowerCase()}',
       type: FileType.custom,
-      allowedExtensions: const ['xlsx', 'xls'],
+      allowedExtensions: extensionesDePlanilla,
     );
     if (archivo == null || !mounted) return;
+
+    // El selector de algunos teléfonos deja elegir "cualquier archivo" aunque se
+    // le pida solo `xlsx`. El backend rechaza lo que no sea `.xlsx` con un 400;
+    // se avisa acá y se ahorra subirlo.
+    if (!esPlanillaXlsx(archivo.name)) {
+      setState(() {
+        _error = mensajePlanillaNoXlsx;
+        _informe = null;
+        _importados = null;
+        _contenido = null;
+        _nombreArchivo = null;
+      });
+      return;
+    }
 
     setState(() {
       _trabajando = true;

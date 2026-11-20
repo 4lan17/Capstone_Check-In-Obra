@@ -144,9 +144,11 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
         ),
       );
     } catch (e) {
-      // Un 409 acá es "stock insuficiente", que no es un fallo de red ni un
-      // error de la app: es el sistema impidiendo un descuadre. Se muestra tal
-      // como lo explica el backend.
+      // Un 409 acá es "stock insuficiente" o que el trabajador no es de esta
+      // obra (`OBRA_NO_ASIGNADA`) o no tiene cuadrilla (`SIN_CUADRILLA`): no es
+      // un fallo de red ni un error de la app, es el sistema impidiendo un
+      // descuadre. Se muestra tal como lo explica el backend y no se reintenta:
+      // la respuesta no cambia hasta que se elija otro trabajador.
       if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);

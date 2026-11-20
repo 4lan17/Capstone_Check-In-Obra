@@ -136,6 +136,31 @@ class _SolicitudesFalsas implements SolicitudesApi {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+/// Responde como el backend cuando ya hay una solicitud pendiente del mismo
+/// material: 409 `SOLICITUD_DUPLICADA` con el mensaje listo para mostrar.
+class _SolicitudesDuplicadas implements SolicitudesApi {
+  int intentos = 0;
+
+  @override
+  Future<SolicitudMaterial> pedirMaterial({
+    required int materialId,
+    int? obraId,
+    required double cantidad,
+    required String descripcion,
+    String? clave,
+  }) async {
+    intentos++;
+    throw const ApiException(
+      409,
+      'Ya pediste Montante 90 y tu solicitud sigue pendiente',
+      codigo: 'SOLICITUD_DUPLICADA',
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 Future<void> _montar(
   WidgetTester tester,
   Widget pantalla, {
@@ -238,6 +263,63 @@ void main() {
     await tester.tap(find.text('Pedir material'));
     await tester.pumpAndSettle();
     expect(find.byType(PantallaPedirMaterial), findsNothing);
+  });
+
+  testWidgets('un pedido repetido muestra el mensaje del servidor y recarga', (
+    tester,
+  ) async {
+    // Otro teléfono ya pidió este material, o la lista no estaba al día: el
+    // servidor responde 409 SOLICITUD_DUPLICADA. Se ve su mensaje —no uno
+    // genérico— y la lista se recarga para marcarlo como ya pedido.
+    final api = _SolicitudesDuplicadas();
+    var cargas = 0;
+    await _montar(
+      tester,
+      const PantallaPedirMaterial(perfil: _perfil),
+      overrides: [
+        solicitudesApiProvider.overrideWithValue(api),
+        misSolicitudesProvider.overrideWith((ref) async {
+          cargas++;
+          return _solicitudes;
+        }),
+        catalogoTrabajadorProvider.overrideWith(
+          (ref) async => const [
+            MaterialObra(
+              id: 3,
+              sku: 'MET-MONT-90',
+              codigoBarra: null,
+              nombre: 'Montante 90',
+              categoria: 'METALCOM',
+              precioUnitario: 3100,
+              stockMinimo: 40,
+            ),
+          ],
+        ),
+      ],
+    );
+    await tester.tap(find.text('Montante 90'));
+    await tester.pumpAndSettle();
+    final campos = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byType(TextField),
+    );
+    await tester.enterText(campos.first, '24');
+    await tester.enterText(campos.last, 'Tabiquería del piso 5');
+    final antes = cargas;
+
+    await tester.tap(find.text('Solicitar material'));
+    await tester.pumpAndSettle();
+
+    expect(api.intentos, 1);
+    expect(
+      find.text('Ya pediste Montante 90 y tu solicitud sigue pendiente'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('error inesperado'), findsNothing);
+    // La lista de solicitudes se volvió a pedir al servidor.
+    expect(cargas, greaterThan(antes));
+    // La hoja sigue abierta: el mensaje es lo que hay que leer.
+    expect(find.byType(BottomSheet), findsOneWidget);
   });
 
   testWidgets('pedir material lo manda a la obra de su cuadrilla', (

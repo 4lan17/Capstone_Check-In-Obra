@@ -402,6 +402,14 @@ class _HojaMaterialState extends ConsumerState<_HojaMaterial> {
         ),
       );
       Navigator.of(context).pop(_Resultado.pedido);
+    } on ApiException catch (e) {
+      // Ya tenía este material pedido y sin resolver (otro teléfono, o la lista
+      // no se había actualizado): no es un fallo, es un estado. Se deja el
+      // mensaje del servidor, que dice qué pasó ("Ya pediste … y tu solicitud
+      // sigue pendiente"), y se recarga para que la lista lo marque como
+      // "Ya lo pediste" y Inicio muestre la solicitud pendiente.
+      if (e.codigo == 'SOLICITUD_DUPLICADA') recargarTrabajador(ref);
+      if (mounted) setState(() => _error = mensajeDeError(e));
     } catch (e) {
       if (mounted) setState(() => _error = mensajeDeError(e));
     } finally {
