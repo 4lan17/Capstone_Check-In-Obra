@@ -228,6 +228,12 @@ public class CatalogoDeEmpresas implements DisposableBean {
         return empresaDeCorreo(correo).equals(Optional.of(empresaId));
     }
 
+    /** Quita una empresa del catálogo con sus correos reservados (deshace un alta que falló). */
+    public void eliminarEmpresa(long id) {
+        catalogo.sql("DELETE FROM indice_login WHERE empresa_id = :id").param("id", id).update();
+        catalogo.sql("DELETE FROM empresas WHERE id = :id").param("id", id).update();
+    }
+
     /** Suelta un correo reservado, solo si es de esa empresa (compensa un alta que falló). */
     public void liberarCorreo(String email, Long empresaId) {
         catalogo.sql("DELETE FROM indice_login WHERE email = :email AND empresa_id = :empresa")

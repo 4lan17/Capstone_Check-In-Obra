@@ -78,15 +78,7 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
     }
 
     private HikariDataSource pool(CatalogoDeEmpresas.EmpresaRegistrada e) {
-        String ref = e.secretoRef();
-        if (ref == null || !ref.startsWith(PREFIJO_ENV)) {
-            throw new IllegalStateException("La referencia al secreto debe ser env:VARIABLE");
-        }
-        String variable = ref.substring(PREFIJO_ENV.length());
-        String clave = entorno.getProperty(variable);
-        if (clave == null) {
-            throw new IllegalStateException("No está definida la variable " + variable);
-        }
+        String clave = secreto(e.secretoRef());
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(urls.de(e.nombreBase()));
         config.setUsername(e.usuarioBase());
@@ -96,6 +88,23 @@ public class ResolutorPorCatalogo implements ResolutorDeBases, DisposableBean {
         // Sin conexión al armar el pool: la base puede estar migrándose todavía.
         config.setInitializationFailTimeout(-1);
         return new HikariDataSource(config);
+    }
+
+    /** {@code env:VARIABLE} (se lee del entorno) o {@code file:nombre} (del directorio de secretos). */
+    private String secreto(String ref) {
+        if (ref != null && ref.startsWith(AlmacenDeSecretos.PREFIJO)) {
+            return new AlmacenDeSecretos(entorno.getProperty("checkinobra.secretos.directorio", "./secretos"))
+                    .leer(ref.substring(AlmacenDeSecretos.PREFIJO.length()));
+        }
+        if (ref == null || !ref.startsWith(PREFIJO_ENV)) {
+            throw new IllegalStateException("La referencia al secreto debe ser env:VARIABLE o file:nombre");
+        }
+        String variable = ref.substring(PREFIJO_ENV.length());
+        String clave = entorno.getProperty(variable);
+        if (clave == null) {
+            throw new IllegalStateException("No está definida la variable " + variable);
+        }
+        return clave;
     }
 
     @Override

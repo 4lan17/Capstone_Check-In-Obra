@@ -11,6 +11,9 @@ FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa195823
 WORKDIR /app
 # No corre como root: un fallo de la API no entrega un shell de root dentro del contenedor.
 RUN addgroup -S app && adduser -S -G app -H -s /sbin/nologin app
+# Contraseñas de las bases que crea la API (alta de empresas): debe ser un volumen persistente.
+RUN mkdir /secretos && chown app:app /secretos && chmod 700 /secretos
+ENV SECRETOS_DIR=/secretos
 COPY --from=build --chown=app:app /app/target/*.jar app.jar
 USER app
 EXPOSE 8080
