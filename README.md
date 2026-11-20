@@ -311,19 +311,18 @@ Y abrir Swagger UI en **http://localhost:8081/swagger-ui.html**
 
 ### 2. Primer login
 
-La migración `V2` deja un administrador para poder entrar la primera vez:
-
-| Campo | Valor |
-|---|---|
-| Correo | `admin@arauco-ltda.cl` |
-| PIN | `0000` |
+La migración `V2` crea un administrador, `admin@arauco-ltda.cl`, **sin
+credencial publicada**: la `V11` anuló el PIN `0000` que traía. Su clave inicial es
+la de `PRIMER_ADMIN_CLAVE` en el `.env` de la raíz (`scripts/levantar.sh` genera
+una; a mano, define la tuya de 8 o más caracteres antes de arrancar). La API la
+aplica al arrancar, solo si la cuenta aún no tiene credencial.
 
 **Ubuntu**
 
 ```bash
 curl -X POST http://localhost:8081/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@arauco-ltda.cl","pin":"0000"}'
+  -d "{\"email\":\"admin@arauco-ltda.cl\",\"pin\":\"$PRIMER_ADMIN_CLAVE\"}"
 ```
 
 **Windows (PowerShell)** — las comillas simples no sirven para el JSON, hay que
@@ -332,18 +331,32 @@ escapar las dobles:
 ```powershell
 curl.exe -X POST http://localhost:8081/api/auth/login `
   -H "Content-Type: application/json" `
-  -d '{\"email\":\"admin@arauco-ltda.cl\",\"pin\":\"0000\"}'
+  -d "{\`"email\`":\`"admin@arauco-ltda.cl\`",\`"pin\`":\`"$env:PRIMER_ADMIN_CLAVE\`"}"
 ```
 
-Devuelve un JWT que se manda en las llamadas siguientes como
-`Authorization: Bearer <token>`.
+Devuelve un JWT y `debeCambiarClave: true`. **Con esa clave el administrador solo
+puede cambiarla**: cualquier otra llamada responde `403` con
+`codigo: DEBE_CAMBIAR_PIN`. Se cambia con `PUT /api/auth/pin`
+(`{"pinActual": "...", "pinNuevo": "..."}`, 8 a 72 caracteres), que devuelve una
+sesión nueva ya sin la obligación:
 
-> ⚠️ Ese PIN es solo para arrancar en local. Antes de cualquier despliegue real
-> hay que cambiarlo con `PUT /api/usuarios/{id}/pin`.
+```bash
+curl -X PUT http://localhost:8081/api/auth/pin \
+  -H "Authorization: Bearer <token>" -H 'Content-Type: application/json' \
+  -d '{"pinActual":"<la inicial>","pinNuevo":"<la tuya, 8 o más caracteres>"}'
+```
+
+El token se manda en las llamadas siguientes como `Authorization: Bearer <token>`.
+
+> Por qué no hay un PIN fijo: con uno publicado, cualquiera que leyera este README
+> podía entrar como administrador, cambiarlo y quedarse con la cuenta. La `V11`
+> además marca a **todo usuario existente que no sea trabajador** para cambiar su
+> clave en el próximo ingreso: el hash no revela el largo, y no se puede saber
+> cuáles tienen todavía un PIN de 4 dígitos.
 
 ### Cuentas de prueba (los cuatro roles)
 
-La `V2` solo trae al administrador. Las demás cuentas las crea un script que usa
+La base solo trae al administrador. Las demás cuentas las crea un script que usa
 la API como admin:
 
 ```bash
@@ -358,7 +371,7 @@ bodeguero no puede despacharle nada.
 
 | Rol | Correo | PIN | Qué ve hoy en la app |
 |---|---|---|---|
-| Administrador | `admin@arauco-ltda.cl` | `0000` | Obras, materiales, usuarios, empresa y la vista de bodega |
+| Administrador | `admin@arauco-ltda.cl` | `PRIMER_ADMIN_CLAVE` del `.env` (la cambia en su primer ingreso) | Obras, materiales, usuarios, empresa y la vista de bodega |
 | Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `jefe-1111-obra` | Pantalla de rol pendiente (su flujo no está construido) |
 | Bodeguero | `jorge.reyes@arauco-ltda.cl` | `bodega-2222-obra` | Inicio, bodega, herramientas y alertas de la obra que elija |
 | Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Pantalla de rol pendiente (su flujo no está construido) |
@@ -551,18 +564,19 @@ una operación de un tenant — necesitaría un rol por encima de los cuatro, y
 este sistema tiene cuatro por diseño.
 
 Una constructora nueva se crea por migración junto con su primer ADMIN, como
-hace `V2__seed_admin.sql`:
+hacía `V2__seed_admin.sql`:
 
 ```sql
 INSERT INTO empresas (nombre, rut) VALUES ('Constructora Nueva Ltda.', '77.111.222-3');
 
-INSERT INTO usuarios (nombre, email, rol, pin_hash, empresa_id)
+INSERT INTO usuarios (nombre, email, rol, pin_hash, debe_cambiar_pin, empresa_id)
 VALUES ('Admin Nueva', 'admin@nueva.cl', 'ADMIN',
-        '<hash BCrypt del PIN inicial>',
+        '<hash BCrypt de una clave temporal de 8 o más caracteres, que no esté en el repo>',
+        TRUE,
         (SELECT id FROM empresas WHERE rut = '77.111.222-3'));
 ```
 
-Su primera acción debe ser cambiar ese PIN desde la app.
+Con `debe_cambiar_pin = TRUE` su primera acción tiene que ser cambiar esa clave.
 
 ### Escaneo e importación masiva
 
@@ -783,7 +797,7 @@ solo verifica que las entidades calcen con las tablas).
 | Archivo | Qué hace |
 |---|---|
 | `V1__init_schema.sql` | Crea las 17 tablas con sus llaves foráneas e índices |
-| `V2__seed_admin.sql` | Inserta una empresa y el admin de arranque |
+| `V2__seed_admin.sql` | Inserta una empresa y el admin de arranque (su PIN `0000` lo anula la `V11`) |
 | `V3__rut_en_usuario_...sql` | Sube el RUT a `usuarios`, agrega el jefe de la obra y el receptor del despacho |
 | `V4__codigo_de_barra_en_materiales.sql` | Agrega `materiales.codigo_barra` (único **por empresa**) para el escáner |
 | `V5__normaliza_codigos_a_mayusculas.sql` | Pasa a mayúsculas los SKU y códigos de herramienta existentes |

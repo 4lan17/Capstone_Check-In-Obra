@@ -72,6 +72,8 @@ public class JwtService {
                 .claim("email", usuario.getEmail())
                 .claim("rol", usuario.getRol().name())
                 .claim("empresaId", usuario.getEmpresa().getId())
+                // Solo viaja cuando es verdadero: la cuenta está limitada a cambiar su clave.
+                .claim("cambiarPin", usuario.isDebeCambiarPin() ? Boolean.TRUE : null)
                 .issuedAt(ahora)
                 .expiration(expira)
                 .signWith(key)

@@ -27,6 +27,10 @@ services:
       # versionado; scripts/levantar.sh lo genera. A mano: openssl rand -base64 48
       # Vacío permitido a propósito: con ":?" compose fallaba hasta en "down" y "ps".
       JWT_SECRET: ${JWT_SECRET:-}
+      # Clave inicial del administrador (SEG3): sin ella nadie puede entrar como
+      # admin, porque la migración V11 anuló el PIN 0000 que sembraba V2. La cuenta
+      # queda obligada a cambiarla en su primer ingreso. scripts/levantar.sh la genera.
+      PRIMER_ADMIN_CLAVE: ${PRIMER_ADMIN_CLAVE:-}
       # Hora de Chile, la misma de la app y de ./mvnw test. La API recibe y
       # devuelve fechas sin zona; en UTC, "hoy 18:00" llegaba como pasada.
       TZ: America/Santiago

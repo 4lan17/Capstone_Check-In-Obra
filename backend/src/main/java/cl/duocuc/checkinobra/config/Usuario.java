@@ -69,6 +69,14 @@ public class Usuario implements PerteneceAEmpresa {
     @Column(name = "pin_hash")
     private String pinHash;
 
+    /**
+     * La clave es provisoria (la inicial del primer administrador, o una anterior a
+     * la política de 8 caracteres): hasta que la cambie, la cuenta solo puede
+     * llamar a {@code PUT /api/auth/pin}. Lo limpia {@link #definirPin}.
+     */
+    @Column(name = "debe_cambiar_pin", nullable = false)
+    private boolean debeCambiarPin;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
@@ -98,6 +106,8 @@ public class Usuario implements PerteneceAEmpresa {
             throw new IllegalArgumentException("La clave no puede pasar de " + CLAVE_MAX_BYTES + " bytes");
         }
         this.pinHash = BCrypt.hashpw(pinPlano, BCrypt.gensalt());
+        // Una credencial nueva, que ya cumplió la política, deja de ser provisoria.
+        this.debeCambiarPin = false;
     }
 
     /** Usuario.autenticar(pin): boolean del diagrama. */

@@ -86,6 +86,24 @@ public class AutenticacionService {
         return verificar(permitido, pin, claveCuenta, ip);
     }
 
+    /**
+     * El usuario cambia su propia clave. Exige la actual (y cuenta los fallos como
+     * cualquier login: quien robó un token no puede adivinarla sin límite), una
+     * nueva distinta que cumpla la política de su rol, y limpia la obligación de
+     * cambiarla.
+     */
+    @Transactional
+    public Usuario cambiarPin(Long usuarioId, String pinActual, String pinNuevo, String ip) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException(CREDENCIALES_INVALIDAS));
+        verificar(Optional.of(usuario), pinActual, "u:" + usuario.getId(), ip);
+        if (pinNuevo != null && pinNuevo.equals(pinActual)) {
+            throw new IllegalArgumentException("La clave nueva debe ser distinta de la actual");
+        }
+        usuario.definirPin(pinNuevo);
+        return usuarioRepository.save(usuario);
+    }
+
     private Usuario verificar(Optional<Usuario> usuario, String clave, String claveCuenta, String ip) {
         exigirNoBloqueado(claveCuenta, ip);
         boolean correcta = comprobar(usuario, clave);
