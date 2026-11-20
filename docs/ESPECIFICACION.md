@@ -728,7 +728,7 @@ Cifras verificadas contra el código de la rama de referencia.
 | App — pruebas | Unitarias y de widget | **6 archivos · 46 casos** |
 | CI | GitHub Actions sobre `main` y `develop` | ✅ |
 
-**Requisitos funcionales:** los **64** requisitos de la §6 están soportados por
+**Requisitos funcionales:** los **58** requisitos de la §6 están soportados por
 el backend —RF-A3 es del lado de la app— y
 **41** de ellos están además disponibles en la app. Lo que falta ahí es, en
 bloque, el flujo del jefe de terreno (cubicación, presupuesto y desviación) y el
