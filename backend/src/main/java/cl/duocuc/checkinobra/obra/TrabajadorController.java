@@ -1,5 +1,7 @@
 package cl.duocuc.checkinobra.obra;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,7 +31,7 @@ public class TrabajadorController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public TrabajadorCredencialResponse crear(@RequestBody CrearTrabajadorRequest req) {
+    public TrabajadorCredencialResponse crear(@Valid @RequestBody CrearTrabajadorRequest req) {
         // Al crearlo se emite su credencial, y es la única vez que hay que
         // entregarla junto con el resto de los datos. El RUT no viene acá: es
         // del Usuario, y se define al registrarlo.
@@ -110,6 +112,6 @@ public class TrabajadorController {
         return TrabajadorCredencialResponse.de(trabajadorService.renovarCredencial(id));
     }
 
-    public record CrearTrabajadorRequest(Long usuarioId, Long cuadrillaId) {
+    public record CrearTrabajadorRequest(@NotNull(message = "Falta el usuario") Long usuarioId, Long cuadrillaId) {
     }
 }

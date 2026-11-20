@@ -1,5 +1,7 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -32,7 +34,7 @@ public class PrestamoHerramientaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public PrestamoHerramientaResponse prestarDirecto(@RequestBody PrestarDirectoRequest req) {
+    public PrestamoHerramientaResponse prestarDirecto(@Valid @RequestBody PrestarDirectoRequest req) {
         return PrestamoHerramientaResponse.de(prestamoHerramientaService.prestarDirecto(
                 req.herramientaId(), req.trabajadorId(), req.obraId(), SesionActual.usuarioId(), req.fechaDevolEsperada()));
     }
@@ -40,7 +42,7 @@ public class PrestamoHerramientaController {
     @PutMapping("/{id}/devolucion")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     public PrestamoHerramientaResponse registrarDevolucion(
-            @PathVariable Long id, @RequestBody RegistrarDevolucionRequest req) {
+            @PathVariable Long id, @Valid @RequestBody RegistrarDevolucionRequest req) {
         return PrestamoHerramientaResponse.de(
                 prestamoHerramientaService.registrarDevolucion(id, req.nuevoEstadoHerramienta()));
     }
@@ -81,9 +83,13 @@ public class PrestamoHerramientaController {
     }
 
     public record PrestarDirectoRequest(
-            Long herramientaId, Long trabajadorId, Long obraId, LocalDateTime fechaDevolEsperada) {
+            @NotNull(message = "Falta la herramienta") Long herramientaId,
+            @NotNull(message = "Falta el trabajador") Long trabajadorId,
+            @NotNull(message = "Falta la obra") Long obraId,
+            LocalDateTime fechaDevolEsperada) {
     }
 
-    public record RegistrarDevolucionRequest(EstadoHerramienta nuevoEstadoHerramienta) {
+    public record RegistrarDevolucionRequest(
+            @NotNull(message = "Falta el estado en que vuelve la herramienta") EstadoHerramienta nuevoEstadoHerramienta) {
     }
 }

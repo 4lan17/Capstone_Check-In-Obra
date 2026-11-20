@@ -143,12 +143,16 @@ class LoginSeguroTest {
 
     @Test
     void loginPinSoloAceptaTrabajadoresAunqueElPinseaCorrecto() throws Exception {
-        Usuario jefe = usuario("jefe-" + s, RolUsuario.JEFE_TERRENO, CLAVE_LARGA);
-        Usuario bodeguero = usuario("bodega-" + s, RolUsuario.BODEGUERO, CLAVE_LARGA);
+        // Un PIN de 4 dígitos en un rol que no es TRABAJADOR solo existe como herencia
+        // de antes de la política de claves largas: se fija directo, porque definirPin
+        // ya no lo permite. Es justo el caso que login-pin no debe aceptar.
+        Usuario jefe = conPinHeredado(usuario("jefe-" + s, RolUsuario.JEFE_TERRENO, CLAVE_LARGA));
+        Usuario bodeguero = conPinHeredado(usuario("bodega-" + s, RolUsuario.BODEGUERO, CLAVE_LARGA));
+        Usuario adminHeredado = conPinHeredado(usuario("admin-h-" + s, RolUsuario.ADMIN, CLAVE_LARGA));
 
         HttpResponse<String> pinMalo = loginPin(trabajador.getId(), "0000");
-        for (Usuario u : List.of(admin, jefe, bodeguero)) {
-            HttpResponse<String> r = loginPin(u.getId(), CLAVE_LARGA);
+        for (Usuario u : List.of(adminHeredado, jefe, bodeguero)) {
+            HttpResponse<String> r = loginPin(u.getId(), PIN);
 
             // Mismo status y mismo mensaje que un PIN equivocado: no se revela
             // que el id existe ni qué rol tiene.
@@ -156,6 +160,20 @@ class LoginSeguroTest {
             assertThat(mensaje(r)).isEqualTo(mensaje(pinMalo));
         }
         assertThat(loginPin(trabajador.getId(), PIN).statusCode()).isEqualTo(200);
+    }
+
+    @Test
+    void loginPinSoloRecibePinesDeCuatroDigitosYNoMiraClavesLargas() throws Exception {
+        // La clave larga de un administrador ni siquiera llega al servicio por esta ruta.
+        HttpResponse<String> r = loginPin(admin.getId(), CLAVE_LARGA);
+
+        assertThat(r.statusCode()).isEqualTo(400);
+        assertThat(mensaje(r)).contains("pin");
+    }
+
+    private Usuario conPinHeredado(Usuario u) {
+        u.setPinHash(org.springframework.security.crypto.bcrypt.BCrypt.hashpw(PIN, org.springframework.security.crypto.bcrypt.BCrypt.gensalt()));
+        return usuarioRepository.save(u);
     }
 
     @Test

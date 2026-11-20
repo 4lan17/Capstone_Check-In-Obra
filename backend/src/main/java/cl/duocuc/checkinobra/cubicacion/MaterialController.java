@@ -1,5 +1,11 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.importacion.PlantillaExcel;
 import cl.duocuc.checkinobra.importacion.ResultadoImportacion;
@@ -40,7 +46,7 @@ public class MaterialController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public MaterialResponse crear(@RequestBody CrearMaterialRequest req) {
+    public MaterialResponse crear(@Valid @RequestBody CrearMaterialRequest req) {
         // La empresa sale del token, no de la petición. Mientras el cliente
         // pudiera nombrarla, pedir los datos de otra constructora era cuestión
         // de cambiar un número en la URL.
@@ -124,7 +130,7 @@ public class MaterialController {
 
     @PutMapping("/{id}/precio")
     @PreAuthorize("hasRole('ADMIN')")
-    public MaterialResponse actualizarPrecio(@PathVariable Long id, @RequestBody ActualizarPrecioRequest req) {
+    public MaterialResponse actualizarPrecio(@PathVariable Long id, @Valid @RequestBody ActualizarPrecioRequest req) {
         return conCosto(materialService.actualizarPrecio(id, req.nuevoPrecio()));
     }
 
@@ -138,10 +144,15 @@ public class MaterialController {
     }
 
     public record CrearMaterialRequest(
-            String sku, String nombre, CategoriaMaterial categoria, double precioUnitario, double stockMinimo,
-            String codigoBarra) {
+            @NotBlank(message = "El SKU es obligatorio") @Size(max = 50, message = "El SKU admite hasta 50 caracteres") String sku,
+            @NotBlank(message = "El nombre es obligatorio") @Size(max = 200, message = "El nombre admite hasta 200 caracteres") String nombre,
+            @NotNull(message = "Falta la categoría") CategoriaMaterial categoria,
+            @PositiveOrZero(message = "El precio no puede ser negativo") @DecimalMax(value = "1000000000", message = "El precio es demasiado grande") double precioUnitario,
+            @PositiveOrZero(message = "El stock mínimo no puede ser negativo") @DecimalMax(value = "1000000", message = "El stock mínimo es demasiado grande") double stockMinimo,
+            @Size(max = 50, message = "El código de barras admite hasta 50 caracteres") String codigoBarra) {
     }
 
-    public record ActualizarPrecioRequest(double nuevoPrecio) {
+    public record ActualizarPrecioRequest(
+            @PositiveOrZero(message = "El precio no puede ser negativo") @DecimalMax(value = "1000000000", message = "El precio es demasiado grande") double nuevoPrecio) {
     }
 }
