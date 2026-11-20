@@ -169,6 +169,54 @@ public class CatalogoDeEmpresas implements DisposableBean {
         return asignado;
     }
 
+    /** Un operador de plataforma tal como lo guarda el catálogo. */
+    public record OperadorRegistrado(
+            Long id, String email, String nombre, String pinHash, boolean activo, int tokenVersion) {
+    }
+
+    private static final org.springframework.jdbc.core.RowMapper<OperadorRegistrado> OPERADOR =
+            (rs, n) -> new OperadorRegistrado(rs.getLong("id"), rs.getString("email"), rs.getString("nombre"),
+                    rs.getString("pin_hash"), rs.getBoolean("activo"), rs.getInt("token_version"));
+
+    public Optional<OperadorRegistrado> buscarOperadorPorCorreo(String email) {
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+        return catalogo.sql("SELECT id, email, nombre, pin_hash, activo, token_version FROM operadores WHERE email = :email")
+                .param("email", normalizar(email)).query(OPERADOR).optional();
+    }
+
+    /** Un operador activo, por id; vacío si no existe o está desactivado. */
+    public Optional<OperadorRegistrado> buscarOperadorActivo(long id) {
+        return catalogo.sql("SELECT id, email, nombre, pin_hash, activo, token_version FROM operadores WHERE id = :id AND activo")
+                .param("id", id).query(OPERADOR).optional();
+    }
+
+    /** @return el id del operador nuevo, o vacío si ya hay uno con ese correo */
+    public java.util.OptionalLong crearOperador(String email, String nombre, String pinHash) {
+        return catalogo.sql("""
+                        INSERT INTO operadores (email, nombre, pin_hash) VALUES (:email, :nombre, :pin)
+                        ON CONFLICT (email) DO NOTHING RETURNING id
+                        """)
+                .param("email", normalizar(email)).param("nombre", nombre).param("pin", pinHash)
+                .query(Long.class).optional()
+                .map(java.util.OptionalLong::of).orElseGet(java.util.OptionalLong::empty);
+    }
+
+    public int contarOperadores() {
+        return catalogo.sql("SELECT count(*) FROM operadores").query(Integer.class).single();
+    }
+
+    /** Deja sin efecto todos los tokens ya emitidos del operador. */
+    public void invalidarSesionesDeOperador(long id) {
+        catalogo.sql("UPDATE operadores SET token_version = token_version + 1 WHERE id = :id").param("id", id).update();
+    }
+
+    public void desactivarOperador(long id) {
+        catalogo.sql("UPDATE operadores SET activo = FALSE, token_version = token_version + 1 WHERE id = :id")
+                .param("id", id).update();
+    }
+
     /**
      * Reserva un correo para una empresa. Es único en todo el sistema: si ya es de otra,
      * no se pisa y devuelve {@code false}.

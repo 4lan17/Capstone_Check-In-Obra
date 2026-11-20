@@ -21,11 +21,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final ResolutorDeBases resolutor;
     private final ValidadorDeSesion validador;
+    private final ValidadorDeOperador validadorDeOperador;
 
-    public JwtAuthFilter(JwtService jwtService, ResolutorDeBases resolutor, ValidadorDeSesion validador) {
+    public JwtAuthFilter(
+            JwtService jwtService, ResolutorDeBases resolutor, ValidadorDeSesion validador,
+            ValidadorDeOperador validadorDeOperador) {
         this.jwtService = jwtService;
         this.resolutor = resolutor;
         this.validador = validador;
+        this.validadorDeOperador = validadorDeOperador;
+    }
+
+    /**
+     * El token de un operador de plataforma (MT6, #109): sin empresa, revalidado contra el catálogo y
+     * sin tocar ninguna base de empresa. Un token con ese rol que además trae empresa es inválido: no
+     * hay un operador "de" una empresa.
+     */
+    private void autenticarOperador(Claims claims) {
+        if (claims.get("empresaId") != null) {
+            throw new IllegalArgumentException("Un token de plataforma no lleva empresa");
+        }
+        long operadorId = Long.parseLong(claims.getSubject());
+        if (!validadorDeOperador.vigente(operadorId, claims.get("tv", Number.class))) {
+            throw new IllegalArgumentException("El token ya no corresponde a un operador vigente");
+        }
+        var operador = new UsuarioAutenticado(
+                operadorId, claims.get("email", String.class), RolUsuario.PLATAFORMA, null);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                operador, null, List.of(new SimpleGrantedAuthority("ROLE_" + RolUsuario.PLATAFORMA.name()))));
     }
 
     /** La única llamada que una cuenta con clave provisoria puede hacer. */
@@ -59,6 +82,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtService.validarYExtraer(header.substring(7));
                 String rol = claims.get("rol", String.class);
+                if (RolUsuario.PLATAFORMA.name().equals(rol)) {
+                    autenticarOperador(claims);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 // Un token sin empresa no vale: antes daba un NullPointerException aquí
                 // (un 500); ahora es un token inválido, y la petición sale como 401.
                 Number empresaClaim = claims.get("empresaId", Number.class);

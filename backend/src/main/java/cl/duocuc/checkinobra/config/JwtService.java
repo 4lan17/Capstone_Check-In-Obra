@@ -90,6 +90,25 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * El token de un operador de plataforma: sin {@code empresaId} (no pertenece a ninguna) y con
+     * {@code rol=PLATAFORMA}. El filtro lo distingue por ese rol y lo revalida contra el catálogo.
+     */
+    public String emitirParaOperador(CatalogoDeEmpresas.OperadorRegistrado operador) {
+        Date ahora = new Date();
+        return Jwts.builder()
+                .subject(operador.id().toString())
+                .claim("email", operador.email())
+                .claim("rol", RolUsuario.PLATAFORMA.name())
+                .claim("tv", operador.tokenVersion())
+                .issuer(EMISOR)
+                .audience().add(AUDIENCIA).and()
+                .issuedAt(ahora)
+                .expiration(new Date(ahora.getTime() + expiracionMinutos * 60_000))
+                .signWith(key)
+                .compact();
+    }
+
     public Claims validarYExtraer(String token) {
         return Jwts.parser()
                 .verifyWith(key)
