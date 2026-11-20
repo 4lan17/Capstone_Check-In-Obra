@@ -140,6 +140,13 @@ resolutor que manda todas a la misma base (ningún despliegue lo trae). El enrut
 se prueba con dos bases en `TenantRoutingDataSourceTest`, y las pruebas que inician sesión por
 correo registran su empresa y sus usuarios en el catálogo (`CatalogoDePrueba`).
 
+**Pruebas de aislamiento con dos bases** (`AislamientoConDosBasesTest`): registran dos empresas en
+el catálogo, cada una en su base, y usan el enrutador de verdad. Necesitan una segunda base **vacía**,
+`checkinobra_b` (o la de `checkinobra.pruebas.segunda-base`), que crea `db/crear-roles.sh` si se le
+pasa `CHECKINOBRA_BASES_EXTRA=checkinobra_b` (con `docker compose`: `docker compose exec -T -e
+CHECKINOBRA_BASES_EXTRA=checkinobra_b db /docker-entrypoint-initdb.d/01-roles.sh`). La CI lo hace. Las
+tablas las migra `MigradorDeBases` durante la prueba. Sin esa base, la prueba falla diciendo cuál falta.
+
 La CI (`.github/workflows/ci.yml`) crea los roles con `db/crear-roles.sh` sobre un
 PostgreSQL 16 vacío en `localhost:5432` y corre `./mvnw -B verify` con ellos.
 

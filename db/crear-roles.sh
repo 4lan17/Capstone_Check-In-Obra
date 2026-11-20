@@ -32,3 +32,15 @@ psql -X -q -v ON_ERROR_STOP=1 \
   -v plataforma_password="$CHECKINOBRA_PLATAFORMA_PASSWORD" \
   -f "$sql"
 echo "Roles y base de catálogo listos."
+
+# Bases de empresa adicionales, vacías, para las pruebas de aislamiento (MT5): una lista de
+# nombres separados por coma en CHECKINOBRA_BASES_EXTRA. No hace falta en un despliegue.
+if [[ -n "${CHECKINOBRA_BASES_EXTRA:-}" ]]; then
+  base_sql="${BASE_SQL:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/crear-base-de-empresa.sql}"
+  [[ -f "$base_sql" ]] || { echo "No encuentro $base_sql (defina BASE_SQL)" >&2; exit 1; }
+  IFS=',' read -ra extras <<< "$CHECKINOBRA_BASES_EXTRA"
+  for extra in "${extras[@]}"; do
+    psql -X -q -v ON_ERROR_STOP=1 -v base="$extra" -f "$base_sql"
+    echo "Base de empresa $extra lista."
+  done
+fi
