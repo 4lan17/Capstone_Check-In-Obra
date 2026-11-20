@@ -58,6 +58,8 @@ class ResolutorPorCatalogoTest {
         long id = catalogo.registrar(null, "RC-" + UUID.randomUUID().toString().substring(0, 10),
                 "Empresa " + s, base + "_" + s, usuario, secretoRef);
         registradas.add(id);
+        // Una base solo se abre si su migración salió bien.
+        catalogo.marcarMigracion(id, true, null);
         return id;
     }
 
@@ -94,6 +96,17 @@ class ResolutorPorCatalogoTest {
 
         enElCatalogo.update("UPDATE empresas SET estado = 'SUSPENDIDA' WHERE id = ?", id);
         r.refrescar();
+
+        assertThat(r.conoce(id)).isFalse();
+        assertThatThrownBy(() -> r.baseDe(id)).isInstanceOf(SinEmpresaEnContextoException.class);
+    }
+
+    @Test
+    void unaBaseCuyaMigracionFalloNoSeAbre() {
+        long id = registrarContraElCatalogo();
+        catalogo.marcarMigracion(id, false, "falló la V12");
+
+        ResolutorPorCatalogo r = resolutor();
 
         assertThat(r.conoce(id)).isFalse();
         assertThatThrownBy(() -> r.baseDe(id)).isInstanceOf(SinEmpresaEnContextoException.class);

@@ -36,6 +36,7 @@ public class BaseInicialInicializador implements ApplicationRunner {
 
     private final CatalogoDeEmpresas catalogo;
     private final ResolutorDeBases resolutor;
+    private final MigradorDeBases migrador;
     private final String url;
     private final String usuario;
     private final String clave;
@@ -46,6 +47,7 @@ public class BaseInicialInicializador implements ApplicationRunner {
     public BaseInicialInicializador(
             CatalogoDeEmpresas catalogo,
             ResolutorDeBases resolutor,
+            MigradorDeBases migrador,
             @Value("${spring.datasource.url}") String url,
             @Value("${spring.datasource.username}") String usuario,
             @Value("${spring.datasource.password}") String clave,
@@ -54,6 +56,7 @@ public class BaseInicialInicializador implements ApplicationRunner {
             @Value("${checkinobra.primer-admin.clave:}") String claveInicial) {
         this.catalogo = catalogo;
         this.resolutor = resolutor;
+        this.migrador = migrador;
         this.url = url;
         this.usuario = usuario;
         this.clave = clave;
@@ -92,13 +95,17 @@ public class BaseInicialInicializador implements ApplicationRunner {
         config.setPoolName("base-inicial");
         try (HikariDataSource conexion = new HikariDataSource(config)) {
             JdbcClient base = JdbcClient.create(conexion);
-            Optional<Long> existente = base.sql("SELECT id FROM empresas WHERE rut = :rut")
-                    .param("rut", rut).query(Long.class).optional();
+            // Una base recién creada no tiene esquema: se migra más abajo, antes de crear la empresa.
+            boolean hayEsquema = base.sql("SELECT to_regclass('public.empresas') IS NOT NULL")
+                    .query(Boolean.class).single();
+            Optional<Long> existente = hayEsquema
+                    ? base.sql("SELECT id FROM empresas WHERE rut = :rut").param("rut", rut).query(Long.class).optional()
+                    : Optional.empty();
             if (existente.isPresent()) {
                 return Optional.of(catalogo.registrar(existente.get(), rut, nombreDe(base, existente.get(), nombre),
                         catalogo.nombreBaseActual(), catalogo.usuarioBaseActual(), catalogo.secretoBaseActual()));
             }
-            Long empresas = base.sql("SELECT count(*) FROM empresas").query(Long.class).single();
+            Long empresas = hayEsquema ? base.sql("SELECT count(*) FROM empresas").query(Long.class).single() : 0L;
             if (!crearSiFalta || empresas > 0) {
                 log.warn("La base «{}» no tiene a la empresa {} y no se registró en el catálogo. Define "
                         + "PRIMER_ADMIN_CLAVE para crearla en una base vacía.", catalogo.nombreBaseActual(), rut);
@@ -106,6 +113,13 @@ public class BaseInicialInicializador implements ApplicationRunner {
             }
             long id = catalogo.registrar(null, rut, nombre, catalogo.nombreBaseActual(),
                     catalogo.usuarioBaseActual(), catalogo.secretoBaseActual());
+            // La base puede estar vacía: se migra antes de insertar la empresa. Las demás bases del
+            // catálogo las migra MigracionInicializador.
+            var registrada = catalogo.buscarPorBase(catalogo.nombreBaseActual()).orElseThrow();
+            MigradorDeBases.Resultado migracion = migrador.migrar(registrada);
+            if (!migracion.ok()) {
+                throw new IllegalStateException("No se pudo migrar la base inicial: " + migracion.error());
+            }
             base.sql("INSERT INTO empresas (id, nombre, rut) VALUES (:id, :nombre, :rut)")
                     .param("id", id).param("nombre", nombre).param("rut", rut).update();
             // No se adelanta la secuencia de empresas.id: la API no tiene permiso sobre ella (solo

@@ -16,13 +16,34 @@ import org.springframework.stereotype.Component;
 class CatalogoDePrueba {
 
     private final CatalogoDeEmpresas catalogo;
+    private final org.springframework.jdbc.core.JdbcTemplate enElCatalogo;
+    private final java.util.List<Long> registradas = new java.util.concurrent.CopyOnWriteArrayList<>();
 
-    CatalogoDePrueba(CatalogoDeEmpresas catalogo) {
+    CatalogoDePrueba(
+            CatalogoDeEmpresas catalogo,
+            @org.springframework.beans.factory.annotation.Value("${checkinobra.catalogo.url}") String url,
+            @org.springframework.beans.factory.annotation.Value("${checkinobra.catalogo.username}") String usuario,
+            @org.springframework.beans.factory.annotation.Value("${checkinobra.catalogo.password}") String clave) {
         this.catalogo = catalogo;
+        this.enElCatalogo = new org.springframework.jdbc.core.JdbcTemplate(
+                new org.springframework.jdbc.datasource.DriverManagerDataSource(url, usuario, clave));
+    }
+
+    /**
+     * Al cerrarse el contexto de pruebas, el catálogo compartido queda como estaba: las empresas
+     * ficticias no deben acumularse entre corridas, porque el arranque intenta migrar cada una.
+     */
+    @jakarta.annotation.PreDestroy
+    void limpiar() {
+        for (Long id : registradas) {
+            enElCatalogo.update("DELETE FROM indice_login WHERE empresa_id = ?", id);
+            enElCatalogo.update("DELETE FROM empresas WHERE id = ?", id);
+        }
     }
 
     /** La empresa queda en el catálogo; hace falta antes de indexar sus correos. */
     void registrar(Empresa empresa) {
+        registradas.add(empresa.getId());
         catalogo.registrar(empresa.getId(), empresa.getRut(), empresa.getNombre(),
                 "prueba_" + empresa.getId() + "_" + System.nanoTime(), "usuario_de_prueba", "env:NO_SE_USA");
     }

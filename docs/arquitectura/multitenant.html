@@ -643,22 +643,45 @@
       <ul>
         <li><code>hibernate.boot.allow_jdbc_metadata_access=false</code>, dialecto PostgreSQL explícito y <code>ddl-auto=none</code>: al arrancar no se abre ninguna conexión</li>
         <li>Se pierde la validación del mapeo contra el esquema al arrancar. La suite de pruebas la conserva (<code>validate</code> contra su base) y el esquema de cada empresa lo garantizan las migraciones (fase 3)</li>
-        <li>Flyway migra la base actual con su propia URL, porque el <code>DataSource</code> de la aplicación ya es el enrutador</li>
       </ul>
     </div>
     <div class="card">
       <div class="card-header"><span class="dot ink"></span><h3>Lo que sigue sin hacer</h3></div>
       <ul>
-        <li>Flyway por cada base del catálogo y un job que migre una empresa nueva (fase 3, MT3)</li>
+        <li>Un job que migre una empresa nueva al darla de alta, sin reiniciar la API (fase 4): hoy se migra al arrancar</li>
         <li>Alta de empresas y de su base (fase 4): hoy la base de una empresa se crea fuera, y solo hay una</li>
         <li>La purga de claves de idempotencia ya recorre las empresas con base abierta; si una falla, sigue con las demás</li>
       </ul>
     </div>
   </div>
 
+  <section>
+    <h2>Decisiones tomadas en la fase 3 (MT3)</h2>
+  </section>
+
+  <div class="cards two">
+    <div class="card">
+      <div class="card-header"><span class="dot accent"></span><h3>Flyway por cada base</h3></div>
+      <ul>
+        <li><code>spring.flyway.enabled=false</code>: el Flyway de Spring Boot migra una sola base y necesita una conexión sin empresa. <code>MigradorDeBases</code> corre Flyway programático sobre la base de cada empresa activa del catálogo, con el usuario migrador</li>
+        <li>Todas las bases reciben las mismas migraciones (<code>db/migration</code>), así que quedan en la misma versión. Una base vacía queda con el esquema completo en ese paso; el registro de la base inicial la migra antes de crear su empresa</li>
+        <li>Se mantiene <code>ignore-migration-patterns=*:missing</code> para las bases que aplicaron <code>V2</code>, que ya no está</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="dot ink"></span><h3>Si una base falla</h3></div>
+      <ul>
+        <li>El resultado queda en el catálogo (<code>migracion_estado</code>, <code>migracion_error</code>, <code>migrada_en</code>) y en el log</li>
+        <li>Esa empresa no tiene pool y sus tokens no valen, porque una base a medio migrar no debe servir peticiones. Las demás se migran y arrancan igual</li>
+        <li>Una base nueva empieza <code>PENDIENTE</code> y solo se abre cuando su migración sale <code>OK</code></li>
+        <li>Orden en el arranque: registrar la base actual → migrar todas → abrir pools → crear el administrador → sincronizar el índice de login</li>
+      </ul>
+    </div>
+  </div>
+
   <footer class="footer">
     <span>Check-In-Obra · Propuesta multi-tenant · base por empresa</span>
-    <span>Actualizada el 2026-11-19: fases 1 y 2 (catálogo y enrutador)</span>
+    <span>Actualizada el 2026-11-19: fases 1 a 3 (catálogo, enrutador y Flyway por base)</span>
   </footer>
 
 </div>

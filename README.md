@@ -799,7 +799,19 @@ Cada petición abre **solo la base de la empresa de su token** (MT2):
 
 **El login resuelve la empresa antes de tocar la base.** `POST /api/auth/login` busca el correo en el índice del catálogo; `POST /api/auth/login-pin` recibe `empresaId` junto a `usuarioId` (los ids de usuario se repiten entre bases; si falta y hay una sola empresa se usa esa). Un correo o empresa desconocidos se tratan como una cuenta que no existe. Crear un usuario reserva su correo en el catálogo, donde es único en todo el sistema.
 
-**Hibernate ya no valida el esquema al arrancar**: no hay una base a la cual conectarse sin empresa. El dialecto se fija a mano y `ddl-auto=none`; la suite de pruebas sí valida el mapeo contra una base. Flyway sigue migrando la base actual (migrar la de cada empresa es MT3).
+**Hibernate ya no valida el esquema al arrancar**: no hay una base a la cual conectarse sin empresa. El dialecto se fija a mano y `ddl-auto=none`; la suite de pruebas sí valida el mapeo contra una base.
+
+### Flyway por base
+
+Las migraciones de `db/migration` las corre `MigradorDeBases` (Flyway programático; el de Spring Boot está desactivado porque migra una sola base) **sobre la base de cada empresa del catálogo**, con el usuario migrador y una por una:
+
+- Al arrancar recorre las empresas activas. Una base **vacía** registrada en el catálogo queda con el esquema completo y en la última versión en ese mismo paso; una ya migrada no cambia.
+- El resultado de cada base queda en el catálogo (`empresas.migracion_estado`: `PENDIENTE`, `OK` o `ERROR`, con `migracion_error` y `migrada_en`).
+- **Una base que falla queda anotada, sin abrir (su empresa no tiene pool y sus tokens no valen) y no impide arrancar a las demás.** Una base nueva empieza `PENDIENTE` y solo se abre cuando su migración sale `OK`.
+- `RegistroIdempotencia.purgarVencidas`, la única tarea programada, recorre las empresas con base abierta y fija la de cada una (MT2).
+
+La base de una empresa tiene que existir antes y el migrador, poder conectarse y crear tablas en ella; crearla es parte del alta de empresas (fase 4) y hoy se hace a mano.
+
 
 
 ### Conectarse con un cliente SQL
