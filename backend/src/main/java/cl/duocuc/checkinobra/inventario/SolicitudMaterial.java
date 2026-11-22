@@ -38,6 +38,13 @@ import java.time.LocalDateTime;
 @Builder
 public class SolicitudMaterial implements PerteneceAEmpresa {
 
+    /**
+     * Índice único parcial (V14) que impide dos solicitudes PENDIENTES del mismo trabajador, material
+     * y obra. Es la segunda capa del control de duplicados del #76; el servicio lo reconoce por
+     * este nombre al traducir la violación a un 409.
+     */
+    public static final String INDICE_PENDIENTE_UNICA = "uq_solicitud_material_pendiente";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
