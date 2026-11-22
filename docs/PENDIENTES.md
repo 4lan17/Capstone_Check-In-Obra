@@ -1,6 +1,6 @@
 # Check-In-Obra — Estado y trabajo pendiente
 
-**Fecha:** 2026-08-27 (backend y multi-tenant actualizados el 2026-11-20; **las filas y secciones de la app móvil no se actualizaron**) · **Rama:** `main` · **Repo:** [1Bryvn/Check-In-Obra](https://github.com/1Bryvn/Check-In-Obra)
+**Fecha:** 2026-08-27 (backend, multi-tenant y app móvil actualizados el 2026-11-22) · **Rama:** `main` · **Repo:** [1Bryvn/Check-In-Obra](https://github.com/1Bryvn/Check-In-Obra)
 
 Informe del estado real del proyecto y lo que falta para cerrar el MVP 1.
 Las cifras salen de auditar el código, no de estimaciones.
@@ -13,14 +13,18 @@ Las cifras salen de auditar el código, no de estimaciones.
 |---|---:|---:|---:|
 | **Backend** — endpoints REST | 106 | 106 | ✅ 100 % |
 | **Backend** — entidades (`@Entity`) | 20 | 20 | ✅ 100 % |
-| **App móvil** — pantallas diseñadas | 2 | 34 | 🟠 6 % |
-| **App móvil** — endpoints consumidos | 2 | 66 | 🔴 3 % |
+| **App móvil** — pantallas diseñadas | 29 | 34 | 🟢 85 % |
+| **App móvil** — endpoints consumidos | 84 | 106 | 🟢 79 % (84 de los 101 que no son de plataforma) |
 | **Pruebas** — backend | 397 | — | ✅ 56 clases; unitarias e integración contra Postgres real |
-| **Pruebas** — móvil | 7 | — | 🟠 unitarias, sin integración |
+| **Pruebas** — móvil | 310 | — | ✅ 28 archivos; unitarias y de widget, sin integración contra el backend |
 | **CI/CD** | 1 | — | ✅ GitHub Actions (backend y app); CodeQL y revisión de dependencias solo con la variable `GHAS=true` |
 
-**Lectura corta:** el backend está completo y probado a mano; la app móvil
-tiene la autenticación lista y le faltan 32 de 34 pantallas.
+**Lectura corta:** el backend está completo y probado; la app móvil tiene los
+flujos del bodeguero, del administrador y del trabajador, y del jefe de terreno
+todo menos la desviación. Le faltan 5 de los 34 diseños (§3).
+
+*Cómo se midió la app (2026-11-22):* sobre `develop` (6e4545f), con los PR móviles ya
+integrados —ver [`ESPECIFICACION.md` §13](ESPECIFICACION.md#13-estado-de-cumplimiento)—.
 
 ---
 
@@ -33,76 +37,49 @@ Verificado de punta a punta contra el backend real, no asumido:
   esquema completo y el usuario semilla.
 - **Backend** — 20 entidades, 21 controladores, 106 endpoints, autorización por
   rol con `@PreAuthorize`, JWT con refresh, Swagger (apagado en el perfil `prod`).
-  *(Cifras del 2026-11-20; las de la app móvil de este informe son de agosto.)*
-- **App móvil** — acceso por correo+PIN y por PIN, sesión persistente en el
-  Keystore, cliente HTTP con Bearer automático, tema del design system.
+  *(Cifras de `develop` al 2026-11-22.)*
+- **App móvil** — los cuatro roles entran a su propia app: bodeguero (stock, kardex,
+  escáner, solicitudes, herramientas, alertas), administrador (obras, materiales,
+  usuarios, importación de planillas), trabajador (credencial QR, pedidos,
+  historial) y jefe de terreno (partidas, cubicación y presupuesto). Sesión en el
+  Keystore con renovación automática del token, cambio de clave en el primer
+  ingreso, y todo lo que recuerda el teléfono guardado por empresa y usuario.
 - **Entorno de desarrollo** — celular físico y emulador Pixel 5 (API 33),
   ambos probados con login real.
 
 ---
 
-## 3. App móvil — 32 pantallas pendientes
+## 3. App móvil — 5 pantallas pendientes
 
-Los diseños están listos en `docs/mockups/design-movil/`. Falta implementarlos.
+Los diseños están en `docs/mockups/design-movil/` (34). Cada uno cuenta como hecho si
+hay una pantalla de la app que lo cubre.
 
-### 3.1 Compartidas — 4 pendientes
+| Rol | Hechas | Pendientes |
+|---|---|---|
+| Compartidas (6) | `Acceso`, `AccesoPin`, `SelectorObra`, `Alertas` | `SinPermiso`, `SinConexion` |
+| Trabajador (6) | Las 6 | — |
+| Bodeguero (10) | Las 10 | — |
+| Jefe de terreno (6) | `JefePartidas`, `JefeCubicacion`, `JefePresupuesto` | `JefeInicio`, `JefeDesviacion`, `JefeCuadrillas` |
+| Administrador (6) | Las 6 | — |
+
+### 3.1 Lo que falta
 
 | Pantalla | Estado | Qué implica |
 |---|---|---|
-| `Acceso` | ✅ Hecha | — |
-| `AccesoPin` | ✅ Hecha | — |
-| `SelectorObra` | ⬜ Pendiente | Elegir obra activa; obras `CERRADA` en solo lectura |
-| `SinPermiso` | ⬜ Pendiente | Acción bloqueada por rol, con quién sí puede |
-| `Alertas` | ⬜ Pendiente | Bandeja filtrada por rol · `GET /api/alertas` |
-| `SinConexion` | ⬜ Pendiente | **Cola offline — ver §6.1, es la más compleja** |
+| `SinPermiso` | ⬜ Pendiente | Acción bloqueada por rol, con quién sí puede. Hoy el rechazo se ve como un mensaje en la pantalla donde ocurrió |
+| `SinConexion` | ⬜ Pendiente | **Cola offline — ver §6.1, es la más compleja.** Los requisitos para que nazca aislada por empresa están en `arquitectura/cola-offline-por-empresa.md` (PR #132) |
+| `JefeInicio` | ⬜ Pendiente | Contadores de la obra y la desviación a la vista. Hoy el jefe entra directo a Partidas. Ver el endpoint de resumen en §4.2 |
+| `JefeDesviacion` | ⬜ Pendiente | `GET /api/presupuestos/{id}/desviacion` · **gráficos, `fl_chart` sin usar**. Es el único requisito funcional de la app que falta del flujo del jefe (RF-D6) |
+| `JefeCuadrillas` | ⬜ Pendiente | `GET /api/cuadrillas?obraId=`, y crear cuadrillas (RF-B5). Con ella, dar de alta un trabajador (RF-B6) |
 
-### 3.2 Trabajador — 6 pendientes
+También sin pantalla, aunque tienen endpoint: renovar la credencial de un trabajador
+por su id desde la gestión (RF-B9). El trabajador renueva la suya desde su credencial.
 
-| Pantalla | Endpoint que consume |
-|---|---|
-| `TrabInicio` | `/api/trabajadores/{id}`, `/api/prestamos-herramienta` |
-| `TrabCredencial` | `/api/trabajadores/{id}` · **requiere generar el QR** |
-| `TrabSolicitarHerr` | `POST /api/solicitudes-herramienta` |
-| `TrabSolicitarMat` | `POST /api/solicitudes-material` |
-| `TrabSolicitudes` | `GET /api/solicitudes-*?trabajadorId=` |
-| `TrabPrestamos` | `GET /api/prestamos-herramienta?trabajadorId=` |
+### 3.2 Pendientes que no son un diseño
 
-### 3.3 Bodeguero — 10 pendientes
-
-| Pantalla | Endpoint que consume |
-|---|---|
-| `BodInicio` | Varios · contadores del turno |
-| `BodEscaneo` | **Cámara — `mobile_scanner`, aún sin usar** |
-| `BodSolicitudes` | `GET /api/solicitudes-*?obraId=&soloPendientes=true` |
-| `BodAprobar` | `PUT /api/solicitudes-herramienta/{id}/aprobar` |
-| `BodRechazo` | `PUT /api/solicitudes-*/{id}/rechazar` |
-| `BodRecepcion` | `POST /api/kardex` (RECEPCION) |
-| `BodDespacho` | `POST /api/kardex` (DESPACHO) + bloqueo de stock |
-| `BodStock` | `GET /api/kardex/stock` |
-| `BodDevolucion` | `PUT /api/prestamos-herramienta/{id}/devolucion` |
-| `BodCierreTurno` | `POST /api/alertas/cierre-turno` |
-
-### 3.4 Jefe de terreno — 6 pendientes
-
-| Pantalla | Endpoint que consume |
-|---|---|
-| `JefeInicio` | `/api/obras`, `/api/presupuestos/{id}/desviacion` |
-| `JefePartidas` | `GET /api/partidas?obraId=` |
-| `JefeCubicacion` | `POST /api/partidas/{id}/cubicar` |
-| `JefePresupuesto` | `/api/presupuestos` + `congelar` |
-| `JefeDesviacion` | `GET /api/presupuestos/{id}/desviacion` · **gráficos, `fl_chart` sin usar** |
-| `JefeCuadrillas` | `GET /api/cuadrillas?obraId=` |
-
-### 3.5 Administrador — 6 pendientes
-
-| Pantalla | Endpoint que consume |
-|---|---|
-| `AdmInicio` | `GET /api/empresas/{id}` |
-| `AdmUsuarios` | `GET /api/usuarios?empresaId=` |
-| `AdmUsuarioNuevo` | `POST /api/usuarios` |
-| `AdmMateriales` | `/api/materiales` |
-| `AdmMerma` | `PUT /api/materiales/{id}/merma` |
-| `AdmObras` | `/api/obras` + `cerrar` |
+- **Pruebas de integración de la app contra el backend real:** hoy son todas con el
+  backend simulado.
+- **Ícono de la app:** sigue siendo el de Flutter por defecto.
 
 ---
 
@@ -141,8 +118,8 @@ La columna «¿Tiene prueba?» sale de un `grep`, no de una cobertura medida.
   un usuario, la app tendría que recorrer la lista completa de trabajadores.
 - Paginación en los listados. Con 34 materiales da igual, pero un kardex de
   varios meses devuelto entero es un problema.
-- `GET /api/obras/{id}/resumen` — los contadores que muestran `BodInicio` y
-  `JefeInicio` obligarían hoy a 4-5 llamadas separadas.
+- `GET /api/obras/{id}/resumen` — los contadores que muestra `BodInicio` (y los que
+  mostraría `JefeInicio`) se arman hoy con varias llamadas separadas.
 
 ---
 
@@ -150,17 +127,14 @@ La columna «¿Tiene prueba?» sale de un `grep`, no de una cobertura medida.
 
 | Pendiente | Estado | Nota |
 |---|---|---|
-| **CI/CD** | 🔴 Sin configurar | `.github/workflows/` está vacío |
-| **`scripts/`** | 🔴 Vacío | Reservado para utilidades en Python |
-| **Fuentes del design system** | 🟠 Pendiente | Fira Sans / Fira Code sin empaquetar; hoy se usa la del sistema |
+| **CI/CD** | 🟢 Hecho | `.github/workflows/ci.yml`: backend y app; además `release-apk.yml`, manual, para el APK firmado |
+| **`scripts/`** | 🟢 Hecho | `levantar.sh`, `release-apk.sh`, `cuentas_de_prueba.py` y los de respaldo |
+| **Fuentes del design system** | 🟢 Hecho | Inter empaquetada en `mobile/assets/fonts`; reemplaza al par Fira que proponía el documento original |
 | **Ícono de la app** | 🟠 Pendiente | Sigue el de Flutter por defecto |
-| **Nombre visible** | 🟠 Pendiente | Aparece como `checkinobra_mobile` |
+| **Nombre visible** | 🟢 Hecho | «Check-In Obra» |
 
-**CI mínimo sugerido** (un solo workflow):
-```
-backend: ./mvnw verify
-mobile:  flutter analyze && flutter test
-```
+**El CI corre** `./mvnw verify` para el backend y, para la app, `dart format`,
+`flutter analyze`, `flutter test` y `flutter build apk --debug`.
 
 ---
 
@@ -194,49 +168,35 @@ constructora antes de que un presupuesto salga de estas cifras.
 
 | Punto | Estado |
 |---|---|
-| Admin semilla con PIN `0000` | 🟢 La `V11` anula ese PIN; la clave inicial viene de `PRIMER_ADMIN_CLAVE` y la cuenta debe cambiarla en el primer ingreso (SEG3). `V2` salió de `db/migration` (MT1). Falta la pantalla en la app |
+| Admin semilla con PIN `0000` | 🟢 La `V11` anula ese PIN; la clave inicial viene de `PRIMER_ADMIN_CLAVE` y la cuenta debe cambiarla en el primer ingreso (SEG3). `V2` salió de `db/migration` (MT1). La app muestra el cambio de clave obligatorio (SEG3) |
 | `JWT_SECRET` con valor por defecto | 🟢 Sin valor por defecto: la API no arranca sin uno propio de 32 bytes o más (SEG1). Rotarlo en las instancias que ya corrieron con el antiguo |
 | Contraseñas de PostgreSQL `postgres/postgres` | 🟢 Sin valor por defecto: vienen del `.env`; la API usa `checkinobra_app` (solo DML) y Flyway `checkinobra_migrador`; el puerto va solo en `127.0.0.1` (SEG6, MT0) |
-| API por HTTP sin TLS | 🟠 Aceptable en LAN de obra; no fuera de ella |
-| Sin expiración de refresh ni renovación | 🟠 El token dura 8 h y luego obliga a reingresar |
+| API por HTTP sin TLS | 🟠 La app en release exige `https://` y Android bloquea el tráfico en claro (SEG9); falta el proxy TLS del despliegue |
+| Sesión sin renovación | 🟢 Token de 30 min con refresh rotado (SEG10); la app lo renueva sola |
 
 ### 6.4 Dependencias declaradas pero sin usar
 
-`mobile_scanner`, `drift`, `fl_chart` e `intl` están en `pubspec.yaml` pero no
-se importan en ningún archivo. No es un error —se declararon al armar el
-stack— pero marcan funcionalidad que aún no existe: escaneo QR, base local,
-gráficos y formato es-CL.
+`drift` y `fl_chart` están en `pubspec.yaml` pero no se importan en ningún archivo:
+marcan funcionalidad que aún no existe —la base local de la cola sin conexión y los
+gráficos de la desviación—. `mobile_scanner`, `intl`, `qr_flutter` y `file_picker` ya
+se usan (escáner, formato es-CL, credencial QR e importación de planillas).
 
 ---
 
 ## 7. Orden de trabajo propuesto
 
-### Etapa 1 — Rebanada vertical: el flujo de solicitudes
-> *Cruza dos roles y termina moviendo el kardex. Deja armados los patrones de
-> lista, formulario y estados que después reutiliza todo lo demás.*
+Las etapas de agosto —el flujo de solicitudes, la bodega completa, el trabajador, la
+administración y el flujo del jefe de terreno hasta el presupuesto— están hechas. Lo que
+queda, en este orden:
 
-1. `SelectorObra` — hace falta para casi todo lo que sigue
-2. `TrabInicio` + `TrabSolicitarHerr` + `TrabSolicitarMat` + `TrabSolicitudes`
-3. `BodInicio` + `BodSolicitudes` + `BodAprobar` + `BodRechazo`
-4. Endpoint `GET /api/usuarios/{id}/trabajador`
-
-### Etapa 2 — Bodega completa
-5. `BodEscaneo` (integrar `mobile_scanner`) + `BodStock`
-6. `BodRecepcion` + `BodDespacho` + `BodDevolucion`
-7. `TrabCredencial` (generar el QR) + `TrabPrestamos`
-8. `Alertas` + `BodCierreTurno`
-
-### Etapa 3 — Terreno y administración
-9. `JefeInicio` + `JefePartidas` + `JefeCubicacion`
-10. `JefePresupuesto` + `JefeDesviacion` (integrar `fl_chart`) + `JefeCuadrillas`
-11. Las 6 pantallas de `Adm*`
-12. `SinPermiso`
-
-### Etapa 4 — Robustez
-13. Pruebas del backend con Testcontainers (§4.1)
-14. CI en GitHub Actions
-15. Cola sin conexión (§6.1)
-16. Fuentes, ícono y nombre de la app
+1. `JefeDesviacion` (integrar `fl_chart`): cierra el flujo del jefe y el criterio de
+   aceptación «la desviación se muestra en la app».
+2. `JefeCuadrillas` y, con ella, el alta de trabajadores desde la gestión.
+3. `JefeInicio` y el endpoint `GET /api/obras/{id}/resumen`.
+4. `SinPermiso`.
+5. Pruebas de integración de la app contra el backend real.
+6. Cola sin conexión (§6.1), con los requisitos por empresa ya escritos.
+7. Ícono de la app.
 
 ---
 
@@ -264,10 +224,12 @@ suspensión y respaldo por base (MT8). Los PR están encadenados y se integran e
 
 **Pendiente:**
 
-- **Fase 5, la app** (MT9 #112 y MT10 #113): sesión y obra activa por empresa, y base local y cola de
-  sincronización por empresa. Cambiar de cuenta en el mismo equipo no debe mostrar ni enviar datos de la anterior.
-- **La app aún no usa el refresh token** (SEG10): con el token de 30 minutos, el trabajador tendría que volver
-  a entrar cada media hora. Hay que integrarlo antes de que el PR #141 llegue a `develop`.
+- **Fase 5, la app:** la sesión, la obra activa y la copia de la credencial ya se guardan por empresa y usuario
+  (MT9, PR #126). La base local y la cola de sincronización por empresa (MT10 #113) quedan como requisitos de
+  la épica de la cola sin conexión (documento `arquitectura/cola-offline-por-empresa.md`, PR #132),
+  porque la cola no existe todavía.
+- **El refresh token ya lo usa la app** (SEG10, PR #142): renueva el token de 30 minutos sola. Hay que integrarlo
+  junto con el PR #141 del backend: uno sin el otro pide la clave cada media hora o recibe un token que no existe.
 - **Operadores de plataforma:** no hay forma de crear más del primero (se crea con `PLATAFORMA_OPERADOR_*`) ni de
   cambiarles la clave; su token no tiene refresh.
 - **Altas a medias:** un corte del proceso en medio del alta deja una empresa a medias; no hay un barrido que la
@@ -279,5 +241,5 @@ suspensión y respaldo por base (MT8). Los PR están encadenados y se integran e
   `solicitudes_material` (hoy la unicidad de "una solicitud pendiente" la sostiene un bloqueo de fila);
   pedidos de herramientas con QR no validan la obra del trabajador al crearse; planes con topes (el plan existe
   en el catálogo pero no limita nada).
-- **Las cifras del informe de agosto** de las secciones 3 en adelante siguen siendo las de entonces.
+- **Las cifras de la app** se midieron el 2026-11-22 (§1); las de las secciones 4 y 5 son las de agosto salvo lo corregido.
 

@@ -51,8 +51,8 @@ mientras la obra todavía está abierta.
 | `mobile_scanner` | ^7.4.0 | Escáner de cámara: credencial QR del trabajador y código de barras de material y herramientas |
 | `dio` | ^5.11.0 | Cliente HTTP contra la API |
 | `flutter_riverpod` | ^2.6.1 | Manejo de estado |
-| `drift` | ^2.34.3 | Base local (cola de movimientos sin conexión) |
-| `flutter_secure_storage` | ^11.0.0 | Guardar el JWT y el PIN de forma segura |
+| `drift` | ^2.34.3 | Base local para la cola de movimientos sin conexión (declarada, **aún sin usar**: la cola no existe) |
+| `flutter_secure_storage` | ^11.0.0 | Guardar la sesión (token y refresh token) de forma segura. El PIN no se guarda nunca |
 | `file_picker` | ^12.2.0 | Elegir y guardar la planilla `.xlsx` de la importación masiva |
 | `fl_chart` | ^1.2.0 | Gráficos de desviación y consumo |
 | `intl` | ^0.20.3 | Formato de fechas y montos en es-CL |
@@ -136,8 +136,9 @@ checkinobra/
 │   ├── lib/
 │   │   ├── core/{theme,network}/    Tema visual y cliente HTTP
 │   │   ├── data/{api,local_db}/     Repositorios remotos y base local
-│   │   ├── features/                auth · cubicacion · presupuesto ·
-│   │   │                            inventario · solicitudes · admin
+│   │   ├── features/                auth · admin · bodega · trabajador ·
+│   │   │                            jefe_terreno · cubicacion · presupuesto ·
+│   │   │                            obra · inicio
 │   │   └── shared_widgets/
 │   ├── android/
 │   ├── .env.example
@@ -375,19 +376,20 @@ bodeguero no puede despacharle nada.
 | Rol | Correo | PIN | Qué ve hoy en la app |
 |---|---|---|---|
 | Administrador | `admin@arauco-ltda.cl` | `PRIMER_ADMIN_CLAVE` del `.env` (la cambia en su primer ingreso) | Obras, materiales, usuarios, empresa y la vista de bodega |
-| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `jefe-1111-obra` | Pantalla de rol pendiente (su flujo no está construido) |
+| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `jefe-1111-obra` | Partidas, cubicación y presupuesto de la obra que elija |
 | Bodeguero | `jorge.reyes@arauco-ltda.cl` | `bodega-2222-obra` | Inicio, bodega, herramientas y alertas de la obra que elija |
-| Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Pantalla de rol pendiente (su flujo no está construido) |
+| Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Inicio, credencial QR, historial y pedidos de material y herramientas |
 | Trabajador | `javier.ortiz@arauco-ltda.cl` | `4444` | Idem |
 
 Los correos y PINs salen de `CUENTAS` en el script: si cambias uno allá, cámbialo
 acá. El jefe de terreno y el bodeguero usan una clave de 8 o más caracteres: la
 API la exige a todo rol que no sea trabajador.
 
-**Probar el escaneo de credencial sin la app del trabajador.** Como esa app
-todavía no existe, no hay QR que mostrar. Corre el script con
-`--renovar-credenciales`: imprime el código de cada trabajador (el anterior deja
-de valer), y el bodeguero lo escribe en el ingreso manual del escáner.
+**Probar el escaneo de credencial.** Entra como trabajador (`marcelo.sepulveda@…`) en
+un teléfono o emulador y abre *Credencial*: el bodeguero la escanea desde el suyo. Con
+un solo equipo, corre el script con `--renovar-credenciales`: imprime el código de cada
+trabajador (el anterior deja de valer) y el bodeguero lo escribe en el ingreso manual
+del escáner.
 
 > ⚠️ El script reemplaza PINs. Es solo para la base local: no lo corras contra un
 > servidor real.
@@ -428,27 +430,20 @@ termine de bootear, crea el `.env` desde `.env.example` si falta y lanza
 
 #### Qué se ve al correrla
 
-Por ahora la app abre en una **pantalla de verificación de conexión**. No es
-una pantalla del producto: es una herramienta para el equipo que comprueba, de
-una sola vez, que el teléfono llega hasta la base de datos.
-
-Al tocar *Probar conexión* hace un login real contra `/api/auth/login` con el
-usuario semilla y muestra:
-
-- **En verde** — el rol, la empresa, el JWT recibido y la latencia. Eso
-  significa que funcionan la red, la API, PostgreSQL y las migraciones.
-- **En rojo** — la causa concreta y el comando para resolverla. Distingue entre
-  firewall bloqueando, redes WiFi distintas, IP desactualizada en el `.env` y
-  backend caído.
-
-Es el punto de partida: las pantallas reales del MVP1 (acceso por rol,
-cubicación, bodega, solicitudes) se construyen sobre esta base.
+La app abre en la **pantalla de acceso**. Entra con una de las cuentas de la tabla de
+arriba: cada rol llega a su propia app (ver [App móvil](#app-móvil)). Si el
+teléfono ya recuerda a un trabajador, le ofrece entrar solo con su PIN; a los
+demás roles les pide correo y clave. Una cuenta con clave provisoria —como la del
+administrador inicial— solo ve la pantalla de cambio de clave hasta que la cambie.
 
 **Si la app dice "No se pudo alcanzar el servidor"**, revisa en este orden:
 
 1. El backend está arriba — `docker compose ps`
-2. El teléfono y el computador están en la **misma red WiFi**
-3. La IP del `.env` es la actual — cambia cada vez que cambias de red
+2. Un teléfono físico va **por cable con `adb reverse`** (lo hace
+   `scripts/levantar.sh --telefono`): Android bloquea el tráfico en claro, así que
+   en *debug* solo se permite HTTP hacia `10.0.2.2`, `localhost` y `127.0.0.1`, y
+   la IP de la WiFi en el `.env` ya no sirve
+3. El emulador usa `http://10.0.2.2:8081`, que es el valor por defecto
 
 > Sobre el firewall: aunque UFW esté activo con política `DROP`, **normalmente
 > no bloquea** los puertos publicados por Docker. Docker inserta sus propias
@@ -461,7 +456,7 @@ cubicación, bodega, solicitudes) se construyen sobre esta base.
 > adb shell "curl -s -o /dev/null -w '%{http_code}' http://<IP-del-PC>:8081/v3/api-docs"
 > ```
 >
-> Si eso devuelve `200`, el problema no es de red sino del `.env` de la app.
+> Si eso devuelve `200`, el problema no es de red sino de cómo la app llega a la API (ver el punto 2).
 
 ---
 
@@ -1180,8 +1175,10 @@ El enrutado está en `main.dart`, en `_paraElRol`.
 |---|---|---|
 | Bodeguero | ✅ Construido | `features/bodega/shell_bodega.dart` |
 | Administrador | ✅ Construido | `features/admin/shell_admin.dart` |
-| Jefe de terreno | ⏳ Pendiente | `features/inicio/pantalla_rol_pendiente.dart` |
-| Trabajador | ⏳ Pendiente | idem |
+| Trabajador | ✅ Construido | `features/trabajador/shell_trabajador.dart` |
+| Jefe de terreno | 🟡 Sin la desviación | `features/jefe_terreno/shell_jefe_terreno.dart` |
+
+`PantallaRolPendiente` queda solo para un rol que la app no conoce.
 
 #### Bodeguero
 
@@ -1273,15 +1270,36 @@ importa nada: se corrige el archivo y se vuelve a subir. El bodeguero tiene la
 misma pantalla acotada a herramientas, porque es quien las etiqueta y las da de
 alta cuando llegan.
 
+#### Trabajador
+
+Tres pestañas, sobre la obra de su cuadrilla (sin cuadrilla no hay bodega a la que
+pedirle):
+
+1. **Inicio** — lo vencido primero y en rojo, lo que tiene en su poder y lo que
+   espera de bodega, y el acceso a pedir material, pedir herramientas y hacer un
+   **pedido especial**.
+2. **Credencial** — el QR a ancho completo para que el bodeguero lo escanee; se
+   puede renovar, y una copia guardada permite mostrarla sin señal.
+3. **Historial** — lo que pidió y las herramientas que tuvo.
+
+Pedir herramientas permite elegir varias y retirarlas con **un QR de pedido**. No ve
+precios ni costos.
+
+#### Jefe de terreno
+
+Elige obra y trabaja con dos pestañas:
+
+1. **Partidas** — crear una partida (tipo, ancho, alto y separación de montantes) y
+   **cubicarla**: cada material con su cantidad calculada y con merma. Cubicar de nuevo
+   reemplaza el cálculo anterior.
+2. **Presupuesto** — crearlo, agregar ítems con el precio vigente del catálogo (o todos
+   los de una partida cubicada), aprobarlo y congelarlo. Congelado no se edita.
+
 #### Lo que falta
 
-El **jefe de terreno** necesita el flujo de cubicación: crear partidas, correr
-el motor de cubicación, armar y congelar el presupuesto, y ver la desviación.
-El **trabajador** necesita el de terreno: solicitar herramienta y material,
-mostrar su credencial QR y seguir sus préstamos. Ambos endpoints ya existen en
-el backend y ambos roles ya autentican y autorizan bien; lo que falta son las
-pantallas. Mientras tanto, `PantallaRolPendiente` se lo dice en pantalla junto
-con los permisos que su rol sí tiene.
+La **desviación** presupuestado vs. ejecutado del jefe de terreno, la gestión de
+cuadrillas, su pantalla de inicio, `SinPermiso` y la cola sin conexión. El detalle y el
+estado de cada pantalla están en [`docs/PENDIENTES.md`](docs/PENDIENTES.md).
 
 ### Emulador (teléfono virtual)
 
