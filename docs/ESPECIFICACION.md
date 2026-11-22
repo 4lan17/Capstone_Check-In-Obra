@@ -75,7 +75,9 @@ corregible.
   ni factura asociada.
 - **Multi-obra simultánea para un mismo bodeguero.** Se elige una obra y se
   trabaja sobre ella.
-- **Alta de constructoras por API.** Ver [RF-A8](#a-acceso-y-configuración).
+- **Planes, cobro y topes por empresa.** El alta, la suspensión y el respaldo de
+  una constructora existen (RF-A8 a RF-A10), pero el plan no limita usuarios ni
+  obras todavía y no hay facturación.
 - **Web.** Hay mockups de escritorio en `docs/mockups/design/`, pero el MVP 1
   entrega solo la app Android.
 - **Nómina, asistencia y avance físico de obra.**
@@ -253,12 +255,18 @@ Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de
 | RF-A5 | Consultar el padrón de la empresa y un usuario puntual | ADMIN | `GET /api/usuarios`, `GET /api/usuarios/{id}` | ✅ (el detalle, 🟡) |
 | RF-A6 | Restablecer el PIN de un usuario | ADMIN | `PUT /api/usuarios/{id}/pin` | ✅ |
 | RF-A7 | Consultar los datos de la propia constructora | Autenticado | `GET /api/empresas/mia`, `GET /api/empresas/{id}` | ✅ |
-| RF-A8 | Dar de alta una constructora | — | **sin endpoint, por migración SQL** | ✅ |
+| RF-A8 | Dar de alta una constructora: su base, su usuario de base, el esquema y su primer ADMIN (con clave a cambiar) | PLATAFORMA | `POST /api/plataforma/empresas` | ✅ |
+| RF-A9 | Suspender y reactivar una constructora | PLATAFORMA | `PUT /api/plataforma/empresas/{id}/estado` | ✅ |
+| RF-A10 | Iniciar sesión como operador de plataforma | Público | `POST /api/plataforma/auth/login` | ✅ |
 
-> **RF-A8 no es un olvido.** Crear un tenant no es una operación de un tenant:
-> el ADMIN que creara la empresa no podría verla después, porque el aislamiento
-> lo dejaría fuera de la que acaba de crear. Haría falta un rol por encima de
-> los cuatro, y el sistema tiene cuatro por diseño.
+> **El alta de una constructora no es una operación de una constructora.** El
+> ADMIN que la creara no podría verla después, porque el aislamiento lo dejaría
+> fuera de la que acaba de crear. Por eso hay un rol por encima de los cuatro,
+> `PLATAFORMA`: el operador de plataforma **no pertenece a ninguna empresa**, vive
+> en el catálogo y su token no lleva `empresaId`. Nunca llega a una ruta de
+> empresa, ni una empresa a `/api/plataforma/**` (§9.6). El respaldo y la
+> restauración por base son scripts (`scripts/respaldar-empresa.sh`,
+> `scripts/restaurar-empresa.sh`), no endpoints.
 
 ### B. Obra y equipos
 
@@ -448,7 +456,7 @@ Un préstamo abierto (`fecha_devol_real` nula) pasada su fecha esperada está
 ## 9. Interfaz de la API
 
 Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
-`/swagger-ui.html`. **71 endpoints** en 16 controladores.
+`/swagger-ui.html`. **106 endpoints** en 21 controladores.
 
 ### 9.1 Autenticación
 
@@ -479,7 +487,9 @@ herramientas lo son).
 | `200` | Operación exitosa |
 | `201` | Recurso creado |
 | `400` | Datos inválidos, enum inexistente, parámetro faltante, credenciales incorrectas |
-| `403` | Sin token, token inválido, o el rol no autoriza la acción |
+| `401` | Sin token, token inválido o vencido, o un refresh token que no sirve (`SESION_INVALIDA`) |
+| `403` | El rol no autoriza la acción, la cuenta debe cambiar su clave (`DEBE_CAMBIAR_PIN`) o la empresa está suspendida (`EMPRESA_SUSPENDIDA`) |
+| `429` | Demasiados intentos de login fallidos; trae `Retry-After` |
 | `404` | El recurso no existe **o es de otra empresa** (RN-23) |
 | `409` | La operación choca con una regla de negocio |
 
@@ -518,6 +528,34 @@ id más la etiqueta mínima para leerlas. Devolver la entidad arrastraba el graf
 completo por los `@ManyToOne(EAGER)` — y con él, en su momento, el hash del PIN.
 Hay dos records de trabajador a propósito: uno sin la credencial QR y otro solo
 al emitirla o renovarla.
+
+---
+
+### 9.6 Aislamiento entre empresas y plataforma
+
+El aislamiento tiene capas, y cada una cubre el hueco de la anterior:
+
+1. **Una base de datos por empresa.** Un catálogo (`checkinobra_catalogo`) guarda qué empresas
+   existen y cómo conectarse a cada una; `TenantRoutingDataSource` abre la base de la empresa del
+   token y **no tiene base por defecto**: sin empresa en el contexto, la petición falla. Los datos
+   de otra empresa no están en la base que se abrió.
+2. **Un usuario de PostgreSQL por empresa**, solo con DML y conectado únicamente a su base; las
+   migraciones las aplica otro usuario (el migrador, dueño del esquema).
+3. **`AccesoEmpresa.esPropio` / `exigirEmpresa`** y la columna `empresa_id` se mantienen como red:
+   un recurso ajeno responde 404, igual que uno inexistente (RN-23). **43 comprobaciones en 17
+   archivos** (medido sobre `backend/src/main`, sin contar `AccesoEmpresa` ni los comentarios) y
+   las **20 entidades** implementan `PerteneceAEmpresa`.
+4. **El token** lleva `empresaId`, `iss`, `aud` y la versión de sesión; vive 30 minutos y se
+   renueva con un refresh token rotativo.
+
+**Plataforma.** El rol `PLATAFORMA` (operador, tabla `operadores` del catálogo) entra por
+`POST /api/plataforma/auth/login`; su token **no lleva `empresaId`** y se revalida contra el
+catálogo. `/api/plataforma/**` exige ese rol (un token de empresa recibe 403) y toda ruta de
+empresa rechaza un token de plataforma (403). El alta de una empresa registra el catálogo, crea
+su base y su usuario de PostgreSQL (con un rol aprovisionador distinto del de la API y del
+migrador), migra, siembra la empresa con el mismo id del catálogo, abre el pool en caliente y crea
+su primer ADMIN; si un paso falla se deshace todo. Una empresa **suspendida** recibe 403
+(`EMPRESA_SUSPENDIDA`) sin que se abra su base.
 
 ---
 
@@ -609,7 +647,7 @@ acceso a la vista de bodega, porque la matriz de permisos se lo concede).
 
 ### 10.5 Cobertura de la API
 
-La capa de datos de la app implementa **43 de los 71 endpoints**. Sin consumir:
+La capa de datos de la app implementa **43 de los 71 endpoints** que había cuando se midió (agosto; el backend creció a 106 y no se volvió a medir la app). Sin consumir:
 cuadrillas (3), partidas y cubicación (5), presupuestos (8), el alta de
 solicitudes —que es del trabajador, cuyo flujo falta— y varias lecturas de
 detalle.
@@ -679,19 +717,19 @@ Cifras verificadas contra el código de la rama de referencia.
 
 | Área | Medida | Valor |
 |---|---|---|
-| Backend — endpoints | Anotaciones de mapeo en 16 controladores | **71** |
-| Backend — entidades | Clases `@Entity` | **17** |
-| Backend — servicios | Clases `*Service` | **18** |
+| Backend — endpoints | Anotaciones de mapeo en 21 controladores | **106** |
+| Backend — entidades | Clases `@Entity` (todas `PerteneceAEmpresa`) | **20** |
+| Backend — servicios | Clases `*Service` | **28** |
 | Backend — migraciones | Flyway `V1`–`V5` | **5** |
-| Backend — pruebas | `contextLoads` + 4 de arquitectura y seguridad + 3 de importación y escaneo | **8 clases · 51 casos** |
+| Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **56 clases · 397 casos** |
 | App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart` | **43 / 71** |
 | App — flujos por rol | Bodeguero y administrador construidos | **2 / 4** |
 | App — pantallas | `pantalla_*.dart` + shells | **21** |
 | App — pruebas | Unitarias y de widget | **6 archivos · 46 casos** |
 | CI | GitHub Actions sobre `main` y `develop` | ✅ |
 
-**Requisitos funcionales:** los **56** requisitos de la §6 están soportados por
-el backend —RF-A3 es del lado de la app y RF-A8 se resuelve por migración— y
+**Requisitos funcionales:** los **58** requisitos de la §6 están soportados por
+el backend —RF-A3 es del lado de la app— y
 **41** de ellos están además disponibles en la app. Lo que falta ahí es, en
 bloque, el flujo del jefe de terreno (cubicación, presupuesto y desviación) y el
 del trabajador (solicitudes y credencial).

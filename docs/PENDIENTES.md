@@ -1,6 +1,6 @@
 # Check-In-Obra — Estado y trabajo pendiente
 
-**Fecha:** 2026-08-27 · **Rama:** `main` · **Repo:** [1Bryvn/Check-In-Obra](https://github.com/1Bryvn/Check-In-Obra)
+**Fecha:** 2026-08-27 (backend y multi-tenant actualizados el 2026-11-20; **las filas y secciones de la app móvil no se actualizaron**) · **Rama:** `main` · **Repo:** [1Bryvn/Check-In-Obra](https://github.com/1Bryvn/Check-In-Obra)
 
 Informe del estado real del proyecto y lo que falta para cerrar el MVP 1.
 Las cifras salen de auditar el código, no de estimaciones.
@@ -11,13 +11,13 @@ Las cifras salen de auditar el código, no de estimaciones.
 
 | Área | Hecho | Total | Avance |
 |---|---:|---:|---:|
-| **Backend** — endpoints REST | 66 | 66 | ✅ 100 % |
-| **Backend** — entidades del diagrama | 17 | 17 | ✅ 100 % |
+| **Backend** — endpoints REST | 106 | 106 | ✅ 100 % |
+| **Backend** — entidades (`@Entity`) | 20 | 20 | ✅ 100 % |
 | **App móvil** — pantallas diseñadas | 2 | 34 | 🟠 6 % |
 | **App móvil** — endpoints consumidos | 2 | 66 | 🔴 3 % |
-| **Pruebas** — backend | 1 | — | 🔴 solo `contextLoads` |
+| **Pruebas** — backend | 397 | — | ✅ 56 clases; unitarias e integración contra Postgres real |
 | **Pruebas** — móvil | 7 | — | 🟠 unitarias, sin integración |
-| **CI/CD** | 0 | — | 🔴 sin configurar |
+| **CI/CD** | 1 | — | ✅ GitHub Actions (backend y app); CodeQL y revisión de dependencias solo con la variable `GHAS=true` |
 
 **Lectura corta:** el backend está completo y probado a mano; la app móvil
 tiene la autenticación lista y le faltan 32 de 34 pantallas.
@@ -31,8 +31,9 @@ Verificado de punta a punta contra el backend real, no asumido:
 - **Infraestructura** — `docker compose up` levanta backend + PostgreSQL con
   puertos que no chocan con otros proyectos (8081/5433). Flyway aplica el
   esquema completo y el usuario semilla.
-- **Backend** — 17 entidades, 17 repositorios, 17 servicios, 16 controladores,
-  66 endpoints, autorización por rol con `@PreAuthorize`, JWT, Swagger.
+- **Backend** — 20 entidades, 21 controladores, 106 endpoints, autorización por
+  rol con `@PreAuthorize`, JWT con refresh, Swagger (apagado en el perfil `prod`).
+  *(Cifras del 2026-11-20; las de la app móvil de este informe son de agosto.)*
 - **App móvil** — acceso por correo+PIN y por PIN, sesión persistente en el
   Keystore, cliente HTTP con Bearer automático, tema del design system.
 - **Entorno de desarrollo** — celular físico y emulador Pixel 5 (API 33),
@@ -111,24 +112,28 @@ El backend está **funcionalmente completo**, pero le falta respaldo automatizad
 
 ### 4.1 Pruebas — prioridad alta
 
-Hoy existe **un solo test**: `contextLoads()`, que además necesita PostgreSQL
-levantado para pasar. Hay **18 validaciones de negocio sin ninguna prueba**.
+*(Actualizado el 2026-11-20.)* El backend tiene **397 pruebas en 56 clases**, casi todas de integración
+contra PostgreSQL real (HTTP con el servidor levantado, dos bases reales, los scripts de respaldo). Ya no
+es «un solo test». **No hay medición de cobertura** (no hay JaCoCo en el `pom.xml`), así que no se sabe
+cuántas validaciones de negocio siguen sin prueba: la cifra de «18 sin ninguna prueba» del informe de
+agosto no se volvió a medir.
 
-Las que más duelen si se rompen en silencio:
+De las reglas que más duelen si se rompen en silencio, buscando su código o su nombre en las pruebas:
 
-| Regla | Dónde vive |
-|---|---|
-| El kardex no admite stock negativo | `KardexMovimientoService` |
-| Una obra no cierra con herramientas fuera o alertas abiertas | `ObraService.cerrarObra` |
-| Un presupuesto solo se congela desde `APROBADO` | `Presupuesto.congelar` |
-| Una solicitud resuelta no se puede volver a resolver | `Solicitud*.aprobar/rechazar` |
-| Una herramienta prestada no se puede volver a prestar | `PrestamoHerramientaService` |
-| El PIN debe tener exactamente 4 dígitos | `Usuario.definirPin` |
+| Regla | Dónde vive | ¿Tiene prueba? |
+|---|---|---|
+| El kardex no admite stock negativo | `KardexMovimientoService` | Sí (`STOCK_INSUFICIENTE`, con concurrencia) |
+| Una obra no cierra con herramientas fuera o alertas abiertas | `ObraService.cerrarObra` | Se nombra en las pruebas; no se verificó que cubran las dos condiciones |
+| Un presupuesto solo se congela desde `APROBADO` | `Presupuesto.congelar` | **No encontré una prueba** |
+| Una solicitud resuelta no se puede volver a resolver | `Solicitud*.aprobar/rechazar` | Sí (`YA_RESUELTA`) |
+| Una herramienta prestada no se puede volver a prestar | `PrestamoHerramientaService` | Sí (`HERRAMIENTA_NO_DISPONIBLE`) |
+| La clave cumple la política de su rol (el PIN de un trabajador es de 4 dígitos) | `Usuario.definirPin` | Sí |
 
-> **Recomendación:** usar Testcontainers para levantar PostgreSQL en las
-> pruebas. Así los tests corren contra la base real, incluidas las
-> restricciones del esquema, sin depender de que alguien tenga Docker
-> levantado a mano.
+La columna «¿Tiene prueba?» sale de un `grep`, no de una cobertura medida.
+
+> **Recomendación pendiente:** hoy las pruebas **necesitan un PostgreSQL con los roles y bases ya
+> creados** (la CI lo levanta como servicio; en local, `db/crear-roles.sh`). Testcontainers lo
+> haría solo; no se adoptó. Medir la cobertura (JaCoCo) tampoco.
 
 ### 4.2 Endpoints que faltarían
 
@@ -244,3 +249,35 @@ Además del código:
 - [ ] Documentar la decisión de las recetas de cubicación (§6.2) en el informe
 - [ ] Evidencia de pruebas — hoy solo existe la verificación manual de esta bitácora
 - [ ] Diagrama de despliegue — el de clases ya está en `docs/diagrams/`
+
+---
+
+## 9. Multi-tenant: una base por empresa (actualizado 2026-11-20)
+
+Épica [#102](https://github.com/4lan17/Capstone_Check-In-Obra/issues/102). El detalle del diseño está
+en [`docs/arquitectura/multitenant.html`](arquitectura/multitenant.html) y la operación en el README.
+
+**Implementado en el backend (fases 0 a 4):** usuarios de base propios (MT0), catálogo (MT1), enrutador sin
+base por defecto (MT2), Flyway por base (MT3), login que resuelve la empresa antes del token (MT4), pruebas
+con dos bases reales (MT5), rol `PLATAFORMA` (MT6), alta de una constructora de punta a punta (MT7) y
+suspensión y respaldo por base (MT8). Los PR están encadenados y se integran en ese orden.
+
+**Pendiente:**
+
+- **Fase 5, la app** (MT9 #112 y MT10 #113): sesión y obra activa por empresa, y base local y cola de
+  sincronización por empresa. Cambiar de cuenta en el mismo equipo no debe mostrar ni enviar datos de la anterior.
+- **La app aún no usa el refresh token** (SEG10): con el token de 30 minutos, el trabajador tendría que volver
+  a entrar cada media hora. Hay que integrarlo antes de que el PR #141 llegue a `develop`.
+- **Operadores de plataforma:** no hay forma de crear más del primero (se crea con `PLATAFORMA_OPERADOR_*`) ni de
+  cambiarles la clave; su token no tiene refresh.
+- **Altas a medias:** un corte del proceso en medio del alta deja una empresa a medias; no hay un barrido que la
+  detecte. Si una compensación falla, queda en el log y el resto se limpia a mano.
+- **Secretos de las bases creadas por la API:** viven en el volumen `secretos`, que hay que respaldar junto con las
+  bases; los scripts de respaldo no lo incluyen. Programar y cifrar los respaldos es de quien despliega.
+- **Suspensión con varias instancias:** vale en la instancia que la recibe (hoy hay una).
+- **Mejoras anotadas:** `REVOKE` de la API sobre `flyway_schema_history`; índice único parcial en
+  `solicitudes_material` (hoy la unicidad de "una solicitud pendiente" la sostiene un bloqueo de fila);
+  pedidos de herramientas con QR no validan la obra del trabajador al crearse; planes con topes (el plan existe
+  en el catálogo pero no limita nada).
+- **Las cifras del informe de agosto** de las secciones 3 en adelante siguen siendo las de entonces.
+

@@ -560,26 +560,12 @@ Base: `http://localhost:8081` · Swagger: `/swagger-ui.html`
 
 ### Dar de alta una constructora
 
-No hay endpoint para crearla, y no es un olvido. Lo hubo, y era incoherente: el
-ADMIN que creaba una empresa no podía verla después, porque el aislamiento por
-empresa lo dejaba fuera de la que acababa de crear. Dar de alta un tenant no es
-una operación de un tenant — necesitaría un rol por encima de los cuatro, y
-este sistema tiene cuatro por diseño.
-
-Una constructora nueva se crea por migración junto con su primer ADMIN, como
-hacía `V2__seed_admin.sql`:
-
-```sql
-INSERT INTO empresas (nombre, rut) VALUES ('Constructora Nueva Ltda.', '77.111.222-3');
-
-INSERT INTO usuarios (nombre, email, rol, pin_hash, debe_cambiar_pin, empresa_id)
-VALUES ('Admin Nueva', 'admin@nueva.cl', 'ADMIN',
-        '<hash BCrypt de una clave temporal de 8 o más caracteres, que no esté en el repo>',
-        TRUE,
-        (SELECT id FROM empresas WHERE rut = '77.111.222-3'));
-```
-
-Con `debe_cambiar_pin = TRUE` su primera acción tiene que ser cambiar esa clave.
+Ya no es una migración a mano: la da de alta un **operador de plataforma** con una sola llamada,
+`POST /api/plataforma/empresas`, que crea su base, su usuario de PostgreSQL, el esquema y su
+primer ADMIN (con clave a cambiar en su primer ingreso). El detalle —el rol `PLATAFORMA`, las
+credenciales que intervienen, la suspensión, el respaldo y el borrado— está en
+[Operadores de plataforma](#operadores-de-plataforma-rol-plataforma). Si un paso falla, se
+deshace todo. `V2__seed_admin.sql` ya no existe: la empresa de partida la registra el arranque.
 
 ### Escaneo e importación masiva
 
