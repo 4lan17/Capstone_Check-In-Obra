@@ -11,12 +11,12 @@ Las cifras salen de auditar el código, no de estimaciones.
 
 | Área | Hecho | Total | Avance |
 |---|---:|---:|---:|
-| **Backend** — endpoints REST | 105 | 105 | ✅ 100 % |
+| **Backend** — endpoints REST | 106 | 106 | ✅ 100 % |
 | **Backend** — entidades (`@Entity`) | 20 | 20 | ✅ 100 % |
 | **App móvil** — pantallas diseñadas | 29 | 34 | 🟢 85 % |
-| **App móvil** — endpoints consumidos | 83 | 105 | 🟢 79 % (83 de los 100 que no son de plataforma) |
+| **App móvil** — endpoints consumidos | 84 | 106 | 🟢 79 % (84 de los 101 que no son de plataforma) |
 | **Pruebas** — backend | 349 | — | ✅ 48 clases; unitarias e integración contra Postgres real |
-| **Pruebas** — móvil | 286 | — | ✅ 27 archivos; unitarias y de widget, sin integración contra el backend |
+| **Pruebas** — móvil | 310 | — | ✅ 28 archivos; unitarias y de widget, sin integración contra el backend |
 | **CI/CD** | 1 | — | ✅ GitHub Actions (backend y app); CodeQL y revisión de dependencias solo con la variable `GHAS=true` |
 
 **Lectura corta:** el backend está completo y probado; la app móvil tiene los
@@ -37,9 +37,9 @@ Verificado de punta a punta contra el backend real, no asumido:
 - **Infraestructura** — `docker compose up` levanta backend + PostgreSQL con
   puertos que no chocan con otros proyectos (8081/5433). Flyway aplica el
   esquema completo y el usuario semilla.
-- **Backend** — 20 entidades, 21 controladores, 105 endpoints, autorización por
+- **Backend** — 20 entidades, 21 controladores, 106 endpoints, autorización por
   rol con `@PreAuthorize`, JWT con refresh, Swagger (apagado en el perfil `prod`).
-  *(Cifras del 2026-11-20; las de la app móvil de este informe son de agosto.)*
+  *(Cifras de `develop` al 2026-11-22.)*
 - **App móvil** — los cuatro roles entran a su propia app: bodeguero (stock, kardex,
   escáner, solicitudes, herramientas, alertas), administrador (obras, materiales,
   usuarios, importación de planillas), trabajador (credencial QR, pedidos,
@@ -79,9 +79,6 @@ por su id desde la gestión (RF-B9). El trabajador renueva la suya desde su cred
 
 ### 3.2 Pendientes que no son un diseño
 
-- **El botón «Agregar una partida cubicada»** del presupuesto usa
-  `POST /api/presupuestos/{id}/items/desde-partida`, que está en un PR del backend
-  aún no integrado; mientras no lo esté, ese botón no funciona contra el backend.
 - **Pruebas de integración de la app contra el backend real:** hoy son todas con el
   backend simulado.
 - **Ícono de la app:** sigue siendo el de Flutter por defecto.

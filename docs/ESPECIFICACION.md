@@ -456,7 +456,7 @@ Un préstamo abierto (`fecha_devol_real` nula) pasada su fecha esperada está
 ## 9. Interfaz de la API
 
 Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
-`/swagger-ui.html`. **105 endpoints** en 21 controladores.
+`/swagger-ui.html`. **106 endpoints** en 21 controladores.
 
 ### 9.1 Autenticación
 
@@ -700,7 +700,7 @@ cuadrillas y una pantalla de inicio con contadores.
 
 ### 10.5 Cobertura de la API
 
-La capa de datos de la app consume **83 de los 105 endpoints** del backend.
+La capa de datos de la app consume **84 de los 106 endpoints** del backend.
 Sin consumir quedan 22: **5** son de la plataforma (`/api/plataforma/*`), que no
 pasa por la app móvil, y **17** son del producto:
 
@@ -712,8 +712,8 @@ pasa por la app móvil, y **17** son del producto:
   solicitudes, trabajador y usuario), que la app no necesita porque ya trae las
   listas.
 
-Además consume `POST /api/presupuestos/{id}/items/desde-partida`, que está en un PR
-del backend aún no integrado a la rama de referencia y por eso no entra en los 105.
+Entre los consumidos está `POST /api/presupuestos/{id}/items/desde-partida`, el botón
+«Agregar una partida cubicada» del presupuesto.
 
 ### 10.6 Configuración
 
@@ -785,15 +785,15 @@ Cifras verificadas contra el código de la rama de referencia.
 
 | Área | Medida | Valor |
 |---|---|---|
-| Backend — endpoints | Anotaciones de mapeo en 21 controladores | **105** |
+| Backend — endpoints | Anotaciones de mapeo en 21 controladores | **106** |
 | Backend — entidades | Clases `@Entity` (todas `PerteneceAEmpresa`) | **20** |
 | Backend — servicios | Clases `*Service` | **28** |
 | Backend — migraciones | Flyway `V1`–`V5` | **5** |
 | Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **48 clases · 349 casos** |
-| App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart`; de los 105, 5 son de la plataforma | **83 / 105** (83 de los 100 que no son de plataforma) |
+| App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart`; de los 106, 5 son de la plataforma | **84 / 106** (84 de los 101 que no son de plataforma) |
 | App — flujos por rol | Bodeguero, administrador y trabajador completos; jefe de terreno sin la desviación | **3 / 4** completos |
 | App — pantallas | `pantalla_*.dart` (36) + shells (4) | **40** · 29 de los 34 diseños en `docs/mockups/design-movil/` |
-| App — pruebas | Unitarias y de widget | **27 archivos · 286 casos** |
+| App — pruebas | Unitarias y de widget | **28 archivos · 310 casos** |
 | CI | GitHub Actions sobre `main` y `develop` | ✅ |
 
 **Requisitos funcionales:** los **58** requisitos de la §6 están soportados por
@@ -804,12 +804,11 @@ faltan: crear cuadrillas (RF-B5), dar de alta un trabajador (RF-B6), renovar la
 credencial de un trabajador por su id desde la gestión (RF-B9) y la desviación
 del presupuesto (RF-D6).
 
-**Cómo se midió (2026-11-20).** Sobre el árbol que resulta de integrar los PR
-móviles #119, #120, #123, #125, #126, #133, #134, #135, #136, #142 y #145 (analizado
-sin problemas, 286 pruebas pasan); #150 (aviso de empresa suspendida) no cambia
-ninguna de estas cifras. *Endpoints consumidos*: pares método + ruta de
+**Cómo se midió (2026-11-22).** Sobre `develop` (6e4545f), con todos los PR móviles
+ya integrados: `flutter analyze` sin problemas y 310 pruebas que pasan.
+*Endpoints consumidos*: pares método + ruta de
 `dominio_api.dart` y `auth_api.dart` (los pasos de pedidos especiales,
-`gestionar`/`listo`/`entregar`, se cuentan uno a uno) contra los 105 pares de los
+`gestionar`/`listo`/`entregar`, se cuentan uno a uno) contra los 106 pares de los
 controladores. *Requisitos disponibles*: un requisito cuenta si la app consume su
 endpoint (o el principal, cuando el detalle por id es solo una lectura que la lista
 ya cubre). *Diseños*: cada lienzo de `design-movil` cuenta si hay una pantalla de
