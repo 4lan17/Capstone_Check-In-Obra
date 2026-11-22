@@ -41,7 +41,7 @@ class FilaSolicitudMaterial extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final saldos = ref.watch(stockPorMaterialProvider).valueOrNull;
+    final saldos = ref.watch(stockPorMaterialProvider).value;
     final stock = saldos?[solicitud.materialId];
     final alcanza = stock == null || stock >= solicitud.cantidad;
     // La unidad ("pl", "tira", "un") sale de la categoría del catálogo. Se
@@ -152,7 +152,7 @@ class FilaSolicitudMaterial extends ConsumerWidget {
   /// stock. Si todavía no llegó se devuelve vacía, y `unidadDe` cae en la
   /// unidad genérica en vez de dejar el número desnudo.
   String _categoriaDe(WidgetRef ref, int materialId) {
-    final catalogo = ref.watch(catalogoProvider).valueOrNull;
+    final catalogo = ref.watch(catalogoProvider).value;
     if (catalogo == null) return '';
     for (final m in catalogo) {
       if (m.id == materialId) return m.categoria;
@@ -177,7 +177,7 @@ class FilaSolicitudHerramienta extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final herramienta = ref
         .watch(herramientasProvider)
-        .valueOrNull
+        .value
         ?.where((h) => h.id == solicitud.herramientaId)
         .firstOrNull;
     final disponible = herramienta?.disponible ?? true;
@@ -378,7 +378,7 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
 
   Future<void> _aprobar() async {
     if (_enviando) return;
-    final sesion = ref.read(sesionProvider).valueOrNull;
+    final sesion = ref.read(sesionProvider).value;
     if (sesion == null) return;
 
     if (_valor <= 0) {
@@ -440,7 +440,7 @@ class _HojaAprobarMaterialState extends ConsumerState<_HojaAprobarMaterial> {
   Widget build(BuildContext context) {
     final stock = ref
         .watch(stockPorMaterialProvider)
-        .valueOrNull?[widget.solicitud.materialId];
+        .value?[widget.solicitud.materialId];
     final quedaria = stock == null ? null : stock - _valor;
 
     return _Hoja(
@@ -521,7 +521,7 @@ class _HojaAprobarHerramientaState
 
   Future<void> _aprobar() async {
     if (_enviando) return;
-    final sesion = ref.read(sesionProvider).valueOrNull;
+    final sesion = ref.read(sesionProvider).value;
     if (sesion == null) return;
 
     // Una devolución en el pasado haría nacer el préstamo vencido, con su
@@ -646,7 +646,7 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
 
   Future<void> _rechazar() async {
     if (_enviando) return;
-    final sesion = ref.read(sesionProvider).valueOrNull;
+    final sesion = ref.read(sesionProvider).value;
     if (sesion == null) return;
 
     final motivo = _motivo.text.trim();

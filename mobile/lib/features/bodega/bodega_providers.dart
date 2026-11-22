@@ -15,7 +15,7 @@ import '../obra/obra_activa.dart';
 /// Id de la obra en curso. Todo lo de abajo depende de él, así que si cambia
 /// la obra, se recarga la bodega entera sola.
 final _obraIdProvider = Provider<int?>(
-  (ref) => ref.watch(obraActivaProvider).valueOrNull?.id,
+  (ref) => ref.watch(obraActivaProvider).value?.id,
 );
 
 /// Todos los movimientos de kardex de la obra.
@@ -166,7 +166,7 @@ final solicitudesPendientesProvider = Provider<AsyncValue<int>>((ref) {
   final especiales =
       ref
           .watch(pedidosEspecialesObraProvider)
-          .valueOrNull
+          .value
           ?.where((p) => p.siguientePaso != null)
           .length ??
       0;
@@ -364,5 +364,5 @@ void recargarBodega(WidgetRef ref) {
 
 /// La obra en curso, para los encabezados.
 final obraEnCursoProvider = Provider<Obra?>(
-  (ref) => ref.watch(obraActivaProvider).valueOrNull,
+  (ref) => ref.watch(obraActivaProvider).value,
 );

@@ -52,7 +52,7 @@ class _PantallaPrestamoState extends ConsumerState<PantallaPrestamo> {
   }
 
   Future<void> _elegirHerramienta() async {
-    final disponibles = (ref.read(herramientasProvider).valueOrNull ?? const [])
+    final disponibles = (ref.read(herramientasProvider).value ?? const [])
         .where((h) => h.disponible)
         .toList();
 
@@ -147,7 +147,7 @@ class _PantallaPrestamoState extends ConsumerState<PantallaPrestamo> {
   Future<void> _autorizar() async {
     if (_enviando) return;
     final obra = ref.read(obraEnCursoProvider);
-    final sesion = ref.read(sesionProvider).valueOrNull;
+    final sesion = ref.read(sesionProvider).value;
     if (obra == null || sesion == null) return;
 
     if (_herramienta == null) {

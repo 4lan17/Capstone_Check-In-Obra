@@ -142,7 +142,7 @@ class SelectorTrabajador extends ConsumerWidget {
   }
 
   Future<void> _abrir(BuildContext context, WidgetRef ref) async {
-    final lista = ref.read(trabajadoresDeObraProvider).valueOrNull ?? const [];
+    final lista = ref.read(trabajadoresDeObraProvider).value ?? const [];
     if (lista.isEmpty) return;
 
     final elegido = await showModalBottomSheet<Trabajador>(

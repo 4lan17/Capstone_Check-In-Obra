@@ -229,8 +229,7 @@ class _PantallaPedirMaterialState extends ConsumerState<PantallaPedirMaterial> {
     // darse cuenta.
     final yaPedidos = {
       for (final s
-          in ref.watch(misPendientesProvider).valueOrNull ??
-              const <MiSolicitud>[])
+          in ref.watch(misPendientesProvider).value ?? const <MiSolicitud>[])
         if (s.origen == OrigenSolicitud.material) s.itemId,
     };
 
@@ -606,12 +605,11 @@ class _PantallaPedirHerramientaState
     final herramientas = ref.watch(herramientasParaPedirProvider);
     final yaPedidas = {
       for (final s
-          in ref.watch(misPendientesProvider).valueOrNull ??
-              const <MiSolicitud>[])
+          in ref.watch(misPendientesProvider).value ?? const <MiSolicitud>[])
         if (s.esHerramienta) s.nombre,
     };
     final elegidas = _elegidas(
-      _agrupar(herramientas.valueOrNull ?? const []),
+      _agrupar(herramientas.value ?? const []),
       yaPedidas,
     );
 

@@ -181,8 +181,7 @@ class PantallaEscaneoCodigo extends ConsumerWidget {
       if (!ref.read(movimientosProvider).hasValue) {
         await ref.read(movimientosProvider.future);
       }
-      final stock =
-          ref.read(stockPorMaterialProvider).valueOrNull?[material.id] ?? 0;
+      final stock = ref.read(stockPorMaterialProvider).value?[material.id] ?? 0;
 
       if (!context.mounted) return null;
       await Navigator.of(context).pushReplacement(
@@ -286,7 +285,7 @@ class PantallaHerramientaEscaneada extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prestamo = ref
         .watch(prestamosAbiertosProvider)
-        .valueOrNull
+        .value
         ?.where((p) => p.herramientaId == herramienta.id)
         .firstOrNull;
 

@@ -944,9 +944,7 @@ class EmpresaApi {
 /// anterior, aunque fuera de otra empresa, hasta tirar para refrescar.
 final clienteRestProvider = Provider<ClienteRest>((ref) {
   ref.watch(
-    sesionProvider.select(
-      (s) => (s.valueOrNull?.usuarioId, s.valueOrNull?.empresaId),
-    ),
+    sesionProvider.select((s) => (s.value?.usuarioId, s.value?.empresaId)),
   );
   return ClienteRest(ref.watch(apiClientProvider));
 });

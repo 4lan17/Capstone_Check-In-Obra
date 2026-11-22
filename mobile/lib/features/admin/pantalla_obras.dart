@@ -112,7 +112,7 @@ class _FilaObra extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final o = obra;
     final detalle = ref.watch(detalleObraProvider(o.id));
-    final d = detalle.valueOrNull;
+    final d = detalle.value;
 
     return PanelTocable(
       semanticLabel:

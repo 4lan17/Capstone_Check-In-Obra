@@ -442,7 +442,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(await storage.leer(), isNull);
-      expect(c.read(sesionProvider).valueOrNull, isNull);
+      expect(c.read(sesionProvider).value, isNull);
       expect(auth.revocados, ['refresh-1']);
     });
 
@@ -455,7 +455,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
 
         expect(await storage.leer(), isNull);
-        expect(c.read(sesionProvider).valueOrNull, isNull);
+        expect(c.read(sesionProvider).value, isNull);
         expect(auth.revocados, ['refresh-1']);
       },
     );
@@ -479,7 +479,7 @@ void main() {
           .read(sesionProvider.notifier)
           .aplicarRenovada(_sesion(token: 'nuevo', refresh: 'refresh-2'));
 
-      final s = c.read(sesionProvider).valueOrNull;
+      final s = c.read(sesionProvider).value;
       expect(s?.token, 'nuevo');
       expect(s?.refreshToken, 'refresh-2');
     });
@@ -500,7 +500,7 @@ void main() {
               _sesion(token: 'ajeno', refresh: 'x', empresaId: 2),
             );
 
-        expect(c.read(sesionProvider).valueOrNull?.token, 'viejo');
+        expect(c.read(sesionProvider).value?.token, 'viejo');
       },
     );
 
@@ -543,7 +543,7 @@ void main() {
       await c.read(apiClientProvider).dio.get<dynamic>('/api/obras');
       await Future<void>.delayed(Duration.zero);
 
-      expect(c.read(sesionProvider).valueOrNull, isNull);
+      expect(c.read(sesionProvider).value, isNull);
       expect(await storage.leer(), isNull);
       expect(c.read(avisoDeAccesoProvider), contains('suspendida'));
     });
@@ -571,7 +571,7 @@ void main() {
           .renovar(tokenQueFallo: 'viejo');
 
       expect(resultado, ResultadoRenovacion.renovada);
-      expect(c.read(sesionProvider).valueOrNull?.token, 'nuevo-1');
+      expect(c.read(sesionProvider).value?.token, 'nuevo-1');
       expect((await storage.leer())?.refreshToken, 'refresh-2');
     });
   });

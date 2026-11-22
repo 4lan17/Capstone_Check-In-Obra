@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/navegacion.dart';
 import 'core/network/app_config.dart';
+import 'core/sin_reintentos.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'data/api/auth_api.dart';
@@ -30,7 +31,7 @@ Future<void> main() async {
   // revienta cualquier pantalla que muestre una fecha — que en esta app son
   // casi todas: el kardex, las alertas y el cierre de turno.
   await initializeDateFormatting('es_CL');
-  runApp(const ProviderScope(child: CheckInObraApp()));
+  runApp(const ProviderScope(retry: sinReintentos, child: CheckInObraApp()));
 }
 
 class CheckInObraApp extends StatelessWidget {

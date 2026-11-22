@@ -33,17 +33,13 @@ class _ShellTrabajadorState extends ConsumerState<ShellTrabajador> {
 
   @override
   Widget build(BuildContext context) {
-    final sesion = ref.watch(sesionProvider).valueOrNull;
+    final sesion = ref.watch(sesionProvider).value;
     final perfil = ref.watch(perfilTrabajadorProvider);
     // Lo que pide acción de él: devolver lo vencido y confirmar lo recibido.
     final vencidos =
-        (ref
-                .watch(enMiPoderProvider)
-                .valueOrNull
-                ?.where((p) => p.vencido)
-                .length ??
+        (ref.watch(enMiPoderProvider).value?.where((p) => p.vencido).length ??
             0) +
-        (ref.watch(porConfirmarProvider).valueOrNull?.length ?? 0);
+        (ref.watch(porConfirmarProvider).value?.length ?? 0);
 
     return Scaffold(
       appBar: AppBar(

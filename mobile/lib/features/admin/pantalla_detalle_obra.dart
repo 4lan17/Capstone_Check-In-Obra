@@ -350,7 +350,7 @@ class _SeccionACargo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final jefes = detalle.jefes;
     // Solo el admin asigna jefe; el resto ve la ficha sin el botón.
-    final esAdmin = ref.watch(sesionProvider).valueOrNull?.rol == 'ADMIN';
+    final esAdmin = ref.watch(sesionProvider).value?.rol == 'ADMIN';
     final puedeAsignar = esAdmin && detalle.obra.activa;
 
     return Column(
@@ -1048,7 +1048,7 @@ class _BotonCerrarState extends ConsumerState<_BotonCerrar> {
   @override
   Widget build(BuildContext context) {
     // Cerrar es del admin: los demás roles ven la ficha sin el botón.
-    final esAdmin = ref.watch(sesionProvider).valueOrNull?.rol == 'ADMIN';
+    final esAdmin = ref.watch(sesionProvider).value?.rol == 'ADMIN';
     if (!esAdmin) return const SizedBox.shrink();
 
     return OutlinedButton.icon(

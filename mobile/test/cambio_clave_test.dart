@@ -276,7 +276,7 @@ void main() {
 
       await c.read(sesionProvider.notifier).exigirCambioDeClave();
 
-      expect(c.read(sesionProvider).valueOrNull?.debeCambiarClave, isTrue);
+      expect(c.read(sesionProvider).value?.debeCambiarClave, isTrue);
       expect((await storage.leer())?.debeCambiarClave, isTrue);
     });
 
@@ -286,7 +286,7 @@ void main() {
 
       await c.read(sesionProvider.notifier).exigirCambioDeClave();
 
-      expect(c.read(sesionProvider).valueOrNull, isNull);
+      expect(c.read(sesionProvider).value, isNull);
     });
 
     test('cambiar la clave reemplaza la sesión por la nueva', () async {
@@ -306,7 +306,7 @@ void main() {
             claveNueva: 'nueva-clave-456',
           );
 
-      final sesion = c.read(sesionProvider).valueOrNull;
+      final sesion = c.read(sesionProvider).value;
       expect(sesion?.debeCambiarClave, isFalse);
       expect(sesion?.token, 'definitivo');
       expect((await storage.leer())?.token, 'definitivo');
@@ -332,7 +332,7 @@ void main() {
         throwsA(isA<ApiException>()),
       );
 
-      expect(c.read(sesionProvider).valueOrNull?.debeCambiarClave, isTrue);
+      expect(c.read(sesionProvider).value?.debeCambiarClave, isTrue);
       expect((await storage.leer())?.token, 'provisorio');
     });
   });

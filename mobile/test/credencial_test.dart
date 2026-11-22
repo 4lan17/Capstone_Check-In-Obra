@@ -1,3 +1,4 @@
+import 'package:checkinobra_mobile/core/sin_reintentos.dart';
 import 'package:checkinobra_mobile/core/storage/sesion_storage.dart';
 import 'package:checkinobra_mobile/core/theme/app_theme.dart';
 import 'package:checkinobra_mobile/data/api/auth_api.dart';
@@ -65,6 +66,7 @@ final _sinRed = DioException(
 
 ProviderContainer _contenedor(TrabajadoresApi api) {
   final c = ProviderContainer(
+    retry: sinReintentos,
     overrides: [
       sesionProvider.overrideWith(_SesionTrabajador.new),
       trabajadoresApiProvider.overrideWithValue(api),

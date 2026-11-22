@@ -91,7 +91,7 @@ class _PantallaMovimientoState extends ConsumerState<PantallaMovimiento> {
     FocusScope.of(context).unfocus();
 
     final obra = ref.read(obraEnCursoProvider);
-    final sesion = ref.read(sesionProvider).valueOrNull;
+    final sesion = ref.read(sesionProvider).value;
     if (obra == null || sesion == null) return;
 
     if (_receptorObligatorio && _receptor == null) {

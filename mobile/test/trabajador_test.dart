@@ -15,6 +15,7 @@ import 'package:checkinobra_mobile/features/trabajador/shell_trabajador.dart';
 import 'package:checkinobra_mobile/features/trabajador/trabajador_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -165,6 +166,8 @@ Future<void> _montar(
   WidgetTester tester,
   Widget pantalla, {
   List<Override> overrides = const [],
+  Override? perfil,
+  Override? solicitudes,
 }) async {
   tester.view.physicalSize = const Size(360, 780);
   tester.view.devicePixelRatio = 1;
@@ -173,9 +176,10 @@ Future<void> _montar(
     ProviderScope(
       overrides: [
         sesionProvider.overrideWith(_SesionTrabajador.new),
-        perfilTrabajadorProvider.overrideWith((ref) async => _perfil),
+        perfil ?? perfilTrabajadorProvider.overrideWith((ref) async => _perfil),
         misPrestamosProvider.overrideWith((ref) async => _prestamos),
-        misSolicitudesProvider.overrideWith((ref) async => _solicitudes),
+        solicitudes ??
+            misSolicitudesProvider.overrideWith((ref) async => _solicitudes),
         misPedidosHerramientaProvider.overrideWith((ref) async => const []),
         ...overrides,
       ],
@@ -238,22 +242,20 @@ void main() {
     await _montar(
       tester,
       const ShellTrabajador(),
-      overrides: [
-        perfilTrabajadorProvider.overrideWith(
-          (ref) async => const PerfilTrabajador(
-            id: 1,
-            usuarioId: 6,
-            nombre: 'Marcelo Sepúlveda',
-            rut: null,
-            cuadrillaId: null,
-            cuadrillaNombre: null,
-            obraId: null,
-            obraNombre: null,
-            obraEstado: null,
-            credencialQr: 'X',
-          ),
+      perfil: perfilTrabajadorProvider.overrideWith(
+        (ref) async => const PerfilTrabajador(
+          id: 1,
+          usuarioId: 6,
+          nombre: 'Marcelo Sepúlveda',
+          rut: null,
+          cuadrillaId: null,
+          cuadrillaNombre: null,
+          obraId: null,
+          obraNombre: null,
+          obraEstado: null,
+          credencialQr: 'X',
         ),
-      ],
+      ),
     );
 
     expect(
@@ -276,12 +278,12 @@ void main() {
     await _montar(
       tester,
       const PantallaPedirMaterial(perfil: _perfil),
+      solicitudes: misSolicitudesProvider.overrideWith((ref) async {
+        cargas++;
+        return _solicitudes;
+      }),
       overrides: [
         solicitudesApiProvider.overrideWithValue(api),
-        misSolicitudesProvider.overrideWith((ref) async {
-          cargas++;
-          return _solicitudes;
-        }),
         catalogoTrabajadorProvider.overrideWith(
           (ref) async => const [
             MaterialObra(

@@ -54,7 +54,7 @@ class _ShellAdminState extends ConsumerState<ShellAdmin> {
     final porAtender =
         ref
             .watch(pedidosEspecialesEmpresaProvider)
-            .valueOrNull
+            .value
             ?.where((p) => p.siguientePaso != null)
             .length ??
         0;
@@ -137,10 +137,10 @@ class _PantallaEmpresa extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final empresa = ref.watch(empresaProvider);
-    final sesion = ref.watch(sesionProvider).valueOrNull;
-    final obras = ref.watch(todasLasObrasProvider).valueOrNull;
-    final materiales = ref.watch(catalogoProvider).valueOrNull;
-    final usuarios = ref.watch(usuariosProvider).valueOrNull;
+    final sesion = ref.watch(sesionProvider).value;
+    final obras = ref.watch(todasLasObrasProvider).value;
+    final materiales = ref.watch(catalogoProvider).value;
+    final usuarios = ref.watch(usuariosProvider).value;
 
     return RefreshIndicator(
       onRefresh: () async => ref.refresh(empresaProvider.future),
