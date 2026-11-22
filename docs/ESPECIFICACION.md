@@ -856,4 +856,4 @@ El MVP 1 está completo cuando, sobre una instalación limpia:
 - [x] Un TRABAJADOR solicita material desde su teléfono y el bodeguero lo aprueba desde el suyo.
 - [ ] Las reglas de la §7 están cubiertas por pruebas automatizadas.
 
-Lo marcado corresponde al estado de la rama de referencia al 2026-09-02; las casillas del jefe de terreno y del trabajador se revisaron el 2026-11-20 contra la app (§13).
+Lo marcado corresponde al estado de la rama de referencia al 2026-09-02; las casillas del jefe de terreno y del trabajador se revisaron el 2026-11-22 contra la app (§13).

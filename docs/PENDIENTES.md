@@ -1,6 +1,6 @@
 # Check-In-Obra — Estado y trabajo pendiente
 
-**Fecha:** 2026-08-27 (backend, multi-tenant y app móvil actualizados el 2026-11-20) · **Rama:** `main` · **Repo:** [1Bryvn/Check-In-Obra](https://github.com/1Bryvn/Check-In-Obra)
+**Fecha:** 2026-08-27 (backend, multi-tenant y app móvil actualizados el 2026-11-22) · **Rama:** `main` · **Repo:** [1Bryvn/Check-In-Obra](https://github.com/1Bryvn/Check-In-Obra)
 
 Informe del estado real del proyecto y lo que falta para cerrar el MVP 1.
 Las cifras salen de auditar el código, no de estimaciones.
@@ -23,10 +23,8 @@ Las cifras salen de auditar el código, no de estimaciones.
 flujos del bodeguero, del administrador y del trabajador, y del jefe de terreno
 todo menos la desviación. Le faltan 5 de los 34 diseños (§3).
 
-*Cómo se midió la app (2026-11-20):* sobre el árbol que resulta de integrar los PR
-móviles #119, #120, #123, #125, #126, #133, #134, #135, #136, #142 y #145 —ver
-[`ESPECIFICACION.md` §13](ESPECIFICACION.md#13-estado-de-cumplimiento)—. Si alguno no
-se integra, las cifras de la app bajan en lo que ese PR aporta.
+*Cómo se midió la app (2026-11-22):* sobre `develop` (6e4545f), con los PR móviles ya
+integrados —ver [`ESPECIFICACION.md` §13](ESPECIFICACION.md#13-estado-de-cumplimiento)—.
 
 ---
 
@@ -239,5 +237,5 @@ suspensión y respaldo por base (MT8). Los PR están encadenados y se integran e
   `solicitudes_material` (hoy la unicidad de "una solicitud pendiente" la sostiene un bloqueo de fila);
   pedidos de herramientas con QR no validan la obra del trabajador al crearse; planes con topes (el plan existe
   en el catálogo pero no limita nada).
-- **Las cifras de la app** se midieron el 2026-11-20 (§1); las de las secciones 4 y 5 son las de agosto salvo lo corregido.
+- **Las cifras de la app** se midieron el 2026-11-22 (§1); las de las secciones 4 y 5 son las de agosto salvo lo corregido.
 
