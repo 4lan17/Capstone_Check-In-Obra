@@ -1,13 +1,13 @@
 # Las imágenes base van fijadas por digest (SEG11, S-15): un tag como 21-jre-alpine se mueve, y con
 # él lo que se construye. Dependabot (ecosistema docker) propone el digest nuevo en un PR.
-FROM maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320 AS build
+FROM maven:3.9-eclipse-temurin-26@sha256:b2c1ad85954592f9928e84327c65201f308ad9b5d8ed7d5b823717c97bf23fbb AS build
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa1958231b15ebeae7420429cbc5baf474
+FROM eclipse-temurin:24-jre-alpine@sha256:4044b6c87cb088885bcd0220f7dc7a8a4aab76577605fa471945d2e98270741f
 WORKDIR /app
 # No corre como root: un fallo de la API no entrega un shell de root dentro del contenedor.
 RUN addgroup -S app && adduser -S -G app -H -s /sbin/nologin app

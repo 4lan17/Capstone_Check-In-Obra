@@ -54,7 +54,7 @@ class PantallaSolicitudesAdmin extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final especiales = ref.watch(pedidosEspecialesEmpresaProvider);
-    final obras = ref.watch(obrasActivasProvider).valueOrNull ?? const [];
+    final obras = ref.watch(obrasActivasProvider).value ?? const [];
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -188,7 +188,7 @@ class _ObraConPendientes extends ConsumerWidget {
               },
             ],
           ),
-          if (pendientes.valueOrNull case final p? when p.total > 0) ...[
+          if (pendientes.value case final p? when p.total > 0) ...[
             const SizedBox(height: AppEspacio.sm),
             for (final s in p.materiales.take(3))
               _Linea(

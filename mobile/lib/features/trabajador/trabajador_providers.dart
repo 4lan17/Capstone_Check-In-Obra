@@ -21,7 +21,7 @@ import '../bodega/pantalla_bodega.dart';
 /// respondió —un 404 de ficha sin crear, un 401—, esa respuesta manda.
 final perfilTrabajadorProvider = FutureProvider<PerfilTrabajador>((ref) async {
   final storage = ref.watch(sesionStorageProvider);
-  final sesion = ref.watch(sesionProvider).valueOrNull;
+  final sesion = ref.watch(sesionProvider).value;
   try {
     final perfil = await ref.watch(trabajadoresApiProvider).yo();
     if (sesion != null) {
@@ -290,7 +290,7 @@ final pedidosPorRetirarProvider = Provider<List<PedidoHerramienta>>(
   (ref) =>
       ref
           .watch(misPedidosHerramientaProvider)
-          .valueOrNull
+          .value
           ?.where((p) => p.pendiente)
           .toList() ??
       const [],

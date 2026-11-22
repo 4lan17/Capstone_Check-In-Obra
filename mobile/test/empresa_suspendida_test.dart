@@ -231,7 +231,7 @@ void main() {
 
       await c.read(sesionProvider.notifier).suspenderPorEmpresa();
 
-      expect(c.read(sesionProvider).valueOrNull, isNull);
+      expect(c.read(sesionProvider).value, isNull);
       expect(await storage.leer(), isNull);
       expect(
         c.read(avisoDeAccesoProvider),
@@ -260,7 +260,7 @@ void main() {
         c.read(sesionProvider.notifier).suspenderPorEmpresa(),
       ]);
 
-      expect(c.read(sesionProvider).valueOrNull, isNull);
+      expect(c.read(sesionProvider).value, isNull);
       expect(c.read(avisoDeAccesoProvider), isNotNull);
     });
 
@@ -280,7 +280,7 @@ void main() {
 
         expect(respuesta.statusCode, 403);
         expect(servidor.peticiones, 1);
-        expect(c.read(sesionProvider).valueOrNull, isNull);
+        expect(c.read(sesionProvider).value, isNull);
         expect(await storage.leer(), isNull);
         expect(c.read(avisoDeAccesoProvider), contains('suspendida'));
       },
@@ -295,7 +295,7 @@ void main() {
       await c.read(apiClientProvider).dio.get<dynamic>('/api/obras');
       await Future<void>.delayed(Duration.zero);
 
-      expect(c.read(sesionProvider).valueOrNull?.token, 'jwt');
+      expect(c.read(sesionProvider).value?.token, 'jwt');
       expect((await storage.leer())?.token, 'jwt');
       expect(c.read(avisoDeAccesoProvider), isNull);
     });

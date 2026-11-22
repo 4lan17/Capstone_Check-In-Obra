@@ -30,7 +30,7 @@ class PantallaMaterial extends ConsumerWidget {
     final actual =
         ref
             .watch(bodegaProvider)
-            .valueOrNull
+            .value
             ?.where((m) => m.material.id == item.material.id)
             .firstOrNull ??
         item;

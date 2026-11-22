@@ -42,7 +42,7 @@ class PantallaInicioTrabajador extends ConsumerWidget {
         children: [
           // Lo que bodega ya le pasó va antes que todo: es lo único de la
           // pantalla que espera algo de él.
-          if (porConfirmar.valueOrNull?.isNotEmpty ?? false) ...[
+          if (porConfirmar.value?.isNotEmpty ?? false) ...[
             _Seccion<MiSolicitud>(
               titulo: 'Confirma que lo recibiste',
               valor: porConfirmar,
@@ -105,7 +105,7 @@ class PantallaInicioTrabajador extends ConsumerWidget {
             vacio: 'No tienes solicitudes pendientes.',
             fila: (s) => FilaMiSolicitud(solicitud: s),
           ),
-          if (novedades.valueOrNull?.isNotEmpty ?? false) ...[
+          if (novedades.value?.isNotEmpty ?? false) ...[
             const SizedBox(height: AppEspacio.lg),
             _Seccion<MiSolicitud>(
               titulo: 'Resueltas hace poco',
@@ -301,7 +301,7 @@ class _Seccion<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final n = valor.valueOrNull?.length;
+    final n = valor.value?.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

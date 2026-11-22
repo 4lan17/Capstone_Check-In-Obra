@@ -53,7 +53,7 @@ class PantallaSolicitudesObra extends ConsumerWidget {
             alReintentar: () => ref.invalidate(solicitudesMaterialProvider),
             constructor: (pedidosMaterial) {
               final pedidosHerramienta =
-                  herramientas.valueOrNull ?? const <SolicitudHerramienta>[];
+                  herramientas.value ?? const <SolicitudHerramienta>[];
               // Las dos consultas son independientes; si la de herramientas
               // falló, decirlo vale más que mostrar la mitad de la cola como
               // si fuera toda.
@@ -66,12 +66,12 @@ class PantallaSolicitudesObra extends ConsumerWidget {
                   .toList();
               // Lo que le toca a bodega primero; lo entregado que el
               // trabajador no confirma, al final.
-              final pedidos =
-                  [...especiales.valueOrNull ?? const <PedidoEspecial>[]]..sort(
-                    (a, b) => (a.siguientePaso == null ? 1 : 0).compareTo(
-                      b.siguientePaso == null ? 1 : 0,
-                    ),
-                  );
+              final pedidos = [...especiales.value ?? const <PedidoEspecial>[]]
+                ..sort(
+                  (a, b) => (a.siguientePaso == null ? 1 : 0).compareTo(
+                    b.siguientePaso == null ? 1 : 0,
+                  ),
+                );
               final falloEspeciales = especiales is AsyncError;
 
               if (pendientesMaterial.isEmpty &&
@@ -176,7 +176,7 @@ class PantallaSolicitudesTrabajador extends ConsumerWidget {
     // mover. Con él enfrente, lo que está listo se le entrega acá mismo.
     final suyos = [
       for (final p
-          in ref.watch(pedidosEspecialesObraProvider).valueOrNull ??
+          in ref.watch(pedidosEspecialesObraProvider).value ??
               const <PedidoEspecial>[])
         if (p.trabajadorId == trabajador.id && p.siguientePaso != null) p,
     ];

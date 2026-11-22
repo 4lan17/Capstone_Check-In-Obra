@@ -87,8 +87,7 @@ class PantallaMateriales extends ConsumerWidget {
             }
             // En cuántas obras falta cada material, para marcarlo en su fila.
             final faltaEn = <int, int>{};
-            for (final f
-                in ref.watch(faltantesProvider).valueOrNull ?? const []) {
+            for (final f in ref.watch(faltantesProvider).value ?? const []) {
               faltaEn[f.materialId] = (faltaEn[f.materialId] ?? 0) + 1;
             }
             return ListView(

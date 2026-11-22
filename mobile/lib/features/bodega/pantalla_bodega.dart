@@ -81,7 +81,7 @@ class _PantallaBodegaState extends ConsumerState<PantallaBodega> {
                   for (final f in _Filtro.values) ...[
                     _Pestana(
                       rotulo: f.rotulo,
-                      cantidad: switch (bodega.valueOrNull) {
+                      cantidad: switch (bodega.value) {
                         null => null,
                         final lista => switch (f) {
                           _Filtro.todos => lista.length,

@@ -39,7 +39,7 @@ typedef _Identidad = ({int empresaId, int usuarioId});
 /// estado seguía vivo, y en disco, porque el id 3 existe en cada empresa.
 class ObraActivaController extends AsyncNotifier<Obra?> {
   _Identidad? get _identidad {
-    final s = ref.read(sesionProvider).valueOrNull;
+    final s = ref.read(sesionProvider).value;
     return s == null ? null : (empresaId: s.empresaId, usuarioId: s.usuarioId);
   }
 
@@ -47,7 +47,7 @@ class ObraActivaController extends AsyncNotifier<Obra?> {
   Future<Obra?> build() async {
     final identidad = ref.watch(
       sesionProvider.select((s) {
-        final v = s.valueOrNull;
+        final v = s.value;
         return v == null
             ? null
             : (empresaId: v.empresaId, usuarioId: v.usuarioId);
