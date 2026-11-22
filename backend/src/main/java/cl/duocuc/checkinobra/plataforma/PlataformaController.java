@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
@@ -43,11 +44,14 @@ public class PlataformaController {
     private final AltaDeEmpresaService altaDeEmpresa;
     private final EventosDeSeguridad eventos;
     private final ResolutorDeBases resolutor;
+    private final BarridoDeAltas barrido;
 
     public PlataformaController(
             PlataformaAutenticacionService autenticacion, CatalogoDeEmpresas catalogo, JwtService jwtService,
-            AltaDeEmpresaService altaDeEmpresa, EventosDeSeguridad eventos, ResolutorDeBases resolutor) {
+            AltaDeEmpresaService altaDeEmpresa, EventosDeSeguridad eventos, ResolutorDeBases resolutor,
+            BarridoDeAltas barrido) {
         this.resolutor = resolutor;
+        this.barrido = barrido;
         this.autenticacion = autenticacion;
         this.catalogo = catalogo;
         this.jwtService = jwtService;
@@ -102,6 +106,55 @@ public class PlataformaController {
         eventos.empresaCambiaDeEstado(SesionActual.usuario().usuarioId(), id, req.estado());
         return catalogo.listar().stream().filter(e -> e.id().equals(id)).findFirst()
                 .map(EmpresaDePlataformaResponse::de).orElseThrow();
+    }
+
+    /**
+     * Lo que quedó a medias de altas de empresa que se cortaron (#154): empresas registradas a las que
+     * les falta algo, y bases, usuarios o secretos que ninguna empresa usa. Solo mira.
+     */
+    @GetMapping("/altas-incompletas")
+    public List<AltaIncompletaResponse> altasIncompletas() {
+        return barrido.detectar().stream().map(AltaIncompletaResponse::de).toList();
+    }
+
+    /**
+     * Borra una de esas sobras. {@code confirmar} tiene que ser igual a {@code referencia}. No borra una
+     * base con administrador (parece en uso) ni una que no pudo revisar.
+     */
+    @PostMapping("/altas-incompletas/deshacer")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deshacerAltaIncompleta(@Valid @RequestBody DeshacerAltaRequest req) {
+        barrido.deshacer(req.tipo(), req.referencia(), req.confirmar());
+        eventos.altaIncompletaDeshecha(SesionActual.usuario().usuarioId(), req.tipo().name(), req.referencia());
+    }
+
+    /**
+     * Termina el alta cortada de una empresa. {@code claveTemporal} solo viene si hubo que crear al
+     * administrador, y es la única vez que se muestra.
+     */
+    @PostMapping("/altas-incompletas/{empresaId}/reanudar")
+    public AltaDeEmpresaResponse reanudarAltaIncompleta(@PathVariable Long empresaId) {
+        var resultado = barrido.reanudar(empresaId);
+        eventos.altaIncompletaReanudada(SesionActual.usuario().usuarioId(), resultado.empresaId());
+        return new AltaDeEmpresaResponse(resultado.empresaId(), resultado.rut(), resultado.nombre(),
+                resultado.adminEmail(), resultado.claveTemporal());
+    }
+
+    public record DeshacerAltaRequest(
+            @NotNull BarridoDeAltas.Tipo tipo,
+            @NotBlank @Size(max = 63) String referencia,
+            @Size(max = 63) String confirmar) {
+    }
+
+    /** Sin nada que sirva para abrir una base: el secreto no sale, solo el nombre de lo que sobra. */
+    public record AltaIncompletaResponse(
+            BarridoDeAltas.Tipo tipo, String referencia, Long empresaId, String nombre, List<String> problemas,
+            boolean sePuedeDeshacer, boolean sePuedeReanudar) {
+
+        static AltaIncompletaResponse de(BarridoDeAltas.AltaIncompleta a) {
+            return new AltaIncompletaResponse(a.tipo(), a.referencia(), a.empresaId(), a.nombre(), a.problemas(),
+                    a.sePuedeDeshacer(), a.sePuedeReanudar());
+        }
     }
 
     public record CambiarEstadoRequest(@NotBlank @Pattern(regexp = "ACTIVA|SUSPENDIDA") String estado) {
