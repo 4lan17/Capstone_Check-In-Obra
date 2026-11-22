@@ -456,7 +456,7 @@ Un préstamo abierto (`fecha_devol_real` nula) pasada su fecha esperada está
 ## 9. Interfaz de la API
 
 Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
-`/swagger-ui.html`. **105 endpoints** en 21 controladores.
+`/swagger-ui.html`. **106 endpoints** en 21 controladores.
 
 ### 9.1 Autenticación
 
@@ -647,7 +647,7 @@ acceso a la vista de bodega, porque la matriz de permisos se lo concede).
 
 ### 10.5 Cobertura de la API
 
-La capa de datos de la app implementa **43 de los 71 endpoints** que había cuando se midió (agosto; el backend creció a 105 y no se volvió a medir la app). Sin consumir:
+La capa de datos de la app implementa **43 de los 71 endpoints** que había cuando se midió (agosto; el backend creció a 106 y no se volvió a medir la app). Sin consumir:
 cuadrillas (3), partidas y cubicación (5), presupuestos (8), el alta de
 solicitudes —que es del trabajador, cuyo flujo falta— y varias lecturas de
 detalle.
@@ -717,11 +717,11 @@ Cifras verificadas contra el código de la rama de referencia.
 
 | Área | Medida | Valor |
 |---|---|---|
-| Backend — endpoints | Anotaciones de mapeo en 21 controladores | **105** |
+| Backend — endpoints | Anotaciones de mapeo en 21 controladores | **106** |
 | Backend — entidades | Clases `@Entity` (todas `PerteneceAEmpresa`) | **20** |
 | Backend — servicios | Clases `*Service` | **28** |
 | Backend — migraciones | Flyway `V1`–`V5` | **5** |
-| Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **48 clases · 349 casos** |
+| Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **56 clases · 397 casos** |
 | App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart` | **43 / 71** |
 | App — flujos por rol | Bodeguero y administrador construidos | **2 / 4** |
 | App — pantallas | `pantalla_*.dart` + shells | **21** |

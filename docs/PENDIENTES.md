@@ -11,11 +11,11 @@ Las cifras salen de auditar el código, no de estimaciones.
 
 | Área | Hecho | Total | Avance |
 |---|---:|---:|---:|
-| **Backend** — endpoints REST | 105 | 105 | ✅ 100 % |
+| **Backend** — endpoints REST | 106 | 106 | ✅ 100 % |
 | **Backend** — entidades (`@Entity`) | 20 | 20 | ✅ 100 % |
 | **App móvil** — pantallas diseñadas | 2 | 34 | 🟠 6 % |
 | **App móvil** — endpoints consumidos | 2 | 66 | 🔴 3 % |
-| **Pruebas** — backend | 349 | — | ✅ 48 clases; unitarias e integración contra Postgres real |
+| **Pruebas** — backend | 397 | — | ✅ 56 clases; unitarias e integración contra Postgres real |
 | **Pruebas** — móvil | 7 | — | 🟠 unitarias, sin integración |
 | **CI/CD** | 1 | — | ✅ GitHub Actions (backend y app); CodeQL y revisión de dependencias solo con la variable `GHAS=true` |
 
@@ -31,7 +31,7 @@ Verificado de punta a punta contra el backend real, no asumido:
 - **Infraestructura** — `docker compose up` levanta backend + PostgreSQL con
   puertos que no chocan con otros proyectos (8081/5433). Flyway aplica el
   esquema completo y el usuario semilla.
-- **Backend** — 20 entidades, 21 controladores, 105 endpoints, autorización por
+- **Backend** — 20 entidades, 21 controladores, 106 endpoints, autorización por
   rol con `@PreAuthorize`, JWT con refresh, Swagger (apagado en el perfil `prod`).
   *(Cifras del 2026-11-20; las de la app móvil de este informe son de agosto.)*
 - **App móvil** — acceso por correo+PIN y por PIN, sesión persistente en el
@@ -112,7 +112,7 @@ El backend está **funcionalmente completo**, pero le falta respaldo automatizad
 
 ### 4.1 Pruebas — prioridad alta
 
-*(Actualizado el 2026-11-20.)* El backend tiene **349 pruebas en 48 clases**, casi todas de integración
+*(Actualizado el 2026-11-20.)* El backend tiene **397 pruebas en 56 clases**, casi todas de integración
 contra PostgreSQL real (HTTP con el servidor levantado, dos bases reales, los scripts de respaldo). Ya no
 es «un solo test». **No hay medición de cobertura** (no hay JaCoCo en el `pom.xml`), así que no se sabe
 cuántas validaciones de negocio siguen sin prueba: la cifra de «18 sin ninguna prueba» del informe de
