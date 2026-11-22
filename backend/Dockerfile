@@ -7,7 +7,7 @@ RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa1958231b15ebeae7420429cbc5baf474
+FROM eclipse-temurin:24-jre-alpine@sha256:4044b6c87cb088885bcd0220f7dc7a8a4aab76577605fa471945d2e98270741f
 WORKDIR /app
 # No corre como root: un fallo de la API no entrega un shell de root dentro del contenedor.
 RUN addgroup -S app && adduser -S -G app -H -s /sbin/nologin app
