@@ -789,7 +789,7 @@ Cifras verificadas contra el código de la rama de referencia.
 | Backend — entidades | Clases `@Entity` (todas `PerteneceAEmpresa`) | **20** |
 | Backend — servicios | Clases `*Service` | **28** |
 | Backend — migraciones | Flyway `V1`–`V5` | **5** |
-| Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **48 clases · 349 casos** |
+| Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **56 clases · 397 casos** |
 | App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart`; de los 106, 5 son de la plataforma | **84 / 106** (84 de los 101 que no son de plataforma) |
 | App — flujos por rol | Bodeguero, administrador y trabajador completos; jefe de terreno sin la desviación | **3 / 4** completos |
 | App — pantallas | `pantalla_*.dart` (36) + shells (4) | **40** · 29 de los 34 diseños en `docs/mockups/design-movil/` |

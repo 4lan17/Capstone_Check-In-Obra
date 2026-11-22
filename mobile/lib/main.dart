@@ -9,14 +9,23 @@ import 'core/theme/app_theme.dart';
 import 'data/api/auth_api.dart';
 import 'features/admin/shell_admin.dart';
 import 'features/auth/pantalla_acceso.dart';
+import 'features/auth/pantalla_cambiar_clave.dart';
+import 'features/auth/pantalla_configuracion_invalida.dart';
 import 'features/auth/sesion_controller.dart';
 import 'features/bodega/shell_bodega.dart';
 import 'features/inicio/pantalla_rol_pendiente.dart';
+import 'features/jefe_terreno/shell_jefe_terreno.dart';
 import 'features/trabajador/shell_trabajador.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.cargar();
+  // En release, una URL que no sea https:// impide arrancar (S-10).
+  final errorDeConfiguracion = AppConfig.errorDeConfiguracion;
+  if (errorDeConfiguracion != null) {
+    runApp(PantallaConfiguracionInvalida(mensaje: errorDeConfiguracion));
+    return;
+  }
   // Sin esto, `DateFormat` con locale 'es_CL' lanza LocaleDataException y
   // revienta cualquier pantalla que muestre una fecha — que en esta app son
   // casi todas: el kardex, las alertas y el cierre de turno.
@@ -51,7 +60,8 @@ Widget _paraElRol(SesionUsuario sesion) => switch (sesion.rol) {
   'BODEGUERO' => const ShellBodega(),
   'ADMIN' => const ShellAdmin(),
   'TRABAJADOR' => const ShellTrabajador(),
-  // Jefe de terreno: su flujo está pendiente.
+  'JEFE_TERRENO' => const ShellJefeTerreno(),
+  // Un rol que la app no conoce (uno nuevo del backend, por ejemplo).
   _ => PantallaRolPendiente(sesion: sesion),
 };
 
@@ -70,6 +80,10 @@ class _Raiz extends ConsumerWidget {
     return switch (sesion) {
       // Primera carga: aún no sabemos si hay sesión guardada.
       AsyncLoading() when !sesion.hasValue => const _Cargando(),
+      // Con clave provisoria no hay app que mostrar: el servidor rechaza todo
+      // salvo el cambio de clave.
+      AsyncValue(value: final s?) when s.debeCambiarClave =>
+        PantallaCambiarClave(sesion: s),
       AsyncValue(value: final s?) => _paraElRol(s),
       _ => const PantallaAcceso(),
     };

@@ -1,5 +1,11 @@
 package cl.duocuc.checkinobra.cubicacion;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.importacion.PlantillaExcel;
 import cl.duocuc.checkinobra.importacion.LectorPlanilla;
@@ -41,7 +47,7 @@ public class MaterialController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public MaterialResponse crear(@RequestBody CrearMaterialRequest req) {
+    public MaterialResponse crear(@Valid @RequestBody CrearMaterialRequest req) {
         // La empresa sale del token, no de la petición. Mientras el cliente
         // pudiera nombrarla, pedir los datos de otra constructora era cuestión
         // de cambiar un número en la URL.
@@ -92,19 +98,26 @@ public class MaterialController {
                 .body(planilla);
     }
 
+    /**
+     * El catálogo lo lee cualquier rol, pero el trabajador lo recibe sin precios ni
+     * costos (S-08): son del administrador, según la matriz de permisos.
+     */
     @GetMapping
-    public List<MaterialResponse> listar(@RequestParam(required = false) CategoriaMaterial categoria) {
+    public List<MaterialVista> listar(@RequestParam(required = false) CategoriaMaterial categoria) {
         Long empresaId = SesionActual.empresaId();
         List<Material> materiales = categoria == null
                 ? materialService.listarPorEmpresa(empresaId)
                 : materialService.listarPorEmpresaYCategoria(empresaId, categoria);
+        if (SesionActual.esTrabajador()) {
+            return materiales.stream().<MaterialVista>map(MaterialBasicoResponse::de).toList();
+        }
         Map<Long, CostoMaterial> costos = materialService.costosPorMaterial(empresaId);
-        return materiales.stream().map(m -> MaterialResponse.de(m, costos.get(m.getId()))).toList();
+        return materiales.stream().<MaterialVista>map(m -> MaterialResponse.de(m, costos.get(m.getId()))).toList();
     }
 
     @GetMapping("/{id}")
-    public MaterialResponse obtener(@PathVariable Long id) {
-        return conCosto(materialService.obtener(id));
+    public MaterialVista obtener(@PathVariable Long id) {
+        return vista(materialService.obtener(id));
     }
 
     /**
@@ -113,13 +126,13 @@ public class MaterialController {
      * a una etiqueta no sabe cuál de los dos está leyendo.
      */
     @GetMapping("/por-codigo/{codigo}")
-    public MaterialResponse buscarPorCodigo(@PathVariable String codigo) {
-        return conCosto(materialService.buscarPorCodigo(SesionActual.empresaId(), codigo));
+    public MaterialVista buscarPorCodigo(@PathVariable String codigo) {
+        return vista(materialService.buscarPorCodigo(SesionActual.empresaId(), codigo));
     }
 
     @PutMapping("/{id}/precio")
     @PreAuthorize("hasRole('ADMIN')")
-    public MaterialResponse actualizarPrecio(@PathVariable Long id, @RequestBody ActualizarPrecioRequest req) {
+    public MaterialResponse actualizarPrecio(@PathVariable Long id, @Valid @RequestBody ActualizarPrecioRequest req) {
         return conCosto(materialService.actualizarPrecio(id, req.nuevoPrecio()));
     }
 
@@ -127,11 +140,21 @@ public class MaterialController {
         return MaterialResponse.de(material, materialService.costoDe(material));
     }
 
-    public record CrearMaterialRequest(
-            String sku, String nombre, CategoriaMaterial categoria, double precioUnitario, double stockMinimo,
-            String codigoBarra) {
+    /** Con costos para quien los maneja; sin ellos, para el trabajador. */
+    private MaterialVista vista(Material material) {
+        return SesionActual.esTrabajador() ? MaterialBasicoResponse.de(material) : conCosto(material);
     }
 
-    public record ActualizarPrecioRequest(double nuevoPrecio) {
+    public record CrearMaterialRequest(
+            @NotBlank(message = "El SKU es obligatorio") @Size(max = 50, message = "El SKU admite hasta 50 caracteres") String sku,
+            @NotBlank(message = "El nombre es obligatorio") @Size(max = 200, message = "El nombre admite hasta 200 caracteres") String nombre,
+            @NotNull(message = "Falta la categoría") CategoriaMaterial categoria,
+            @PositiveOrZero(message = "El precio no puede ser negativo") @DecimalMax(value = "1000000000", message = "El precio es demasiado grande") double precioUnitario,
+            @PositiveOrZero(message = "El stock mínimo no puede ser negativo") @DecimalMax(value = "1000000", message = "El stock mínimo es demasiado grande") double stockMinimo,
+            @Size(max = 50, message = "El código de barras admite hasta 50 caracteres") String codigoBarra) {
+    }
+
+    public record ActualizarPrecioRequest(
+            @PositiveOrZero(message = "El precio no puede ser negativo") @DecimalMax(value = "1000000000", message = "El precio es demasiado grande") double nuevoPrecio) {
     }
 }

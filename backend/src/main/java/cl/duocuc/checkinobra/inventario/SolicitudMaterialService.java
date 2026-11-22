@@ -69,6 +69,10 @@ public class SolicitudMaterialService {
         }
         String paraQue = Texto.obligatorio(descripcion, "Para qué lo necesitas", 3, 300);
         Trabajador trabajador = trabajadorService.obtenerPorUsuario(usuarioId);
+        // Quien pide, bloqueado: dos solicitudes simultáneas del mismo trabajador, con
+        // claves de idempotencia distintas, no pueden pasar las dos el control de
+        // duplicado de más abajo. Es el mismo bloqueo que usa SolicitudHerramientaService.
+        entityManager.refresh(trabajador, LockModeType.PESSIMISTIC_WRITE);
         Obra asignada = trabajadorService.obraAsignada(trabajador);
         // Pedir para otra obra sería sacar material de una bodega donde el
         // trabajador no está, y que el bodeguero de allá no lo conoce.
@@ -82,6 +86,14 @@ public class SolicitudMaterialService {
                     "La obra " + obra.getNombre() + " está cerrada: ya no se despacha material");
         }
         Material material = materialService.obtener(materialId);
+        // Solo bloquea lo que sigue PENDIENTE: una solicitud aprobada, rechazada o
+        // cancelada se puede volver a pedir. Va después de validar la obra y el
+        // material, para que un material inexistente siga siendo un 404.
+        if (solicitudMaterialRepository.existsByTrabajadorIdAndMaterialIdAndObraIdAndEstado(
+                trabajador.getId(), material.getId(), obra.getId(), EstadoSolicitud.PENDIENTE)) {
+            throw new ConflictoException(ConflictoException.SOLICITUD_DUPLICADA,
+                    "Ya pediste " + material.getNombre() + " y tu solicitud sigue pendiente");
+        }
 
         SolicitudMaterial solicitud = SolicitudMaterial.builder()
                 .trabajador(trabajador)

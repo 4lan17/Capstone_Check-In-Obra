@@ -15,7 +15,7 @@ Las cifras salen de auditar el código, no de estimaciones.
 | **Backend** — entidades (`@Entity`) | 20 | 20 | ✅ 100 % |
 | **App móvil** — pantallas diseñadas | 29 | 34 | 🟢 85 % |
 | **App móvil** — endpoints consumidos | 84 | 106 | 🟢 79 % (84 de los 101 que no son de plataforma) |
-| **Pruebas** — backend | 349 | — | ✅ 48 clases; unitarias e integración contra Postgres real |
+| **Pruebas** — backend | 397 | — | ✅ 56 clases; unitarias e integración contra Postgres real |
 | **Pruebas** — móvil | 310 | — | ✅ 28 archivos; unitarias y de widget, sin integración contra el backend |
 | **CI/CD** | 1 | — | ✅ GitHub Actions (backend y app); CodeQL y revisión de dependencias solo con la variable `GHAS=true` |
 
@@ -89,24 +89,28 @@ El backend está **funcionalmente completo**, pero le falta respaldo automatizad
 
 ### 4.1 Pruebas — prioridad alta
 
-Hoy existe **un solo test**: `contextLoads()`, que además necesita PostgreSQL
-levantado para pasar. Hay **18 validaciones de negocio sin ninguna prueba**.
+*(Actualizado el 2026-11-20.)* El backend tiene **397 pruebas en 56 clases**, casi todas de integración
+contra PostgreSQL real (HTTP con el servidor levantado, dos bases reales, los scripts de respaldo). Ya no
+es «un solo test». **No hay medición de cobertura** (no hay JaCoCo en el `pom.xml`), así que no se sabe
+cuántas validaciones de negocio siguen sin prueba: la cifra de «18 sin ninguna prueba» del informe de
+agosto no se volvió a medir.
 
-Las que más duelen si se rompen en silencio:
+De las reglas que más duelen si se rompen en silencio, buscando su código o su nombre en las pruebas:
 
-| Regla | Dónde vive |
-|---|---|
-| El kardex no admite stock negativo | `KardexMovimientoService` |
-| Una obra no cierra con herramientas fuera o alertas abiertas | `ObraService.cerrarObra` |
-| Un presupuesto solo se congela desde `APROBADO` | `Presupuesto.congelar` |
-| Una solicitud resuelta no se puede volver a resolver | `Solicitud*.aprobar/rechazar` |
-| Una herramienta prestada no se puede volver a prestar | `PrestamoHerramientaService` |
-| El PIN debe tener exactamente 4 dígitos | `Usuario.definirPin` |
+| Regla | Dónde vive | ¿Tiene prueba? |
+|---|---|---|
+| El kardex no admite stock negativo | `KardexMovimientoService` | Sí (`STOCK_INSUFICIENTE`, con concurrencia) |
+| Una obra no cierra con herramientas fuera o alertas abiertas | `ObraService.cerrarObra` | Se nombra en las pruebas; no se verificó que cubran las dos condiciones |
+| Un presupuesto solo se congela desde `APROBADO` | `Presupuesto.congelar` | **No encontré una prueba** |
+| Una solicitud resuelta no se puede volver a resolver | `Solicitud*.aprobar/rechazar` | Sí (`YA_RESUELTA`) |
+| Una herramienta prestada no se puede volver a prestar | `PrestamoHerramientaService` | Sí (`HERRAMIENTA_NO_DISPONIBLE`) |
+| La clave cumple la política de su rol (el PIN de un trabajador es de 4 dígitos) | `Usuario.definirPin` | Sí |
 
-> **Recomendación:** usar Testcontainers para levantar PostgreSQL en las
-> pruebas. Así los tests corren contra la base real, incluidas las
-> restricciones del esquema, sin depender de que alguien tenga Docker
-> levantado a mano.
+La columna «¿Tiene prueba?» sale de un `grep`, no de una cobertura medida.
+
+> **Recomendación pendiente:** hoy las pruebas **necesitan un PostgreSQL con los roles y bases ya
+> creados** (la CI lo levanta como servicio; en local, `db/crear-roles.sh`). Testcontainers lo
+> haría solo; no se adoptó. Medir la cobertura (JaCoCo) tampoco.
 
 ### 4.2 Endpoints que faltarían
 

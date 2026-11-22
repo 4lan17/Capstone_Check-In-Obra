@@ -21,15 +21,23 @@ import '../bodega/pantalla_bodega.dart';
 /// respondió —un 404 de ficha sin crear, un 401—, esa respuesta manda.
 final perfilTrabajadorProvider = FutureProvider<PerfilTrabajador>((ref) async {
   final storage = ref.watch(sesionStorageProvider);
+  final sesion = ref.watch(sesionProvider).valueOrNull;
   try {
     final perfil = await ref.watch(trabajadoresApiProvider).yo();
-    await storage.guardarPerfilTrabajador(perfil);
+    if (sesion != null) {
+      await storage.guardarPerfilTrabajador(
+        perfil,
+        empresaId: sesion.empresaId,
+      );
+    }
     return perfil;
   } on DioException {
-    final usuarioId = ref.read(sesionProvider).valueOrNull?.usuarioId;
-    final guardado = usuarioId == null
+    final guardado = sesion == null
         ? null
-        : await storage.leerPerfilTrabajador(usuarioId);
+        : await storage.leerPerfilTrabajador(
+            empresaId: sesion.empresaId,
+            usuarioId: sesion.usuarioId,
+          );
     if (guardado == null) rethrow;
     return guardado;
   }

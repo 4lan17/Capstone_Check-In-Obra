@@ -121,10 +121,10 @@ class ReglasDeNegocioPorHttpTest {
 
     @Test
     void sePuedeAprobarLoPedidoOMenos() throws Exception {
+        // Una a la vez: develop ya no deja pedir lo mismo mientras hay una pendiente (#76).
         long completa = solicitar(10);
-        long parcial = solicitar(8);
-
         assertThat(aprobar(completa, 10).statusCode()).isEqualTo(200);
+        long parcial = solicitar(8);
         assertThat(aprobar(parcial, 5).statusCode()).isEqualTo(200);
         assertThat(stock()).isEqualTo(15);
     }

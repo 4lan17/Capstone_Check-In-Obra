@@ -1,5 +1,9 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -30,7 +34,7 @@ public class KardexMovimientoController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public KardexMovimientoResponse registrar(@RequestBody RegistrarMovimientoRequest req) {
+    public KardexMovimientoResponse registrar(@Valid @RequestBody RegistrarMovimientoRequest req) {
         return KardexMovimientoResponse.de(kardexMovimientoService.registrarMovimiento(
                 req.obraId(),
                 req.materialId(),
@@ -57,13 +61,13 @@ public class KardexMovimientoController {
     }
 
     public record RegistrarMovimientoRequest(
-            Long obraId,
-            Long materialId,
+            @NotNull(message = "Falta la obra") Long obraId,
+            @NotNull(message = "Falta el material") Long materialId,
             /** A quién se le entrega. Obligatorio en un DESPACHO. */
             Long trabajadorId,
-            TipoMovimiento tipo,
-            double cantidad,
+            @NotNull(message = "Falta el tipo de movimiento") TipoMovimiento tipo,
+            @Positive(message = "La cantidad debe ser mayor que 0") @DecimalMax(value = "1000000", message = "La cantidad es demasiado grande") double cantidad,
             /** Costo real por unidad según la factura. Opcional, y solo en una RECEPCION. */
-            BigDecimal costoUnitario) {
+            @Positive(message = "El costo unitario debe ser mayor que 0") @DecimalMax(value = "1000000000", message = "El costo unitario es demasiado grande") BigDecimal costoUnitario) {
     }
 }
