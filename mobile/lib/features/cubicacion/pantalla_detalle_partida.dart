@@ -62,7 +62,7 @@ class _PantallaDetallePartidaState
   Widget build(BuildContext context) {
     final partida = widget.partida;
     final items = ref.watch(itemsCubicadosProvider(partida.id));
-    final hayItems = items.valueOrNull?.isNotEmpty ?? false;
+    final hayItems = items.value?.isNotEmpty ?? false;
 
     return PopScope(
       canPop: !_cubicando,

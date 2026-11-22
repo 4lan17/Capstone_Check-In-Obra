@@ -42,7 +42,7 @@ class _PantallaCierreTurnoState extends ConsumerState<PantallaCierreTurno> {
   Future<void> _cerrar(int fuera) async {
     if (_enviando) return;
     final obra = ref.read(obraEnCursoProvider);
-    final sesion = ref.read(sesionProvider).valueOrNull;
+    final sesion = ref.read(sesionProvider).value;
     if (obra == null || sesion == null) return;
 
     setState(() {
@@ -80,11 +80,11 @@ class _PantallaCierreTurnoState extends ConsumerState<PantallaCierreTurno> {
 
   @override
   Widget build(BuildContext context) {
-    final sesion = ref.watch(sesionProvider).valueOrNull;
+    final sesion = ref.watch(sesionProvider).value;
     final obra = ref.watch(obraEnCursoProvider);
-    final hoy = ref.watch(movimientosDeHoyProvider).valueOrNull ?? const [];
+    final hoy = ref.watch(movimientosDeHoyProvider).value ?? const [];
     final abiertos = ref.watch(prestamosAbiertosProvider);
-    final fuera = abiertos.valueOrNull?.length ?? 0;
+    final fuera = abiertos.value?.length ?? 0;
 
     int cuenta(String tipo) => hoy.where((m) => m.tipo == tipo).length;
 

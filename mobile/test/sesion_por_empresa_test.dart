@@ -217,7 +217,7 @@ void main() {
           sesionProvider.overrideWith(_SesionCambiante.new),
           // La misma obra 3 existe en las dos empresas, con otro nombre.
           obrasActivasProvider.overrideWith((ref) async {
-            final empresa = ref.read(sesionProvider).valueOrNull?.empresaId;
+            final empresa = ref.read(sesionProvider).value?.empresaId;
             return [_obra(3, empresa == 1 ? 'Torre Norte' : 'Edificio Sur')];
           }),
         ],
@@ -240,7 +240,7 @@ void main() {
         await c
             .read(obraActivaProvider.notifier)
             .elegir(_obra(3, 'Torre Norte'));
-        expect(c.read(obraActivaProvider).valueOrNull?.nombre, 'Torre Norte');
+        expect(c.read(obraActivaProvider).value?.nombre, 'Torre Norte');
 
         // Entra otra cuenta con el mismo id de usuario y otra empresa.
         sesion(c).poner(_enEmpresa2);

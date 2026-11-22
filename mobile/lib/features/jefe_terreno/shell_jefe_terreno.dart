@@ -36,7 +36,7 @@ class _ShellJefeTerrenoState extends ConsumerState<ShellJefeTerreno> {
         ),
       );
     }
-    if (obra.valueOrNull == null) return const PantallaElegirObra();
+    if (obra.value == null) return const PantallaElegirObra();
 
     return Scaffold(
       appBar: AppBar(

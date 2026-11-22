@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 
 import '../../core/navegacion.dart';
 
@@ -61,7 +62,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// quedaba tapando la app con los cuatro puntos llenos, y había que apretar
   /// "atrás" para llegar al inicio.
   void _salirDelAcceso() {
-    if (state.valueOrNull != null) {
+    if (state.value != null) {
       navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
     }
   }
@@ -98,7 +99,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// clave en vez de la app. Puede llegar varias veces seguidas (varias
   /// peticiones en vuelo); solo la primera actúa.
   Future<void> exigirCambioDeClave() async {
-    final sesion = state.valueOrNull;
+    final sesion = state.value;
     if (sesion == null || sesion.debeCambiarClave) return;
     final marcada = sesion.conCambioPendiente();
     // Se saca a la persona de donde esté: lo que estaba apilado no se puede
@@ -117,7 +118,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// falla —sin señal en la obra— el cierre ya ocurrió, y el refresh vence solo.
   Future<void> salir({bool revocar = true}) async {
     navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
-    final refresh = revocar ? state.valueOrNull?.refreshToken : null;
+    final refresh = revocar ? state.value?.refreshToken : null;
     await _storage.cerrarSesion();
     state = const AsyncValue.data(null);
     if (refresh != null) _revocarEnElServidor(refresh);
@@ -133,7 +134,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// persona, con token y refresh nuevos. Si mientras tanto entró otra cuenta,
   /// se descarta (no se le pisa la sesión a quien entró después).
   void aplicarRenovada(SesionUsuario nueva) {
-    final actual = state.valueOrNull;
+    final actual = state.value;
     if (actual == null ||
         actual.usuarioId != nueva.usuarioId ||
         actual.empresaId != nueva.empresaId) {
@@ -148,7 +149,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// se la deja en el acceso por PIN, que la recuerda. Varias peticiones en
   /// vuelo pueden recibir el 401 a la vez; solo la primera actúa.
   Future<void> expirar() async {
-    if (state.valueOrNull == null) return;
+    if (state.value == null) return;
     navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
     // El servidor ya dijo que la sesión no vale: no hay nada que revocar.
     await salir(revocar: false);
@@ -168,7 +169,7 @@ class SesionController extends AsyncNotifier<SesionUsuario?> {
   /// no sabría por qué no puede entrar. Varias peticiones en vuelo pueden
   /// recibir el 403 a la vez; solo la primera actúa.
   Future<void> suspenderPorEmpresa() async {
-    if (state.valueOrNull == null) return;
+    if (state.value == null) return;
     ref.read(avisoDeAccesoProvider.notifier).state = mensajeEmpresaSuspendida;
     navegadorRaiz.currentState?.popUntil((ruta) => ruta.isFirst);
     // No se revoca el refresh: el servidor rechaza todo de esta empresa, y esa

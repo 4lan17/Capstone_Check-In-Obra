@@ -126,7 +126,7 @@ class _TarjetaDestino extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(diagnosticoConexionProvider);
-    final url = estado.valueOrNull?.url;
+    final url = estado.value?.url;
 
     return _Panel(
       child: Column(

@@ -68,7 +68,7 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
   Widget build(BuildContext context) {
     final sesion = ref.watch(sesionProvider);
     final aviso = ref.watch(avisoDeAccesoProvider);
-    final recordado = ref.watch(usuarioRecordadoProvider).valueOrNull;
+    final recordado = ref.watch(usuarioRecordadoProvider).value;
     // El acceso rápido por PIN es solo del TRABAJADOR: el backend rechaza
     // `login-pin` para los demás roles, que entran con correo y clave.
     final conPin =

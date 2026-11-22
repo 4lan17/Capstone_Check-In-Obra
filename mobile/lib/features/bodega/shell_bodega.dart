@@ -44,12 +44,12 @@ class _ShellBodegaState extends ConsumerState<ShellBodega> {
         ),
       );
     }
-    if (obra.valueOrNull == null) {
+    if (obra.value == null) {
       return PantallaElegirObra(puedeVolver: widget.comoAdmin);
     }
 
     final sinResolver =
-        ref.watch(alertasSinResolverProvider).valueOrNull?.length ?? 0;
+        ref.watch(alertasSinResolverProvider).value?.length ?? 0;
 
     return Scaffold(
       appBar: AppBar(

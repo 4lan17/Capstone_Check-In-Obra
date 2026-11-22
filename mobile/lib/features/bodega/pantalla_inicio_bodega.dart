@@ -68,8 +68,7 @@ class PantallaInicioBodega extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: Contador(
-                              valor:
-                                  '${movimientosHoy.valueOrNull?.length ?? 0}',
+                              valor: '${movimientosHoy.value?.length ?? 0}',
                               rotulo: 'Movimientos\ndel turno',
                               color: Colors.white,
                               sobreOscuro: true,
@@ -77,7 +76,7 @@ class PantallaInicioBodega extends ConsumerWidget {
                           ),
                           Expanded(
                             child: Contador(
-                              valor: '${prestamos.valueOrNull?.length ?? 0}',
+                              valor: '${prestamos.value?.length ?? 0}',
                               rotulo: 'Herramientas\nprestadas',
                               color: Colors.white,
                               sobreOscuro: true,
@@ -85,9 +84,9 @@ class PantallaInicioBodega extends ConsumerWidget {
                           ),
                           Expanded(
                             child: Contador(
-                              valor: '${alertas.valueOrNull?.length ?? 0}',
+                              valor: '${alertas.value?.length ?? 0}',
                               rotulo: 'Alertas\nsin resolver',
-                              color: (alertas.valueOrNull?.isEmpty ?? true)
+                              color: (alertas.value?.isEmpty ?? true)
                                   ? Colors.white
                                   : AppColors.destructiveOnDark,
                               sobreOscuro: true,
@@ -187,7 +186,7 @@ class PantallaInicioBodega extends ConsumerWidget {
           Row(
             children: [
               const Expanded(child: Etiqueta('Alertas sin resolver')),
-              if ((alertas.valueOrNull ?? const []).isNotEmpty)
+              if ((alertas.value ?? const []).isNotEmpty)
                 TextButton(
                   onPressed: () => alIrA(3),
                   child: const Text('Ver todas'),
@@ -274,7 +273,7 @@ class _Solicitudes extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(solicitudesPendientesProvider);
-    final pendientes = estado.valueOrNull;
+    final pendientes = estado.value;
     final fallo = estado.hasError;
     final hayGenteEsperando = (pendientes ?? 0) > 0;
 
@@ -479,7 +478,7 @@ class _FilaValor extends StatelessWidget {
 class _BotonCierre extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fuera = ref.watch(prestamosAbiertosProvider).valueOrNull?.length ?? 0;
+    final fuera = ref.watch(prestamosAbiertosProvider).value?.length ?? 0;
 
     return PanelTocable(
       semanticLabel: 'Cerrar el turno de bodega',
