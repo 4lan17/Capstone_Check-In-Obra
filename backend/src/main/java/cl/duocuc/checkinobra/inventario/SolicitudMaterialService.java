@@ -15,6 +15,7 @@ import cl.duocuc.checkinobra.obra.Trabajador;
 import cl.duocuc.checkinobra.obra.TrabajadorService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,7 +105,23 @@ public class SolicitudMaterialService {
                 .estado(EstadoSolicitud.PENDIENTE)
                 .fechaSolicitud(LocalDateTime.now())
                 .build();
-        return solicitudMaterialRepository.save(solicitud);
+        try {
+            // saveAndFlush: el índice único parcial (V14) tiene que saltar acá y no al confirmar la
+            // transacción, donde ya no se podría traducir a un 409 con el mensaje del material.
+            return solicitudMaterialRepository.saveAndFlush(solicitud);
+        } catch (DataIntegrityViolationException e) {
+            if (violaIndicePendienteUnica(e)) {
+                throw new ConflictoException(ConflictoException.SOLICITUD_DUPLICADA,
+                        "Ya pediste " + material.getNombre() + " y tu solicitud sigue pendiente");
+            }
+            throw e;
+        }
+    }
+
+    /** Si la base rechazó la fila por el índice de pendientes y no por otra restricción. */
+    private static boolean violaIndicePendienteUnica(DataIntegrityViolationException e) {
+        String detalle = e.getMostSpecificCause().getMessage();
+        return detalle != null && detalle.contains(SolicitudMaterial.INDICE_PENDIENTE_UNICA);
     }
 
     /**
