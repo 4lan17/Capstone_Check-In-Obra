@@ -232,14 +232,14 @@ suspensión y respaldo por base (MT8). Los PR están encadenados y se integran e
   junto con el PR #141 del backend: uno sin el otro pide la clave cada media hora o recibe un token que no existe.
 - **Operadores de plataforma:** no hay forma de crear más del primero (se crea con `PLATAFORMA_OPERADOR_*`) ni de
   cambiarles la clave; su token no tiene refresh.
-- **Altas a medias:** un corte del proceso en medio del alta deja una empresa a medias; no hay un barrido que la
-  detecte. Si una compensación falla, queda en el log y el resto se limpia a mano.
+- **Altas a medias** (#154): `GET /api/plataforma/altas-incompletas` lista lo que dejó un alta cortada, y el
+  arranque lo avisa en el log. Reanudar y deshacer son del operador. Límites: no se sabe si el alta original pedía
+  el catálogo base de materiales, así que reanudar no lo copia; y una base con ADMIN nunca se borra desde ahí.
+  Si una compensación del alta falla, queda en el log y el resto se limpia con el barrido.
 - **Secretos de las bases creadas por la API:** viven en el volumen `secretos`, que hay que respaldar junto con las
   bases; los scripts de respaldo no lo incluyen. Programar y cifrar los respaldos es de quien despliega.
 - **Suspensión con varias instancias:** vale en la instancia que la recibe (hoy hay una).
-- **Mejoras anotadas:** `REVOKE` de la API sobre `flyway_schema_history`; índice único parcial en
-  `solicitudes_material` (hoy la unicidad de "una solicitud pendiente" la sostiene un bloqueo de fila);
-  pedidos de herramientas con QR no validan la obra del trabajador al crearse; planes con topes (el plan existe
+- **Mejoras anotadas:** pedidos de herramientas con QR no validan la obra del trabajador al crearse; planes con topes (el plan existe
   en el catálogo pero no limita nada).
 - **Las cifras de la app** se midieron el 2026-11-22 (§1); las de las secciones 4 y 5 son las de agosto salvo lo corregido.
 

@@ -33,9 +33,10 @@ import java.util.Deque;
 public class AltaDeEmpresaService {
 
     private static final Logger log = LoggerFactory.getLogger(AltaDeEmpresaService.class);
+    private static final SecureRandom AZAR = new SecureRandom();
     private static final String ALFABETO = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-    private static final int LARGO_CLAVE_BASE = 32;
-    private static final int LARGO_CLAVE_TEMPORAL = 16;
+    static final int LARGO_CLAVE_BASE = 32;
+    static final int LARGO_CLAVE_TEMPORAL = 16;
 
     /** Lo que el operador recibe. {@code claveTemporal} solo viene si la generó el sistema. */
     public record Resultado(long empresaId, String rut, String nombre, String adminEmail, String claveTemporal) {
@@ -47,8 +48,6 @@ public class AltaDeEmpresaService {
     private final MigradorDeBases migrador;
     private final ResolutorDeBases resolutor;
     private final PrimeraEmpresaService primeraEmpresa;
-    private final SecureRandom azar = new SecureRandom();
-
     public AltaDeEmpresaService(
             CatalogoDeEmpresas catalogo, AprovisionadorDeBases aprovisionador, AlmacenDeSecretos secretos,
             MigradorDeBases migrador, ResolutorDeBases resolutor, PrimeraEmpresaService primeraEmpresa) {
@@ -157,10 +156,11 @@ public class AltaDeEmpresaService {
         }
     }
 
-    private String aleatoria(int largo) {
+    /** Una clave al azar; también la usa el barrido de altas a medias (#154) al reanudar. */
+    static String aleatoria(int largo) {
         StringBuilder sb = new StringBuilder(largo);
         for (int i = 0; i < largo; i++) {
-            sb.append(ALFABETO.charAt(azar.nextInt(ALFABETO.length())));
+            sb.append(ALFABETO.charAt(AZAR.nextInt(ALFABETO.length())));
         }
         return sb.toString();
     }

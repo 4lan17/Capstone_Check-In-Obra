@@ -47,6 +47,14 @@ public class EventosDeSeguridad {
         log.info("evento=EMPRESA_CREADA operadorId={} empresaId={}", operadorId, empresaId);
     }
 
+    public void altaIncompletaDeshecha(Long operadorId, String tipo, String referencia) {
+        log.warn("evento=ALTA_INCOMPLETA_DESHECHA operadorId={} tipo={} referencia={}", operadorId, tipo, referencia);
+    }
+
+    public void altaIncompletaReanudada(Long operadorId, Long empresaId) {
+        log.warn("evento=ALTA_INCOMPLETA_REANUDADA operadorId={} empresaId={}", operadorId, empresaId);
+    }
+
     public void loginBloqueado(String ip) {
         log.warn("evento=LOGIN_BLOQUEADO ip={}", ip);
     }

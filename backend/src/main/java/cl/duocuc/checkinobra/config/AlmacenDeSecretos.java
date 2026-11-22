@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -63,6 +64,22 @@ public class AlmacenDeSecretos {
             Files.deleteIfExists(archivo(nombre));
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo borrar el secreto " + nombre, e);
+        }
+    }
+
+    /** Los nombres de todos los secretos guardados (#154: el barrido busca los que ninguna empresa usa). */
+    public List<String> listar() {
+        if (!Files.isDirectory(directorio)) {
+            return List.of();
+        }
+        try (var archivos = Files.list(directorio)) {
+            return archivos.filter(Files::isRegularFile)
+                    .map(a -> a.getFileName().toString())
+                    .filter(n -> NOMBRE.matcher(n).matches())
+                    .sorted()
+                    .toList();
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo listar los secretos", e);
         }
     }
 

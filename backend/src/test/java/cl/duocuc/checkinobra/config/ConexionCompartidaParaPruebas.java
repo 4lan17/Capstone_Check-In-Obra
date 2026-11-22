@@ -79,6 +79,13 @@ class ConexionCompartidaParaPruebas {
         config.setPassword(clave);
         config.setPoolName("pruebas-compartido");
         config.setMaximumPoolSize(10);
+        // Cada contexto de Spring que la suite deja en caché conserva su pool, y con el mínimo ocioso por
+        // defecto (= el máximo) retiene 10 conexiones aunque las pruebas corran de a una. Con muchos
+        // contextos eso agota las 100 conexiones de un PostgreSQL por defecto (el de la CI) y una prueba
+        // cualquiera falla con "remaining connection slots are reserved". Se abren a demanda y se
+        // devuelven pronto.
+        config.setMinimumIdle(1);
+        config.setIdleTimeout(10_000);
         return new Compartido(new HikariDataSource(config));
     }
 }
