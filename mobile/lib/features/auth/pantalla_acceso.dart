@@ -104,9 +104,11 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
           backgroundColor: AppColors.surfaceDark,
           body: Column(
             children: [
-              _Encabezado(
-                nombre: conPin ? _primerNombre(recordado.nombre) : null,
-                duracion: duracion,
+              _FondoEncabezado(
+                child: _Encabezado(
+                  nombre: conPin ? _primerNombre(recordado.nombre) : null,
+                  duracion: duracion,
+                ),
               ),
               // La hoja blanca sube sobre el marco oscuro, con el mismo radio que
               // el resto de las superficies, solo arriba.
@@ -272,6 +274,63 @@ class _PantallaAccesoState extends ConsumerState<PantallaAcceso> {
 String _primerNombre(String nombre) {
   final partes = nombre.trim().split(RegExp(r'\s+'));
   return partes.isEmpty || partes.first.isEmpty ? nombre : partes.first;
+}
+
+/// La silueta de obra detrás del encabezado: un ingeniero de espaldas con el
+/// atardecer, la grúa y la estructura dentro. Va a la derecha y se funde con el
+/// marco oscuro hacia la izquierda, donde está el texto, para que éste siga
+/// leyéndose. Es decoración: queda fuera de la lectura de pantalla.
+class _FondoEncabezado extends StatelessWidget {
+  const _FondoEncabezado({required this.child});
+
+  static const _imagen = 'assets/images/fondo_login.webp';
+
+  /// Qué parte del ancho ocupa la silueta.
+  static const _anchoRelativo = 0.62;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: ExcludeSemantics(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FractionallySizedBox(
+                widthFactor: _anchoRelativo,
+                heightFactor: 1,
+                child: Image.asset(
+                  _imagen,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  // El archivo mide 941 px de ancho; en el teléfono se ve a
+                  // menos de la mitad, así que se decodifica más chico.
+                  cacheWidth: 600,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const Positioned.fill(
+          child: ExcludeSemantics(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [AppColors.surfaceDark, Color(0x001E293B)],
+                  stops: [0.45, 0.8],
+                ),
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
 }
 
 /// El marco oscuro: logo y el saludo, que dice en qué cara se está.
