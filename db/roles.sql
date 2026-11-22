@@ -89,7 +89,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO checkinob
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO checkinobra_app;
 
 -- Lo que el migrador cree de aquí en adelante queda accesible para la API sin
--- tener que acordarse de un GRANT en cada migración.
+-- tener que acordarse de un GRANT en cada migración. La excepción es
+-- flyway_schema_history: la crea Flyway después de este archivo y heredaría DML, así
+-- que backend/src/main/resources/db/migration/afterMigrate.sql se lo quita a la API
+-- en cada migración (#152).
 ALTER DEFAULT PRIVILEGES FOR ROLE checkinobra_migrador IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO checkinobra_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE checkinobra_migrador IN SCHEMA public
