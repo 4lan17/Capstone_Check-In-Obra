@@ -1,23 +1,33 @@
 # Dependabot (SEG11, S-14): propone actualizaciones de cada ecosistema que usa el proyecto, una vez
 # por semana y agrupadas para no abrir un PR por dependencia.
+#
+# Los PR salen contra develop, que es donde se integra el trabajo (#170); a main llegan con el paso de
+# develop a main, ya probados. Dependabot lee este archivo de la rama por defecto (main), así que el
+# cambio rige cuando este archivo llegue allá. Las alertas de seguridad (security updates) siguen
+# apuntando a la rama por defecto: target-branch no las afecta.
 version: 2
 updates:
   - package-ecosystem: maven
     directory: /backend
+    target-branch: develop
     schedule: {interval: weekly}
     open-pull-requests-limit: 5
     groups:
       spring: {patterns: ["org.springframework*"]}
   - package-ecosystem: pub
     directory: /mobile
+    target-branch: develop
     schedule: {interval: weekly}
     open-pull-requests-limit: 5
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
     schedule: {interval: weekly}
   - package-ecosystem: docker
     directory: /backend
+    target-branch: develop
     schedule: {interval: weekly}
   - package-ecosystem: docker-compose
     directory: /
+    target-branch: develop
     schedule: {interval: weekly}

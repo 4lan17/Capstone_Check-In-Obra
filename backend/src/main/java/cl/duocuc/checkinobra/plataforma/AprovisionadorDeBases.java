@@ -71,8 +71,15 @@ public class AprovisionadorDeBases {
                 usuarioBase, claveBase);
         ejecutar(comoAprovisionador, "SELECT format('CREATE DATABASE %I OWNER checkinobra_migrador', ?::text)", base);
 
-        // Dentro de la base, como dueño: solo el usuario de la empresa y el migrador se conectan, y la
-        // API recibe DML sobre lo que el migrador cree, sin poder cambiar el esquema.
+        darPermisos(base, usuarioBase);
+    }
+
+    /**
+     * Lo que {@link #crear} deja puesto dentro de la base, como dueño: solo el usuario de la empresa y
+     * el migrador se conectan, y la API recibe DML sobre lo que el migrador cree, sin poder cambiar el
+     * esquema. Es idempotente: sirve también para reanudar un alta cortada.
+     */
+    private void darPermisos(String base, String usuarioBase) {
         JdbcTemplate comoMigrador = conectar(base, migradorUsuario, migradorClave);
         ejecutar(comoMigrador, "SELECT format('REVOKE CONNECT ON DATABASE %I FROM PUBLIC', ?::text)", base);
         ejecutar(comoMigrador, "SELECT format('GRANT CONNECT ON DATABASE %I TO %I', ?::text, ?::text)", base, usuarioBase);
@@ -126,6 +133,77 @@ public class AprovisionadorDeBases {
         exigirNombres(base, null);
         return Boolean.TRUE.equals(conectar("postgres", usuario, clave)
                 .queryForObject("SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)", Boolean.class, base));
+    }
+
+    /** Lo que se ve por dentro de la base de una empresa para saber hasta dónde llegó su alta. */
+    public record EstadoInterno(boolean tablas, boolean sembrada, boolean admin) {
+    }
+
+    /**
+     * Deja al día lo que un alta cortada pudo no terminar (#154): crea el usuario y la base si faltan,
+     * pone al usuario la clave del secreto (si el secreto se perdió y se regeneró, la vieja ya no sirve)
+     * y repone los permisos. Solo se llama con nombres que siguen la convención del alta.
+     */
+    public void completar(String base, String usuarioBase, String claveBase) {
+        exigirNombres(base, usuarioBase);
+        JdbcTemplate comoAprovisionador = conectar("postgres", usuario, clave);
+        ejecutar(comoAprovisionador, existeUsuario(usuarioBase)
+                        ? "SELECT format('ALTER ROLE %I PASSWORD %L', ?::text, ?::text)"
+                        : "SELECT format('CREATE ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION', ?::text, ?::text)",
+                usuarioBase, claveBase);
+        if (!existeBase(base)) {
+            ejecutar(comoAprovisionador, "SELECT format('CREATE DATABASE %I OWNER checkinobra_migrador', ?::text)", base);
+        }
+        darPermisos(base, usuarioBase);
+    }
+
+    /**
+     * Hasta dónde llegó el alta de una base que existe: ¿tiene el esquema, la fila de su empresa y un
+     * ADMIN? Se mira como el migrador (dueño), así que no depende del secreto, que puede haberse perdido.
+     *
+     * <p>Un fallo de conexión o de consulta se propaga: no se interpreta como "la base está vacía", porque
+     * con eso alguien podría borrar una base en uso.
+     *
+     * @throws org.springframework.dao.DataAccessException si no se pudo mirar
+     */
+    public EstadoInterno estadoInterno(String base) {
+        exigirNombres(base, null);
+        JdbcTemplate comoMigrador = conectar(base, migradorUsuario, migradorClave);
+        boolean tablas = Boolean.TRUE.equals(comoMigrador.queryForObject(
+                "SELECT to_regclass('public.empresas') IS NOT NULL AND to_regclass('public.usuarios') IS NOT NULL",
+                Boolean.class));
+        if (!tablas) {
+            return new EstadoInterno(false, false, false);
+        }
+        boolean sembrada = Boolean.TRUE.equals(comoMigrador.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM empresas)", Boolean.class));
+        boolean admin = Boolean.TRUE.equals(comoMigrador.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM usuarios WHERE rol = 'ADMIN')", Boolean.class));
+        return new EstadoInterno(true, sembrada, admin);
+    }
+
+    public boolean existeUsuario(String usuarioBase) {
+        exigirNombres(usuarioBase, null);
+        return Boolean.TRUE.equals(conectar("postgres", usuario, clave)
+                .queryForObject("SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = ?)", Boolean.class, usuarioBase));
+    }
+
+    /** Las bases del servidor con el nombre que da el alta ({@code checkinobra_e<dígitos del RUT>}). */
+    public java.util.List<String> basesDeEmpresas() {
+        return conectar("postgres", usuario, clave).queryForList(
+                "SELECT datname FROM pg_database WHERE datname ~ '^checkinobra_e[0-9k]+$' ORDER BY datname", String.class);
+    }
+
+    /** Los usuarios de PostgreSQL con el nombre que da el alta ({@code app_e<dígitos del RUT>}). */
+    public java.util.List<String> usuariosDeEmpresas() {
+        return conectar("postgres", usuario, clave).queryForList(
+                "SELECT rolname FROM pg_roles WHERE rolname ~ '^app_e[0-9k]+$' ORDER BY rolname", String.class);
+    }
+
+    /** Borra solo un usuario (el de una base que ya no está). No falla si no existe. */
+    public void eliminarUsuario(String usuarioBase) {
+        exigirNombres(usuarioBase, null);
+        ejecutar(conectar("postgres", usuario, clave), "SELECT format('DROP ROLE IF EXISTS %I', ?::text)", usuarioBase);
     }
 
     /** Las filas del catálogo base: sku, nombre, categoría, precio de referencia y stock mínimo. */

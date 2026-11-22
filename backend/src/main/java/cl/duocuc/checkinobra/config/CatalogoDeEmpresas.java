@@ -247,6 +247,18 @@ public class CatalogoDeEmpresas implements DisposableBean {
         catalogo.sql("DELETE FROM empresas WHERE id = :id").param("id", id).update();
     }
 
+    /** Cuándo se registró la empresa (el barrido de altas a medias deja pasar las muy recientes). */
+    public Optional<java.time.Instant> creadaEn(long id) {
+        return catalogo.sql("SELECT creada_en FROM empresas WHERE id = :id").param("id", id)
+                .query((rs, n) -> rs.getTimestamp("creada_en").toInstant()).optional();
+    }
+
+    /** El correo que el alta reservó para el administrador de la empresa, si sigue reservado. */
+    public Optional<String> correoReservado(long empresaId) {
+        return catalogo.sql("SELECT email FROM indice_login WHERE empresa_id = :id ORDER BY email LIMIT 1")
+                .param("id", empresaId).query(String.class).optional();
+    }
+
     /** Suelta un correo reservado, solo si es de esa empresa (compensa un alta que falló). */
     public void liberarCorreo(String email, Long empresaId) {
         catalogo.sql("DELETE FROM indice_login WHERE email = :email AND empresa_id = :empresa")

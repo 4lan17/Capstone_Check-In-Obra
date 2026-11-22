@@ -51,8 +51,8 @@ mientras la obra todavía está abierta.
 | `mobile_scanner` | ^7.4.0 | Escáner de cámara: credencial QR del trabajador y código de barras de material y herramientas |
 | `dio` | ^5.11.0 | Cliente HTTP contra la API |
 | `flutter_riverpod` | ^2.6.1 | Manejo de estado |
-| `drift` | ^2.34.3 | Base local (cola de movimientos sin conexión) |
-| `flutter_secure_storage` | ^11.0.0 | Guardar el JWT y el PIN de forma segura |
+| `drift` | ^2.34.3 | Base local para la cola de movimientos sin conexión (declarada, **aún sin usar**: la cola no existe) |
+| `flutter_secure_storage` | ^11.0.0 | Guardar la sesión (token y refresh token) de forma segura. El PIN no se guarda nunca |
 | `file_picker` | ^12.2.0 | Elegir y guardar la planilla `.xlsx` de la importación masiva |
 | `fl_chart` | ^1.2.0 | Gráficos de desviación y consumo |
 | `intl` | ^0.20.3 | Formato de fechas y montos en es-CL |
@@ -136,8 +136,9 @@ checkinobra/
 │   ├── lib/
 │   │   ├── core/{theme,network}/    Tema visual y cliente HTTP
 │   │   ├── data/{api,local_db}/     Repositorios remotos y base local
-│   │   ├── features/                auth · cubicacion · presupuesto ·
-│   │   │                            inventario · solicitudes · admin
+│   │   ├── features/                auth · admin · bodega · trabajador ·
+│   │   │                            jefe_terreno · cubicacion · presupuesto ·
+│   │   │                            obra · inicio
 │   │   └── shared_widgets/
 │   ├── android/
 │   ├── .env.example
@@ -375,19 +376,20 @@ bodeguero no puede despacharle nada.
 | Rol | Correo | PIN | Qué ve hoy en la app |
 |---|---|---|---|
 | Administrador | `admin@arauco-ltda.cl` | `PRIMER_ADMIN_CLAVE` del `.env` (la cambia en su primer ingreso) | Obras, materiales, usuarios, empresa y la vista de bodega |
-| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `jefe-1111-obra` | Pantalla de rol pendiente (su flujo no está construido) |
+| Jefe de terreno | `rodrigo.carcamo@arauco-ltda.cl` | `jefe-1111-obra` | Partidas, cubicación y presupuesto de la obra que elija |
 | Bodeguero | `jorge.reyes@arauco-ltda.cl` | `bodega-2222-obra` | Inicio, bodega, herramientas y alertas de la obra que elija |
-| Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Pantalla de rol pendiente (su flujo no está construido) |
+| Trabajador | `marcelo.sepulveda@arauco-ltda.cl` | `3333` | Inicio, credencial QR, historial y pedidos de material y herramientas |
 | Trabajador | `javier.ortiz@arauco-ltda.cl` | `4444` | Idem |
 
 Los correos y PINs salen de `CUENTAS` en el script: si cambias uno allá, cámbialo
 acá. El jefe de terreno y el bodeguero usan una clave de 8 o más caracteres: la
 API la exige a todo rol que no sea trabajador.
 
-**Probar el escaneo de credencial sin la app del trabajador.** Como esa app
-todavía no existe, no hay QR que mostrar. Corre el script con
-`--renovar-credenciales`: imprime el código de cada trabajador (el anterior deja
-de valer), y el bodeguero lo escribe en el ingreso manual del escáner.
+**Probar el escaneo de credencial.** Entra como trabajador (`marcelo.sepulveda@…`) en
+un teléfono o emulador y abre *Credencial*: el bodeguero la escanea desde el suyo. Con
+un solo equipo, corre el script con `--renovar-credenciales`: imprime el código de cada
+trabajador (el anterior deja de valer) y el bodeguero lo escribe en el ingreso manual
+del escáner.
 
 > ⚠️ El script reemplaza PINs. Es solo para la base local: no lo corras contra un
 > servidor real.
@@ -428,27 +430,20 @@ termine de bootear, crea el `.env` desde `.env.example` si falta y lanza
 
 #### Qué se ve al correrla
 
-Por ahora la app abre en una **pantalla de verificación de conexión**. No es
-una pantalla del producto: es una herramienta para el equipo que comprueba, de
-una sola vez, que el teléfono llega hasta la base de datos.
-
-Al tocar *Probar conexión* hace un login real contra `/api/auth/login` con el
-usuario semilla y muestra:
-
-- **En verde** — el rol, la empresa, el JWT recibido y la latencia. Eso
-  significa que funcionan la red, la API, PostgreSQL y las migraciones.
-- **En rojo** — la causa concreta y el comando para resolverla. Distingue entre
-  firewall bloqueando, redes WiFi distintas, IP desactualizada en el `.env` y
-  backend caído.
-
-Es el punto de partida: las pantallas reales del MVP1 (acceso por rol,
-cubicación, bodega, solicitudes) se construyen sobre esta base.
+La app abre en la **pantalla de acceso**. Entra con una de las cuentas de la tabla de
+arriba: cada rol llega a su propia app (ver [App móvil](#app-móvil)). Si el
+teléfono ya recuerda a un trabajador, le ofrece entrar solo con su PIN; a los
+demás roles les pide correo y clave. Una cuenta con clave provisoria —como la del
+administrador inicial— solo ve la pantalla de cambio de clave hasta que la cambie.
 
 **Si la app dice "No se pudo alcanzar el servidor"**, revisa en este orden:
 
 1. El backend está arriba — `docker compose ps`
-2. El teléfono y el computador están en la **misma red WiFi**
-3. La IP del `.env` es la actual — cambia cada vez que cambias de red
+2. Un teléfono físico va **por cable con `adb reverse`** (lo hace
+   `scripts/levantar.sh --telefono`): Android bloquea el tráfico en claro, así que
+   en *debug* solo se permite HTTP hacia `10.0.2.2`, `localhost` y `127.0.0.1`, y
+   la IP de la WiFi en el `.env` ya no sirve
+3. El emulador usa `http://10.0.2.2:8081`, que es el valor por defecto
 
 > Sobre el firewall: aunque UFW esté activo con política `DROP`, **normalmente
 > no bloquea** los puertos publicados por Docker. Docker inserta sus propias
@@ -461,7 +456,7 @@ cubicación, bodega, solicitudes) se construyen sobre esta base.
 > adb shell "curl -s -o /dev/null -w '%{http_code}' http://<IP-del-PC>:8081/v3/api-docs"
 > ```
 >
-> Si eso devuelve `200`, el problema no es de red sino del `.env` de la app.
+> Si eso devuelve `200`, el problema no es de red sino de cómo la app llega a la API (ver el punto 2).
 
 ---
 
@@ -560,26 +555,12 @@ Base: `http://localhost:8081` · Swagger: `/swagger-ui.html`
 
 ### Dar de alta una constructora
 
-No hay endpoint para crearla, y no es un olvido. Lo hubo, y era incoherente: el
-ADMIN que creaba una empresa no podía verla después, porque el aislamiento por
-empresa lo dejaba fuera de la que acababa de crear. Dar de alta un tenant no es
-una operación de un tenant — necesitaría un rol por encima de los cuatro, y
-este sistema tiene cuatro por diseño.
-
-Una constructora nueva se crea por migración junto con su primer ADMIN, como
-hacía `V2__seed_admin.sql`:
-
-```sql
-INSERT INTO empresas (nombre, rut) VALUES ('Constructora Nueva Ltda.', '77.111.222-3');
-
-INSERT INTO usuarios (nombre, email, rol, pin_hash, debe_cambiar_pin, empresa_id)
-VALUES ('Admin Nueva', 'admin@nueva.cl', 'ADMIN',
-        '<hash BCrypt de una clave temporal de 8 o más caracteres, que no esté en el repo>',
-        TRUE,
-        (SELECT id FROM empresas WHERE rut = '77.111.222-3'));
-```
-
-Con `debe_cambiar_pin = TRUE` su primera acción tiene que ser cambiar esa clave.
+Ya no es una migración a mano: la da de alta un **operador de plataforma** con una sola llamada,
+`POST /api/plataforma/empresas`, que crea su base, su usuario de PostgreSQL, el esquema y su
+primer ADMIN (con clave a cambiar en su primer ingreso). El detalle —el rol `PLATAFORMA`, las
+credenciales que intervienen, la suspensión, el respaldo y el borrado— está en
+[Operadores de plataforma](#operadores-de-plataforma-rol-plataforma). Si un paso falla, se
+deshace todo. `V2__seed_admin.sql` ya no existe: la empresa de partida la registra el arranque.
 
 ### Escaneo e importación masiva
 
@@ -811,6 +792,9 @@ El personal de la plataforma entra por `POST /api/plataforma/auth/login` (`{"ema
   - Requiere el rol `checkinobra_aprovisionador` (`CREATEDB` y `CREATEROLE`; `DB_APROVISIONADOR_PASSWORD`), distinto del de la API y del migrador. Sin esa variable el alta responde que no está habilitada. Es una credencial poderosa: guardarla solo donde corre la API. Puede hacer `SET ROLE` al migrador (PostgreSQL lo exige para crear una base cuyo dueño es el migrador) pero no hereda sus permisos.
   - **La contraseña de cada base nueva no está en el catálogo ni en el entorno**: el catálogo guarda la referencia `file:app_e<dígitos>` y el secreto es un archivo (modo `600`) del directorio `SECRETOS_DIR` (`/secretos` en el contenedor, un volumen `secretos`). **Ese volumen hay que respaldarlo junto con las bases**: si se pierde, las bases de esas empresas no se pueden abrir.
 - **Suspender y reactivar**: `PUT /api/plataforma/empresas/{id}/estado` con `{"estado":"SUSPENDIDA"}` (o `"ACTIVA"`). Idempotente. Una empresa suspendida pierde su pool y **recibe `403` con `codigo: EMPRESA_SUSPENDIDA` en cada petición** (la decide `JwtAuthFilter` a partir del catálogo, sin abrir su base); su gente no puede volver a entrar (el login responde como para una cuenta inexistente) y las tareas programadas la saltan. **No toca sus datos**, y las demás empresas siguen igual. Reactivarla la devuelve a como estaba, con los mismos tokens aún vigentes.
+- **Altas a medias** (#154): el alta no es transaccional (catálogo, correo, secreto, usuario y base de PostgreSQL, migración, semilla, ADMIN), así que un corte del proceso puede dejar restos. `GET /api/plataforma/altas-incompletas` los lista: empresas registradas a las que les falta algo (`problemas`: `SIN_BASE`, `SIN_USUARIO_DE_BASE`, `SIN_SECRETO`, `SIN_MIGRAR`, `SIN_EMPRESA_EN_SU_BASE`, `SIN_ADMINISTRADOR`) y bases, usuarios o secretos que ninguna empresa usa. El arranque también lo avisa en el log (solo mira, nunca impide arrancar).
+  - `POST /api/plataforma/altas-incompletas/{empresaId}/reanudar` termina el alta (cada paso es idempotente; repone el secreto si se perdió) y devuelve la `claveTemporal` del ADMIN si hubo que crearlo, **la única vez que se muestra**. No copia el catálogo base de materiales (no se sabe si se pidió). Necesita el correo que el alta reservó.
+  - `POST /api/plataforma/altas-incompletas/deshacer` con `{"tipo","referencia","confirmar"}` borra la sobra; `confirmar` debe ser igual a `referencia`. **Solo toca nombres de la convención del alta** (`checkinobra_e…`, `app_e…`), **nunca una base con ADMIN** (parece en uso) ni una que no pudo revisar, y deja pasar las empresas registradas hace menos de `checkinobra.plataforma.barrido.gracia-minutos` (10), que pueden ser un alta en curso.
 - **Respaldo y restauración por base** (`pg_dump`, por empresa: el archivo de una constructora no trae datos de otra). La imagen del backend **no incluye `pg_dump`** (`eclipse-temurin:21-jre-alpine` no lo trae): el respaldo es un trabajo aparte, con las herramientas de PostgreSQL del contenedor de la base o del servidor:
   ```bash
   # nombre de la base: columna empresas.nombre_base del catálogo (p. ej. checkinobra_e764123309)
@@ -1194,8 +1178,10 @@ El enrutado está en `main.dart`, en `_paraElRol`.
 |---|---|---|
 | Bodeguero | ✅ Construido | `features/bodega/shell_bodega.dart` |
 | Administrador | ✅ Construido | `features/admin/shell_admin.dart` |
-| Jefe de terreno | ⏳ Pendiente | `features/inicio/pantalla_rol_pendiente.dart` |
-| Trabajador | ⏳ Pendiente | idem |
+| Trabajador | ✅ Construido | `features/trabajador/shell_trabajador.dart` |
+| Jefe de terreno | 🟡 Sin la desviación | `features/jefe_terreno/shell_jefe_terreno.dart` |
+
+`PantallaRolPendiente` queda solo para un rol que la app no conoce.
 
 #### Bodeguero
 
@@ -1287,15 +1273,36 @@ importa nada: se corrige el archivo y se vuelve a subir. El bodeguero tiene la
 misma pantalla acotada a herramientas, porque es quien las etiqueta y las da de
 alta cuando llegan.
 
+#### Trabajador
+
+Tres pestañas, sobre la obra de su cuadrilla (sin cuadrilla no hay bodega a la que
+pedirle):
+
+1. **Inicio** — lo vencido primero y en rojo, lo que tiene en su poder y lo que
+   espera de bodega, y el acceso a pedir material, pedir herramientas y hacer un
+   **pedido especial**.
+2. **Credencial** — el QR a ancho completo para que el bodeguero lo escanee; se
+   puede renovar, y una copia guardada permite mostrarla sin señal.
+3. **Historial** — lo que pidió y las herramientas que tuvo.
+
+Pedir herramientas permite elegir varias y retirarlas con **un QR de pedido**. No ve
+precios ni costos.
+
+#### Jefe de terreno
+
+Elige obra y trabaja con dos pestañas:
+
+1. **Partidas** — crear una partida (tipo, ancho, alto y separación de montantes) y
+   **cubicarla**: cada material con su cantidad calculada y con merma. Cubicar de nuevo
+   reemplaza el cálculo anterior.
+2. **Presupuesto** — crearlo, agregar ítems con el precio vigente del catálogo (o todos
+   los de una partida cubicada), aprobarlo y congelarlo. Congelado no se edita.
+
 #### Lo que falta
 
-El **jefe de terreno** necesita el flujo de cubicación: crear partidas, correr
-el motor de cubicación, armar y congelar el presupuesto, y ver la desviación.
-El **trabajador** necesita el de terreno: solicitar herramienta y material,
-mostrar su credencial QR y seguir sus préstamos. Ambos endpoints ya existen en
-el backend y ambos roles ya autentican y autorizan bien; lo que falta son las
-pantallas. Mientras tanto, `PantallaRolPendiente` se lo dice en pantalla junto
-con los permisos que su rol sí tiene.
+La **desviación** presupuestado vs. ejecutado del jefe de terreno, la gestión de
+cuadrillas, su pantalla de inicio, `SinPermiso` y la cola sin conexión. El detalle y el
+estado de cada pantalla están en [`docs/PENDIENTES.md`](docs/PENDIENTES.md).
 
 ### Emulador (teléfono virtual)
 

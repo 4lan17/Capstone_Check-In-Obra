@@ -67,7 +67,7 @@ corregible.
 | 9 | Reporte de desviación presupuestado vs. ejecutado |
 | 10 | Escáner de código de barras para encontrar material y herramientas en bodega |
 | 11 | Alta masiva del catálogo desde planilla Excel |
-| 12 | App Android para los cuatro roles |
+| 12 | App Android para los cuatro roles (el jefe de terreno, sin la desviación) |
 
 ### 1.4 Fuera del alcance
 
@@ -75,7 +75,9 @@ corregible.
   ni factura asociada.
 - **Multi-obra simultánea para un mismo bodeguero.** Se elige una obra y se
   trabaja sobre ella.
-- **Alta de constructoras por API.** Ver [RF-A8](#a-acceso-y-configuración).
+- **Planes, cobro y topes por empresa.** El alta, la suspensión y el respaldo de
+  una constructora existen (RF-A8 a RF-A10), pero el plan no limita usuarios ni
+  obras todavía y no hay facturación.
 - **Web.** Hay mockups de escritorio en `docs/mockups/design/`, pero el MVP 1
   entrega solo la app Android.
 - **Nómina, asistencia y avance físico de obra.**
@@ -91,9 +93,9 @@ dos roles.
 | Actor | Entra por | Trabaja sobre | Pregunta que responde el sistema |
 |---|---|---|---|
 | **Trabajador** | PIN (usuario recordado en el teléfono) | Lo suyo | ¿Qué pedí, qué tengo prestado, cómo me identifico? |
-| **Bodeguero** | Correo + PIN | Una obra | ¿Qué queda, qué salió, quién lo tiene? |
-| **Jefe de terreno** | Correo + PIN | Una obra | ¿Cuánto material necesita esta partida y cómo va la desviación? |
-| **Administrador** | Correo + PIN | La empresa entera | ¿Quién trabaja aquí, a qué precio compramos, qué obras están abiertas? |
+| **Bodeguero** | Correo + clave | Una obra | ¿Qué queda, qué salió, quién lo tiene? |
+| **Jefe de terreno** | Correo + clave | Una obra | ¿Cuánto material necesita esta partida y cómo va la desviación? |
+| **Administrador** | Correo + clave | La empresa entera | ¿Quién trabaja aquí, a qué precio compramos, qué obras están abiertas? |
 
 **Actor no humano:** ninguno. No hay tareas programadas — las alertas se
 detectan cuando alguien las mira ([RN-24](#7-reglas-de-negocio)).
@@ -240,7 +242,7 @@ uno responde a una consulta concreta de una pantalla, no a una intuición.
 ## 6. Requisitos funcionales
 
 Formato: **ID · requisito · rol autorizado · endpoint · estado**.
-Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de los dos.
+Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de los dos. Los requisitos de la plataforma (RF-A8 a RF-A10) no pasan por la app móvil, que es de las constructoras.
 
 ### A. Acceso y configuración
 
@@ -253,12 +255,18 @@ Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de
 | RF-A5 | Consultar el padrón de la empresa y un usuario puntual | ADMIN | `GET /api/usuarios`, `GET /api/usuarios/{id}` | ✅ (el detalle, 🟡) |
 | RF-A6 | Restablecer el PIN de un usuario | ADMIN | `PUT /api/usuarios/{id}/pin` | ✅ |
 | RF-A7 | Consultar los datos de la propia constructora | Autenticado | `GET /api/empresas/mia`, `GET /api/empresas/{id}` | ✅ |
-| RF-A8 | Dar de alta una constructora | — | **sin endpoint, por migración SQL** | ✅ |
+| RF-A8 | Dar de alta una constructora: su base, su usuario de base, el esquema y su primer ADMIN (con clave a cambiar) | PLATAFORMA | `POST /api/plataforma/empresas` | ✅ backend · no es de la app |
+| RF-A9 | Suspender y reactivar una constructora | PLATAFORMA | `PUT /api/plataforma/empresas/{id}/estado` | ✅ backend · no es de la app |
+| RF-A10 | Iniciar sesión como operador de plataforma | Público | `POST /api/plataforma/auth/login` | ✅ backend · no es de la app |
 
-> **RF-A8 no es un olvido.** Crear un tenant no es una operación de un tenant:
-> el ADMIN que creara la empresa no podría verla después, porque el aislamiento
-> lo dejaría fuera de la que acaba de crear. Haría falta un rol por encima de
-> los cuatro, y el sistema tiene cuatro por diseño.
+> **El alta de una constructora no es una operación de una constructora.** El
+> ADMIN que la creara no podría verla después, porque el aislamiento lo dejaría
+> fuera de la que acaba de crear. Por eso hay un rol por encima de los cuatro,
+> `PLATAFORMA`: el operador de plataforma **no pertenece a ninguna empresa**, vive
+> en el catálogo y su token no lleva `empresaId`. Nunca llega a una ruta de
+> empresa, ni una empresa a `/api/plataforma/**` (§9.6). El respaldo y la
+> restauración por base son scripts (`scripts/respaldar-empresa.sh`,
+> `scripts/restaurar-empresa.sh`), no endpoints.
 
 ### B. Obra y equipos
 
@@ -284,20 +292,20 @@ Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de
 | RF-C8 | Encontrar un material por su código de barras o su SKU | Autenticado | `GET /api/materiales/por-codigo/{codigo}` | ✅ |
 | RF-C9 | Dar de alta materiales en masa desde una planilla Excel | ADMIN | `POST /api/materiales/importar` | ✅ |
 | RF-C10 | Descargar la plantilla de importación de materiales | ADMIN | `GET /api/materiales/plantilla-importacion` | ✅ |
-| RF-C4 | Crear una partida con su geometría | ADMIN, JEFE_TERRENO | `POST /api/partidas` | 🟡 |
-| RF-C5 | Listar las partidas de una obra y ver una | Autenticado | `GET /api/partidas`, `GET /api/partidas/{id}` | 🟡 |
-| RF-C6 | Cubicar una partida: calcular sus ítems con merma | ADMIN, JEFE_TERRENO | `POST /api/partidas/{id}/cubicar` | 🟡 |
-| RF-C7 | Consultar los ítems cubicados de una partida | Autenticado | `GET /api/partidas/{id}/items-cubicados` | 🟡 |
+| RF-C4 | Crear una partida con su geometría | ADMIN, JEFE_TERRENO | `POST /api/partidas` | ✅ |
+| RF-C5 | Listar las partidas de una obra y ver una | Autenticado | `GET /api/partidas`, `GET /api/partidas/{id}` | ✅ |
+| RF-C6 | Cubicar una partida: calcular sus ítems con merma | ADMIN, JEFE_TERRENO | `POST /api/partidas/{id}/cubicar` | ✅ |
+| RF-C7 | Consultar los ítems cubicados de una partida | Autenticado | `GET /api/partidas/{id}/items-cubicados` | ✅ |
 
 ### D. Presupuesto
 
 | ID | Requisito | Rol | Endpoint | Estado |
 |---|---|---|---|---|
-| RF-D1 | Crear el presupuesto de una obra | ADMIN, JEFE_TERRENO | `POST /api/presupuestos` | 🟡 |
-| RF-D2 | Agregar un ítem tomando el precio vigente del catálogo | ADMIN, JEFE_TERRENO | `POST /api/presupuestos/{id}/items` | 🟡 |
-| RF-D3 | Consultar el presupuesto de una obra y sus ítems | Autenticado | `GET /api/presupuestos?obraId=`, `/{id}/items` | 🟡 |
-| RF-D4 | Aprobar el presupuesto | ADMIN, JEFE_TERRENO | `PUT /api/presupuestos/{id}/aprobar` | 🟡 |
-| RF-D5 | Congelar el presupuesto aprobado | ADMIN, JEFE_TERRENO | `PUT /api/presupuestos/{id}/congelar` | 🟡 |
+| RF-D1 | Crear el presupuesto de una obra | ADMIN, JEFE_TERRENO | `POST /api/presupuestos` | ✅ |
+| RF-D2 | Agregar un ítem tomando el precio vigente del catálogo | ADMIN, JEFE_TERRENO | `POST /api/presupuestos/{id}/items` | ✅ |
+| RF-D3 | Consultar el presupuesto de una obra y sus ítems | Autenticado | `GET /api/presupuestos?obraId=`, `/{id}/items` | ✅ |
+| RF-D4 | Aprobar el presupuesto | ADMIN, JEFE_TERRENO | `PUT /api/presupuestos/{id}/aprobar` | ✅ |
+| RF-D5 | Congelar el presupuesto aprobado | ADMIN, JEFE_TERRENO | `PUT /api/presupuestos/{id}/congelar` | ✅ |
 | RF-D6 | Obtener la desviación presupuestado vs. ejecutado | Autenticado | `GET /api/presupuestos/{id}/desviacion` | 🟡 |
 
 **Cálculo de RF-D6.** `ejecutado` = Σ (cantidad × precio unitario del catálogo)
@@ -320,10 +328,10 @@ merma con que se cubicó.
 | RF-E8 | Autorizar el préstamo de una herramienta disponible | ADMIN, BODEGUERO | `POST /api/prestamos-herramienta` | ✅ |
 | RF-E9 | Registrar la devolución indicando en qué estado vuelve | ADMIN, BODEGUERO | `PUT /api/prestamos-herramienta/{id}/devolucion` | ✅ |
 | RF-E10 | Listar préstamos por obra, por trabajador o solo vencidos | Autenticado | `GET /api/prestamos-herramienta` | ✅ |
-| RF-E11 | Solicitar una herramienta | TRABAJADOR | `POST /api/solicitudes-herramienta` | 🟡 |
+| RF-E11 | Solicitar una herramienta | TRABAJADOR | `POST /api/solicitudes-herramienta` | ✅ |
 | RF-E12 | Aprobar una solicitud de herramienta, generando el préstamo | ADMIN, BODEGUERO | `PUT /api/solicitudes-herramienta/{id}/aprobar` | ✅ |
 | RF-E13 | Rechazar una solicitud con motivo | ADMIN, BODEGUERO | `PUT /api/solicitudes-*/{id}/rechazar` | ✅ |
-| RF-E14 | Solicitar material para una obra | TRABAJADOR | `POST /api/solicitudes-material` | 🟡 |
+| RF-E14 | Solicitar material para una obra | TRABAJADOR | `POST /api/solicitudes-material` | ✅ |
 | RF-E15 | Aprobar una solicitud de material indicando cuánto se entrega | ADMIN, BODEGUERO | `PUT /api/solicitudes-material/{id}/aprobar` | ✅ |
 | RF-E16 | Listar solicitudes por trabajador, por obra o solo pendientes | Autenticado | `GET /api/solicitudes-*` | ✅ |
 | RF-E17 | Dar de alta herramientas en masa desde una planilla Excel | ADMIN, BODEGUERO | `POST /api/herramientas/importar` | ✅ |
@@ -448,7 +456,7 @@ Un préstamo abierto (`fecha_devol_real` nula) pasada su fecha esperada está
 ## 9. Interfaz de la API
 
 Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
-`/swagger-ui.html`. **71 endpoints** en 16 controladores.
+`/swagger-ui.html`. **106 endpoints** en 21 controladores.
 
 ### 9.1 Autenticación
 
@@ -479,7 +487,9 @@ herramientas lo son).
 | `200` | Operación exitosa |
 | `201` | Recurso creado |
 | `400` | Datos inválidos, enum inexistente, parámetro faltante, credenciales incorrectas |
-| `403` | Sin token, token inválido, o el rol no autoriza la acción |
+| `401` | Sin token, token inválido o vencido, o un refresh token que no sirve (`SESION_INVALIDA`) |
+| `403` | El rol no autoriza la acción, la cuenta debe cambiar su clave (`DEBE_CAMBIAR_PIN`) o la empresa está suspendida (`EMPRESA_SUSPENDIDA`) |
+| `429` | Demasiados intentos de login fallidos; trae `Retry-After` |
 | `404` | El recurso no existe **o es de otra empresa** (RN-23) |
 | `409` | La operación choca con una regla de negocio |
 
@@ -521,6 +531,34 @@ al emitirla o renovarla.
 
 ---
 
+### 9.6 Aislamiento entre empresas y plataforma
+
+El aislamiento tiene capas, y cada una cubre el hueco de la anterior:
+
+1. **Una base de datos por empresa.** Un catálogo (`checkinobra_catalogo`) guarda qué empresas
+   existen y cómo conectarse a cada una; `TenantRoutingDataSource` abre la base de la empresa del
+   token y **no tiene base por defecto**: sin empresa en el contexto, la petición falla. Los datos
+   de otra empresa no están en la base que se abrió.
+2. **Un usuario de PostgreSQL por empresa**, solo con DML y conectado únicamente a su base; las
+   migraciones las aplica otro usuario (el migrador, dueño del esquema).
+3. **`AccesoEmpresa.esPropio` / `exigirEmpresa`** y la columna `empresa_id` se mantienen como red:
+   un recurso ajeno responde 404, igual que uno inexistente (RN-23). **43 comprobaciones en 17
+   archivos** (medido sobre `backend/src/main`, sin contar `AccesoEmpresa` ni los comentarios) y
+   las **20 entidades** implementan `PerteneceAEmpresa`.
+4. **El token** lleva `empresaId`, `iss`, `aud` y la versión de sesión; vive 30 minutos y se
+   renueva con un refresh token rotativo.
+
+**Plataforma.** El rol `PLATAFORMA` (operador, tabla `operadores` del catálogo) entra por
+`POST /api/plataforma/auth/login`; su token **no lleva `empresaId`** y se revalida contra el
+catálogo. `/api/plataforma/**` exige ese rol (un token de empresa recibe 403) y toda ruta de
+empresa rechaza un token de plataforma (403). El alta de una empresa registra el catálogo, crea
+su base y su usuario de PostgreSQL (con un rol aprovisionador distinto del de la API y del
+migrador), migra, siembra la empresa con el mismo id del catálogo, abre el pool en caliente y crea
+su primer ADMIN; si un paso falla se deshace todo. Una empresa **suspendida** recibe 403
+(`EMPRESA_SUSPENDIDA`) sin que se abra su base.
+
+---
+
 ## 10. Aplicación móvil
 
 Android, Flutter 3.47, un solo `MaterialApp` en tema claro. El enrutado por rol
@@ -535,8 +573,11 @@ Un shell común tendría que negar la mitad de sí mismo en cada caso.
 |---|---|---|
 | Bodeguero | `features/bodega/shell_bodega.dart` | ✅ Construido |
 | Administrador | `features/admin/shell_admin.dart` | ✅ Construido |
-| Jefe de terreno | — | ⬜ `PantallaRolPendiente` |
-| Trabajador | — | ⬜ `PantallaRolPendiente` |
+| Trabajador | `features/trabajador/shell_trabajador.dart` | ✅ Construido |
+| Jefe de terreno | `features/jefe_terreno/shell_jefe_terreno.dart` | 🟡 Partidas, cubicación y presupuesto; **falta la desviación** |
+
+`PantallaRolPendiente` queda solo para un rol que la app no conoce (uno nuevo del
+backend). El operador de plataforma no tiene app móvil.
 
 ### 10.2 Flujo del bodeguero
 
@@ -597,30 +638,95 @@ acceso a la vista de bodega, porque la matriz de permisos se lo concede).
   propagan a cada presupuesto. El bodeguero tiene la misma pantalla acotada a
   herramientas, porque es quien las etiqueta cuando llegan.
 
+### 10.3.1 Flujo del trabajador
+
+Tres pestañas, sobre la obra de su cuadrilla (no la elige: sin cuadrilla no hay
+bodega a la que pedirle y la app se lo dice):
+
+1. **Inicio** — dónde está, lo vencido primero y en rojo, lo que tiene en su poder y
+   lo que espera de bodega, y el acceso a pedir material, pedir herramientas y
+   hacer un pedido especial.
+2. **Credencial** — el QR a ancho completo, con nombre y RUT en grande, para que el
+   bodeguero la escanee y confirme de un vistazo que coincide con quien la muestra.
+   Puede renovarla (la anterior deja de valer). Guarda una copia por empresa y
+   usuario para mostrarla **sin señal**, y la borra al cerrar sesión.
+3. **Historial** — todo lo que pidió y las herramientas que tuvo.
+
+Pedir material lleva cantidad y para qué se necesita; pedir herramientas permite
+elegir varias y retirarlas con **un QR de pedido**; el **pedido especial** es lo que
+bodega no puede entregar hoy (no está en el catálogo, o no queda). Puede cancelar
+lo pendiente y confirmar lo que recibió. Si ya tiene el mismo material pedido sin
+resolver, la lista lo marca "Ya lo pediste" y un segundo pedido recibe el mensaje
+del servidor (409 `SOLICITUD_DUPLICADA`). No ve precios ni costos: el backend no se
+los envía.
+
+### 10.3.2 Flujo del jefe de terreno
+
+Elige obra al entrar —como el bodeguero— y trabaja sobre ella, con dos pestañas:
+
+1. **Partidas** — la lista de la obra y el alta con tipo, ancho, alto y separación
+   de montantes (las tres medidas mayores que cero). De cada partida se entra a
+   **cubicarla**: la app muestra cada material con su cantidad calculada y con
+   merma, y volver a cubicar **reemplaza** el cálculo anterior (RN-21).
+2. **Presupuesto** — crearlo (nace en borrador), agregar ítems con el precio vigente
+   del catálogo o **todos los ítems cubicados de una partida** de una vez, aprobarlo
+   y congelarlo; aprobar y congelar piden confirmación. Congelado no ofrece ninguna
+   acción de edición.
+
+**Falta**: la desviación presupuestado vs. ejecutado (RF-D6), la gestión de
+cuadrillas y una pantalla de inicio con contadores.
+
 ### 10.4 Acceso
 
-- **RF-M5** Correo + PIN para admin, jefe de terreno y bodeguero; PIN solo, con
-  teclado propio de teclas grandes, para el usuario recordado. Nadie escribe un
-  correo con guantes puestos, y el PIN no pasa por el teclado predictivo.
+- **RF-M5** Correo + clave para admin, jefe de terreno y bodeguero (8 a 72
+  caracteres); el **trabajador** entra con su PIN de 4 dígitos y es el único con
+  acceso rápido: PIN solo, con teclado propio de teclas grandes, para el usuario
+  recordado. Nadie escribe un correo con guantes puestos, y el PIN no pasa por el
+  teclado predictivo. Tras 5 fallos el servidor bloquea la cuenta y la app dice
+  cuánto esperar (`Retry-After`).
 - **RF-M6** La sesión sobrevive al cierre de la app: el token vive en el
-  almacenamiento cifrado del sistema.
+  almacenamiento cifrado del sistema. El token de acceso dura 30 minutos y la app
+  lo **renueva sola** con el refresh token (7 días sin usarse), de a una renovación
+  por vez porque el refresh se rota; la sesión local solo se cierra si el servidor
+  dice que ya no vale. Al cerrar sesión se revoca el refresh.
+- **RF-M8** Una cuenta con clave provisoria (la inicial del administrador, o una
+  restablecida) **solo puede cambiarla**: la app muestra la pantalla de cambio de
+  clave en lugar de la app, hasta que lo haga.
+- **RF-M9** Lo que recuerda el teléfono —usuario, obra activa, copia de la
+  credencial— se guarda **por empresa y usuario**: con una base por empresa los
+  ids se repiten, y al entrar otra cuenta no hereda nada de la anterior.
 - **RF-M7** «Salir» olvida la sesión pero recuerda al usuario; «Cambiar» olvida
   también al usuario.
 
 ### 10.5 Cobertura de la API
 
-La capa de datos de la app implementa **43 de los 71 endpoints**. Sin consumir:
-cuadrillas (3), partidas y cubicación (5), presupuestos (8), el alta de
-solicitudes —que es del trabajador, cuyo flujo falta— y varias lecturas de
-detalle.
+La capa de datos de la app consume **84 de los 106 endpoints** del backend.
+Sin consumir quedan 22: **5** son de la plataforma (`/api/plataforma/*`), que no
+pasa por la app móvil, y **17** son del producto:
+
+- cuadrillas (3: crear, listar y ver una), el alta de trabajadores (1) y renovar la
+  credencial de un trabajador por su id (1);
+- la desviación del presupuesto (1);
+- la consulta de la merma de un material (1) y las lecturas de detalle por id (10:
+  empresa, herramienta, partida, pedido especial, préstamo, presupuesto, las dos
+  solicitudes, trabajador y usuario), que la app no necesita porque ya trae las
+  listas.
+
+Entre los consumidos está `POST /api/presupuestos/{id}/items/desde-partida`, el botón
+«Agregar una partida cubicada» del presupuesto.
 
 ### 10.6 Configuración
 
-`mobile/.env` (no versionado) define `API_BASE_URL`. Si falta, la app arranca
-igual con `http://10.0.2.2:8081` —el localhost del computador visto desde el
-emulador— y lo informa en pantalla. La misma URL de la WiFi sirve para el
-emulador y para un teléfono físico, así que no hay que recompilar al cambiar de
-dispositivo.
+En desarrollo, `mobile/.env` (no versionado) define `API_BASE_URL`; si falta, la
+app arranca igual con `http://10.0.2.2:8081` —el localhost del computador visto
+desde el emulador— y lo informa en pantalla. Android bloquea el tráfico en claro:
+en *debug* solo permite HTTP hacia `10.0.2.2`, `localhost` y `127.0.0.1`, así que
+un teléfono físico se conecta por cable con `adb reverse`, no por la IP de la WiFi.
+
+En **release** la URL entra solo por `--dart-define=API_BASE_URL=https://…`, tiene
+que ser `https://` (si no, la app no arranca y lo dice) y el `.env` no se lee. El
+APK se firma con el keystore del CI y se ofusca (`scripts/release-apk.sh`); la
+app no se respalda en la nube ni se copia a otro teléfono.
 
 ---
 
@@ -631,7 +737,7 @@ dispositivo.
 | RNF-01 | **Aislamiento multiempresa.** Ningún usuario alcanza datos de otra constructora, ni siquiera por enumeración de ids | Empresa desde el token; `PerteneceAEmpresa` en las 17 entidades; recurso ajeno = 404 idéntico. `AislamientoEntreEmpresasTest` falla si alguien agrega una entidad sin implementar la interfaz o un endpoint que reciba `empresaId` |
 | RNF-02 | **Credenciales.** El PIN nunca se guarda ni se transmite en claro desde la base | BCrypt (factor 10); `pinHash` con `@JsonIgnore` y fuera de todo *record*. `PinHashNoSeSerializaTest` |
 | RNF-03 | **Superficie de respuesta.** Ninguna respuesta expone más de lo necesario | *Records* por controlador. `RespuestasNoExponenEntidadesTest`, `PersonasEnLasRespuestasTest` |
-| RNF-04 | **Sesión en terreno.** Reingresar credenciales al abrir la app es inaceptable con guantes y sin señal estable | Token de 8 h en almacenamiento cifrado; reingreso solo con PIN |
+| RNF-04 | **Sesión en terreno.** Reingresar credenciales al abrir la app es inaceptable con guantes y sin señal estable | Token de 30 min en almacenamiento cifrado, renovado solo con el refresh token (7 días); reingreso solo con PIN, el del trabajador |
 | RNF-05 | **Rendimiento percibido.** La bodega carga con una sola llamada, no con una por material | El kardex de la obra se trae completo y el saldo se reconstruye en el cliente igual que en el servidor |
 | RNF-06 | **Trazabilidad.** Todo movimiento identifica a quién lo registró y, cuando corresponde, a quién recibió | `usuario_id` + `trabajador_id` en el kardex; `autorizado_por_id` en los préstamos; `resuelto_por_id` en las solicitudes |
 | RNF-07 | **Accesibilidad.** Contraste ≥ 4.5:1 en texto y ≥ 3:1 en bordes de control; toques de 48 dp; soporte de escalado de texto del sistema | Paleta verificada por prueba (`accesibilidad_test.dart`); `docs/design-system/` |
@@ -679,22 +785,35 @@ Cifras verificadas contra el código de la rama de referencia.
 
 | Área | Medida | Valor |
 |---|---|---|
-| Backend — endpoints | Anotaciones de mapeo en 16 controladores | **71** |
-| Backend — entidades | Clases `@Entity` | **17** |
-| Backend — servicios | Clases `*Service` | **18** |
+| Backend — endpoints | Anotaciones de mapeo en 21 controladores | **106** |
+| Backend — entidades | Clases `@Entity` (todas `PerteneceAEmpresa`) | **20** |
+| Backend — servicios | Clases `*Service` | **28** |
 | Backend — migraciones | Flyway `V1`–`V5` | **5** |
-| Backend — pruebas | `contextLoads` + 4 de arquitectura y seguridad + 3 de importación y escaneo | **8 clases · 51 casos** |
-| App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart` | **43 / 71** |
-| App — flujos por rol | Bodeguero y administrador construidos | **2 / 4** |
-| App — pantallas | `pantalla_*.dart` + shells | **21** |
-| App — pruebas | Unitarias y de widget | **6 archivos · 46 casos** |
+| Backend — pruebas | Unitarias y de integración contra Postgres real (HTTP, dos bases, respaldo) | **56 clases · 397 casos** |
+| App — endpoints consumidos | En `dominio_api.dart` + `auth_api.dart`; de los 106, 5 son de la plataforma | **84 / 106** (84 de los 101 que no son de plataforma) |
+| App — flujos por rol | Bodeguero, administrador y trabajador completos; jefe de terreno sin la desviación | **3 / 4** completos |
+| App — pantallas | `pantalla_*.dart` (36) + shells (4) | **40** · 29 de los 34 diseños en `docs/mockups/design-movil/` |
+| App — pruebas | Unitarias y de widget | **28 archivos · 310 casos** |
 | CI | GitHub Actions sobre `main` y `develop` | ✅ |
 
-**Requisitos funcionales:** los **56** requisitos de la §6 están soportados por
-el backend —RF-A3 es del lado de la app y RF-A8 se resuelve por migración— y
-**41** de ellos están además disponibles en la app. Lo que falta ahí es, en
-bloque, el flujo del jefe de terreno (cubicación, presupuesto y desviación) y el
-del trabajador (solicitudes y credencial).
+**Requisitos funcionales:** los **58** requisitos de la §6 están soportados por
+el backend —RF-A3 es del lado de la app— y
+**51** de ellos están además disponibles en la app. Los otros **7** son: los tres
+de la plataforma (RF-A8 a RF-A10), que no son de la app móvil, y cuatro que sí le
+faltan: crear cuadrillas (RF-B5), dar de alta un trabajador (RF-B6), renovar la
+credencial de un trabajador por su id desde la gestión (RF-B9) y la desviación
+del presupuesto (RF-D6).
+
+**Cómo se midió (2026-11-22).** Sobre `develop` (6e4545f), con todos los PR móviles
+ya integrados: `flutter analyze` sin problemas y 310 pruebas que pasan.
+*Endpoints consumidos*: pares método + ruta de
+`dominio_api.dart` y `auth_api.dart` (los pasos de pedidos especiales,
+`gestionar`/`listo`/`entregar`, se cuentan uno a uno) contra los 106 pares de los
+controladores. *Requisitos disponibles*: un requisito cuenta si la app consume su
+endpoint (o el principal, cuando el detalle por id es solo una lectura que la lista
+ya cubre). *Diseños*: cada lienzo de `design-movil` cuenta si hay una pantalla de
+la app que lo cubre; faltan `SinPermiso`, `SinConexion` (la cola sin conexión, R2),
+`JefeInicio`, `JefeDesviacion` y `JefeCuadrillas`.
 
 ---
 
@@ -704,11 +823,11 @@ De requisito a código, en un solo salto.
 
 | Grupo | Backend | App |
 |---|---|---|
-| RF-A · Acceso y configuración | `config/AuthController`, `UsuarioController`, `EmpresaController` | `features/auth/`, `features/admin/pantalla_usuarios.dart` |
+| RF-A · Acceso y configuración | `config/AuthController`, `UsuarioController`, `EmpresaController` | `features/auth/` (acceso, cambio de clave), `core/network/renovador_sesion.dart`, `features/admin/pantalla_usuarios.dart` |
 | RF-B · Obra y equipos | `obra/ObraController`, `CuadrillaController`, `TrabajadorController` | `features/admin/pantalla_obras.dart`, `features/obra/` |
-| RF-C · Cubicación | `cubicacion/PartidaController`, `MotorCubicacionService`, `MaterialController` | `features/admin/pantalla_materiales.dart` (catálogo); cubicación ⬜ |
-| RF-D · Presupuesto | `presupuesto/PresupuestoController`, `ComparadorPresupuestoService` | ⬜ |
-| RF-E · Inventario | `inventario/*` | `features/bodega/` |
+| RF-C · Cubicación | `cubicacion/PartidaController`, `MotorCubicacionService`, `MaterialController` | `features/admin/pantalla_materiales.dart` (catálogo), `features/cubicacion/` (partidas y cubicación) |
+| RF-D · Presupuesto | `presupuesto/PresupuestoController`, `ComparadorPresupuestoService` | `features/presupuesto/` (sin la desviación, RF-D6 ⬜) |
+| RF-E · Inventario | `inventario/*` | `features/bodega/`, `features/trabajador/` |
 | Escaneo de credencial y de código | `obra/TrabajadorController`, `cubicacion/MaterialController`, `inventario/HerramientaController` | `features/bodega/escaner.dart`, `pantalla_escaneo.dart`, `pantalla_solicitudes.dart`, `solicitudes_acciones.dart` |
 | Importación masiva (RF-C9, RF-E17) | `importacion/*`, `cubicacion/FilaMaterial`, `inventario/FilaHerramienta` | `features/admin/pantalla_importacion.dart` |
 | RF-F · Control | `control/AlertaController`, `AlertaService` | `features/bodega/pantalla_alertas.dart` |
@@ -729,12 +848,12 @@ El MVP 1 está completo cuando, sobre una instalación limpia:
 - [x] Una herramienta se presta, se devuelve dañada y queda en `MANTENCION`.
 - [x] Una alerta de stock crítico aparece al cruzar el mínimo y se resuelve.
 - [x] Un usuario de otra constructora recibe 404 al pedir cualquier recurso ajeno.
-- [ ] Un JEFE_TERRENO crea una partida, la cubica, arma el presupuesto y lo congela.
+- [x] Un JEFE_TERRENO crea una partida, la cubica, arma el presupuesto y lo congela.
 - [ ] La desviación se muestra en la app con lo ejecutado hasta el momento.
 - [x] Un ADMIN carga el catálogo completo desde una planilla Excel, con el informe de validación antes de confirmar.
 - [x] Un bodeguero escanea el código de barras de un envase y llega a registrar el movimiento de ese material.
 - [x] Un trabajador muestra su credencial QR, el bodeguero la escanea y resuelve sus solicitudes desde ahí.
-- [ ] Un TRABAJADOR solicita material desde su teléfono (falta la pantalla del trabajador; el bodeguero ya lo aprueba desde el suyo).
+- [x] Un TRABAJADOR solicita material desde su teléfono y el bodeguero lo aprueba desde el suyo.
 - [ ] Las reglas de la §7 están cubiertas por pruebas automatizadas.
 
-Lo marcado corresponde al estado de la rama de referencia al 2026-09-02.
+Lo marcado corresponde al estado de la rama de referencia al 2026-09-02; las casillas del jefe de terreno y del trabajador se revisaron el 2026-11-22 contra la app (§13).
