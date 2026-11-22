@@ -1,5 +1,11 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -31,7 +37,7 @@ public class SolicitudMaterialController {
     @PostMapping
     @PreAuthorize("hasRole('TRABAJADOR')")
     @ResponseStatus(HttpStatus.CREATED)
-    public SolicitudMaterialResponse crear(@RequestBody CrearSolicitudRequest req) {
+    public SolicitudMaterialResponse crear(@Valid @RequestBody CrearSolicitudRequest req) {
         return SolicitudMaterialResponse.de(
                 solicitudMaterialService.crear(
                         // Se pide a nombre propio: con el trabajadorId en el
@@ -43,7 +49,7 @@ public class SolicitudMaterialController {
     /** Aprobar/rechazar es de BODEGUERO o ADMIN, según la matriz de permisos. */
     @PutMapping("/{id}/aprobar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public KardexMovimientoResponse aprobar(@PathVariable Long id, @RequestBody AprobarRequest req) {
+    public KardexMovimientoResponse aprobar(@PathVariable Long id, @Valid @RequestBody AprobarRequest req) {
         // Aprobar despacha: lo que sale es el movimiento de kardex.
         return KardexMovimientoResponse.de(
                 solicitudMaterialService.aprobar(id, SesionActual.usuarioId(), req.cantidadAEntregar()));
@@ -51,7 +57,7 @@ public class SolicitudMaterialController {
 
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
-    public SolicitudMaterialResponse rechazar(@PathVariable Long id, @RequestBody RechazarRequest req) {
+    public SolicitudMaterialResponse rechazar(@PathVariable Long id, @Valid @RequestBody RechazarRequest req) {
         return SolicitudMaterialResponse.de(
                 solicitudMaterialService.rechazar(id, SesionActual.usuarioId(), req.motivo()));
     }
@@ -106,12 +112,18 @@ public class SolicitudMaterialController {
     }
 
     /** {@code obraId} es opcional: por defecto, la obra de la cuadrilla de quien pide. */
-    public record CrearSolicitudRequest(Long materialId, Long obraId, double cantidad, String descripcion) {
+    public record CrearSolicitudRequest(
+            @NotNull(message = "Falta el material") Long materialId,
+            Long obraId,
+            @Positive(message = "La cantidad pedida debe ser mayor que 0") @DecimalMax(value = "1000000", message = "La cantidad es demasiado grande") double cantidad,
+            @NotBlank(message = "Cuenta para qué lo necesitas") @Size(max = 300, message = "La descripción admite hasta 300 caracteres") String descripcion) {
     }
 
-    public record AprobarRequest(double cantidadAEntregar) {
+    public record AprobarRequest(
+            @Positive(message = "La cantidad a entregar debe ser mayor que 0") @DecimalMax(value = "1000000", message = "La cantidad es demasiado grande") double cantidadAEntregar) {
     }
 
-    public record RechazarRequest(String motivo) {
+    public record RechazarRequest(
+            @NotBlank(message = "El motivo es obligatorio") @Size(max = 500, message = "El motivo admite hasta 500 caracteres") String motivo) {
     }
 }

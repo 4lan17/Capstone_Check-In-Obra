@@ -1,5 +1,10 @@
 package cl.duocuc.checkinobra.inventario;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import cl.duocuc.checkinobra.config.SesionActual;
 import cl.duocuc.checkinobra.importacion.PlantillaExcel;
 import cl.duocuc.checkinobra.importacion.LectorPlanilla;
@@ -38,7 +43,7 @@ public class HerramientaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO')")
     @ResponseStatus(HttpStatus.CREATED)
-    public HerramientaResponse crear(@RequestBody CrearHerramientaRequest req) {
+    public HerramientaResponse crear(@Valid @RequestBody CrearHerramientaRequest req) {
         // La empresa sale del token, no de la petición. Mientras el cliente
         // pudiera nombrarla, pedir los datos de otra constructora era cuestión
         // de cambiar un número en la URL.
@@ -113,6 +118,9 @@ public class HerramientaController {
     }
 
     public record CrearHerramientaRequest(
-            String codigoQr, String nombre, String categoria, double valorReposicion) {
+            @NotBlank(message = "El código es obligatorio") @Size(max = 100, message = "El código admite hasta 100 caracteres") String codigoQr,
+            @NotBlank(message = "El nombre es obligatorio") @Size(max = 200, message = "El nombre admite hasta 200 caracteres") String nombre,
+            @NotBlank(message = "La categoría es obligatoria") @Size(max = 100, message = "La categoría admite hasta 100 caracteres") String categoria,
+            @PositiveOrZero(message = "El valor de reposición no puede ser negativo") @DecimalMax(value = "1000000000", message = "El valor de reposición es demasiado grande") double valorReposicion) {
     }
 }
