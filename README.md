@@ -530,6 +530,35 @@ Estos comandos son **idénticos en Ubuntu y Windows**.
 > compose etiqueta contenedores, red y volumen, así que nunca toca otros stacks
 > que tengas corriendo.
 
+### Despliegue con HTTPS
+
+Fuera del desarrollo local la API no debe hablar HTTP en claro: la app en modo release ya rechaza una
+`API_BASE_URL` que no sea `https://` (SEG9, #97). Para publicarla con TLS se suma un proxy inverso
+(**Caddy**) al compose de siempre:
+
+```bash
+# en el .env (o exportadas): el dominio público de la API
+API_DOMINIO=api.miempresa.cl
+
+docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --build
+```
+
+| Qué hace | Detalle |
+|---|---|
+| Termina el HTTPS | Con un dominio público (puertos **80 y 443** abiertos hacia el servidor) Caddy pide y renueva el certificado de Let's Encrypt solo. Con `API_DOMINIO=localhost` usa su CA interna |
+| Redirige el HTTP | `http://…` responde `308` a `https://…`; se agrega `Strict-Transport-Security` |
+| Cierra la API al exterior | `docker-compose.tls.yml` quita la publicación del `8081`: solo el proxy llega a la API, por la red interna |
+| Conserva la IP del cliente | La API lee `X-Forwarded-For` **solo de proxies de la red interna** (`SERVER_FORWARD_HEADERS_STRATEGY=native`); sin esto el límite de intentos del login, que es por IP, bloquearía a todos juntos, y desde fuera no se puede falsear |
+
+Para una IP o un nombre que no son públicos (la red de la obra) Caddy no puede pedir un certificado real:
+`CADDY_OPCIONES_GLOBALES=local_certs` usa su CA interna, pero entonces el teléfono tiene que confiar en esa CA
+(o conviene un dominio real). La app se compila con la URL segura:
+`flutter build apk --release --dart-define=API_BASE_URL=https://api.miempresa.cl`.
+
+Se verificó con `curl`: HTTPS responde con TLS 1.3, el HTTP redirige, el `8081` rechaza la conexión y la API ve la IP
+real del cliente aunque venga un `X-Forwarded-For` falso. Necesita **Docker Compose 2.24.4 o más nuevo**. Los
+certificados viven en el volumen `caddy_data`: si se borra, hay que pedirlos otra vez.
+
 ### Backend sin Docker (desde el IDE)
 
 Necesitas la base levantada (`docker compose up -d db`) y un `.env` con el

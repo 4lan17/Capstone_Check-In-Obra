@@ -1,0 +1,25 @@
+# Proxy inverso con TLS delante de la API (SEG9, #97). Lo usa docker-compose.tls.yml.
+#
+# Caddy termina el HTTPS y le habla a la API por la red interna de Compose. Con un dominio publico
+# (API_DOMINIO=api.miempresa.cl, con los puertos 80 y 443 abiertos hacia este servidor) pide y renueva
+# el certificado de Let's Encrypt solo. Con "localhost" usa su propia entidad certificadora interna.
+# Para un nombre o una IP que no son publicos (la red de la obra, una IP de la LAN) Caddy no puede
+# pedir un certificado real: CADDY_OPCIONES_GLOBALES=local_certs le dice que use su CA interna.
+{
+	{$CADDY_OPCIONES_GLOBALES:}
+}
+
+{$API_DOMINIO:localhost} {
+	encode zstd gzip
+
+	header {
+		# Desde la primera visita el navegador y la app solo hablan HTTPS con este nombre.
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	# La API escucha en 8080 dentro de la red de Compose; el puerto 80 de este proxy solo redirige a HTTPS.
+	reverse_proxy backend:8080
+}

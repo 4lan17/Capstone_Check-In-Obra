@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/api_client.dart';
 import '../../features/auth/sesion_controller.dart';
 import '../modelos/alerta.dart';
+import '../modelos/desviacion.dart';
 import '../modelos/detalle_obra.dart';
 import '../modelos/herramienta.dart';
 import '../modelos/importacion.dart';
@@ -906,6 +907,13 @@ class PresupuestosApi {
     {'partidaId': partidaId},
     PresupuestoItem.desdeJson,
     clave: clave,
+  );
+
+  /// Lo presupuestado contra lo ejecutado en bodega, en total y por material
+  /// (RF-D6), con merma estimada y real.
+  Future<Desviacion> desviacion(int presupuestoId) => _rest.uno(
+    '/api/presupuestos/$presupuestoId/desviacion',
+    Desviacion.desdeJson,
   );
 
   /// Solo un BORRADOR pasa a APROBADO (RN-11); otro estado responde 409.

@@ -327,17 +327,34 @@ Future<void> aprobarHerramienta(
 ///
 /// El motivo no es burocracia: es lo único que el trabajador va a ver en su
 /// teléfono para entender por qué no le entregaron lo que pidió.
+///
+/// [largoMaximo] es lo que acepta el servidor: 500 caracteres en las solicitudes
+/// de material y herramienta, 300 en los pedidos especiales. Si el campo no
+/// los corta, el bodeguero escribe el motivo entero y recién al enviar se
+/// entera de que sobraba.
 Future<void> rechazarSolicitud(
   BuildContext context, {
   required String titulo,
   required Future<void> Function(String motivo, String clave) alConfirmar,
+  int largoMaximo = largoMaximoMotivoSolicitud,
 }) async {
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (_) => _HojaRechazo(titulo: titulo, alConfirmar: alConfirmar),
+    builder: (_) => _HojaRechazo(
+      titulo: titulo,
+      alConfirmar: alConfirmar,
+      largoMaximo: largoMaximo,
+    ),
   );
 }
+
+/// El motivo de rechazo de una solicitud de material o de herramienta admite
+/// hasta 500 caracteres (`@Size(max = 500)` en el backend).
+const largoMaximoMotivoSolicitud = 500;
+
+/// El de un pedido especial, hasta 300.
+const largoMaximoMotivoPedidoEspecial = 300;
 
 class _HojaAprobarMaterial extends ConsumerStatefulWidget {
   const _HojaAprobarMaterial({required this.solicitud});
@@ -614,10 +631,15 @@ class _HojaAprobarHerramientaState
 }
 
 class _HojaRechazo extends ConsumerStatefulWidget {
-  const _HojaRechazo({required this.titulo, required this.alConfirmar});
+  const _HojaRechazo({
+    required this.titulo,
+    required this.alConfirmar,
+    required this.largoMaximo,
+  });
 
   final String titulo;
   final Future<void> Function(String motivo, String clave) alConfirmar;
+  final int largoMaximo;
 
   @override
   ConsumerState<_HojaRechazo> createState() => _HojaRechazoState();
@@ -693,6 +715,7 @@ class _HojaRechazoState extends ConsumerState<_HojaRechazo> {
             hint: 'Por qué no se entrega',
             icono: Icons.edit_note,
             habilitado: !_enviando,
+            maxLength: widget.largoMaximo,
             alEnviar: (_) => _rechazar(),
           ),
           ayuda: 'Queda guardado y es lo que ve el trabajador en su teléfono.',

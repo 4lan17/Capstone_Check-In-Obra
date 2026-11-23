@@ -15,6 +15,7 @@ import '../../shared_widgets/presion.dart';
 import '../bodega/bodega_providers.dart';
 import 'pantalla_agregar_item.dart';
 import 'pantalla_agregar_partida.dart';
+import 'pantalla_desviacion.dart';
 import 'presupuesto_providers.dart';
 
 /// El presupuesto de la obra en curso: crearlo (D4), cargarle ítems (D5),
@@ -210,6 +211,23 @@ class _Presupuesto extends ConsumerWidget {
       children: [
         _Cabecera(presupuesto: presupuesto),
         const SizedBox(height: 16),
+        // Un borrador no tiene qué comparar: la desviación se mide contra la
+        // línea base, que existe desde que se aprueba.
+        if (!presupuesto.esBorrador) ...[
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => PantallaDesviacion(presupuesto: presupuesto),
+              ),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accentFill,
+            ),
+            icon: const Icon(Icons.compare_arrows),
+            label: const Text('Ver desviación'),
+          ),
+          const SizedBox(height: 8),
+        ],
         if (presupuesto.editable) ...[
           OutlinedButton.icon(
             onPressed: enviando

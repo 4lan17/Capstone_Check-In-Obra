@@ -19,6 +19,10 @@ class InfraestructuraDelRepositorioTest {
 
     private static final Path RAIZ = Path.of("..");
 
+    private static String sinComentarios(String texto) {
+        return texto.lines().filter(l -> !l.stripLeading().startsWith("#")).collect(java.util.stream.Collectors.joining("\n"));
+    }
+
     private static String leer(String ruta) throws Exception {
         return Files.readString(RAIZ.resolve(ruta));
     }
@@ -35,7 +39,7 @@ class InfraestructuraDelRepositorioTest {
 
     @Test
     void todaImagenDelDockerfileYDelComposeVaFijadaPorDigest() throws Exception {
-        for (String archivo : List.of("backend/Dockerfile", "docker-compose.yml")) {
+        for (String archivo : List.of("backend/Dockerfile", "docker-compose.yml", "docker-compose.tls.yml")) {
             Matcher m = Pattern.compile("(?m)^\\s*(?:FROM|image:)\\s+(\\S+)").matcher(leer(archivo));
             int vistas = 0;
             while (m.find()) {
@@ -44,6 +48,29 @@ class InfraestructuraDelRepositorioTest {
             }
             assertThat(vistas).as(archivo).isPositive();
         }
+    }
+
+    /**
+     * SEG9 (#97): el despliegue de ejemplo con HTTPS. Un proxy con TLS es lo unico que se publica; la API
+     * deja de estar en el host, y detras del proxy lee la IP del cliente (si no, el limite de intentos del
+     * login, que es por IP, bloquearia a todos juntos).
+     */
+    @Test
+    void elDespliegueConHttpsPoneUnProxyConTlsDelanteYNoPublicaLaApi() throws Exception {
+        // Solo la configuracion: los comentarios explican lo que NO se hace y nombran el 8081.
+        String compose = sinComentarios(leer("docker-compose.tls.yml"));
+        String caddy = sinComentarios(leer("deploy/Caddyfile"));
+
+        assertThat(compose).contains("\"443:443\"").contains("\"80:80\"");
+        // La API ya no se publica: sin esto el 8081 seguiria aceptando HTTP en claro.
+        assertThat(compose).contains("ports: !override []").doesNotContain("8081");
+        assertThat(compose).contains("SERVER_FORWARD_HEADERS_STRATEGY: native");
+        assertThat(compose).contains("service_healthy");
+
+        assertThat(caddy).contains("reverse_proxy backend:8080");
+        assertThat(caddy).contains("Strict-Transport-Security");
+        // El proxy no abre la API a otro lado ni reenvia a un puerto publicado del host.
+        assertThat(caddy).doesNotContain("localhost:8081").doesNotContain("http://");
     }
 
     @Test
