@@ -225,9 +225,13 @@ suspensión y respaldo por base (MT8). Los PR están encadenados y se integran e
 **Pendiente:**
 
 - **Fase 5, la app:** la sesión, la obra activa y la copia de la credencial ya se guardan por empresa y usuario
-  (MT9, PR #126). La base local y la cola de sincronización por empresa (MT10 #113) quedan como requisitos de
-  la épica de la cola sin conexión (documento `arquitectura/cola-offline-por-empresa.md`, PR #132),
-  porque la cola no existe todavía.
+  (MT9, PR #126). **Decisión de alcance (23-nov-2026): la base local y la cola de sincronización por empresa
+  (MT10, #113) quedan fuera de esta entrega.** La cola sin conexión no existe todavía y es la pieza más grande
+  del backlog; el propio issue permitía dejarla como decisión de alcance. La épica MT (#102) se da por
+  completa con MT0 a MT9 y MT11: una base por empresa, login que resuelve la empresa, aislamiento, rol de
+  plataforma, alta y suspensión, y la app con sesión por empresa. Los requisitos para que la cola nazca aislada
+  por empresa siguen escritos en `arquitectura/cola-offline-por-empresa.md` (PR #132) y es el "próximo paso" de
+  la presentación. #113 vuelve a Backlog.
 - **El refresh token ya lo usa la app** (SEG10, PR #142): renueva el token de 30 minutos sola. Hay que integrarlo
   junto con el PR #141 del backend: uno sin el otro pide la clave cada media hora o recibe un token que no existe.
 - **Operadores de plataforma:** no hay forma de crear más del primero (se crea con `PLATAFORMA_OPERADOR_*`) ni de
