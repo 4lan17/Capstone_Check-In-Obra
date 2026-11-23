@@ -1,0 +1,41 @@
+# Despliegue con HTTPS (SEG9, #97): un proxy inverso con TLS delante de la API.
+# Se suma al compose de siempre; no lo reemplaza:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --build
+#
+# Necesita Docker Compose 2.24.4 o mas nuevo (por '!override'). Ver "Despliegue con HTTPS" en el README.
+services:
+  backend:
+    # La API deja de publicarse en el host: a ella solo llega el proxy, por la red interna. Sin esto el
+    # puerto 8081 seguiria aceptando HTTP en claro y el proxy no serviria de nada.
+    ports: !override []
+    environment:
+      # Detras del proxy, getRemoteAddr() seria siempre la IP del proxy y el limite de intentos del login
+      # (por IP) bloquearia a todos juntos. 'native' hace que Tomcat lea X-Forwarded-For, pero solo de
+      # proxies de la red interna: desde fuera no se puede falsear.
+      SERVER_FORWARD_HEADERS_STRATEGY: native
+
+  proxy:
+    image: caddy:2-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      # Dominio publico de la API (certificado de Let's Encrypt automatico) o "localhost".
+      API_DOMINIO: ${API_DOMINIO:-localhost}
+      # Para un nombre o una IP que no son publicos: CADDY_OPCIONES_GLOBALES=local_certs
+      CADDY_OPCIONES_GLOBALES: ${CADDY_OPCIONES_GLOBALES:-}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificados y su estado: se pierden si se borra el volumen y hay que pedirlos otra vez.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:

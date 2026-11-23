@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api/dominio_api.dart';
+import '../../data/modelos/desviacion.dart';
 import '../../data/modelos/presupuesto.dart';
 
 /// El presupuesto de una obra, o `null` si todavía no tiene (D4).
@@ -14,3 +15,10 @@ final itemsPresupuestoProvider =
       (ref, presupuestoId) =>
           ref.watch(presupuestosApiProvider).items(presupuestoId),
     );
+
+/// La desviación de un presupuesto. Se descarta al salir de la pantalla: cada
+/// vez que se abre se calcula de nuevo, porque cambia con cada despacho.
+final desviacionProvider = FutureProvider.autoDispose.family<Desviacion, int>(
+  (ref, presupuestoId) =>
+      ref.watch(presupuestosApiProvider).desviacion(presupuestoId),
+);
