@@ -36,6 +36,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Cabecera {@code Idempotency-Key}: la misma petición repetida recibe la misma
@@ -85,6 +86,23 @@ public class IdempotenciaFilter extends OncePerRequestFilter {
      * {@link ApiExceptionHandler#conflictoConcurrente}).
      */
     public static final String NO_GUARDAR = IdempotenciaFilter.class.getName() + ".NO_GUARDAR";
+
+    /**
+     * Rutas cuya respuesta nunca se guarda (SEG13, S-30): entregan o gestionan credenciales, y lo que
+     * se guarda en la tabla de claves queda ahí y se le repite a quien reintente. Un reintento de estas
+     * rutas vuelve a ejecutarse: emitir otro código o renovar otra vez es inocuo.
+     */
+    private static final List<RutaSinRespuestaGuardada> RUTAS_SIN_RESPUESTA_GUARDADA = List.of(
+            new RutaSinRespuestaGuardada("POST", Pattern.compile("/api/trabajadores")),
+            new RutaSinRespuestaGuardada("POST", Pattern.compile("/api/trabajadores/yo/credencial/codigo")),
+            new RutaSinRespuestaGuardada("PUT", Pattern.compile("/api/trabajadores/yo/credencial")),
+            new RutaSinRespuestaGuardada("PUT", Pattern.compile("/api/trabajadores/\\d+/credencial")));
+
+    private record RutaSinRespuestaGuardada(String metodo, Pattern ruta) {
+        boolean coincideCon(HttpServletRequest peticion) {
+            return metodo.equals(peticion.getMethod()) && ruta.matcher(peticion.getRequestURI()).matches();
+        }
+    }
 
     private static final Set<String> METODOS_QUE_ESCRIBEN = Set.of("POST", "PUT", "PATCH", "DELETE");
 
@@ -192,7 +210,8 @@ public class IdempotenciaFilter extends OncePerRequestFilter {
     }
 
     private boolean seGuarda(HttpServletRequest peticion, int status) {
-        if (peticion.getAttribute(NO_GUARDAR) != null) {
+        if (peticion.getAttribute(NO_GUARDAR) != null
+                || RUTAS_SIN_RESPUESTA_GUARDADA.stream().anyMatch(r -> r.coincideCon(peticion))) {
             return false;
         }
         // 401/403: la próxima vez puede venir con otro token o con otro rol.

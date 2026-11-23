@@ -92,35 +92,44 @@ class TrabajadorEnSuTelefonoTest {
     // --- perfil y credencial -----------------------------------------------
 
     @Test
-    void elTrabajadorVeSuFichaConSuObraYSuCredencial() throws Exception {
-        JsonNode ficha = leer(get("/api/trabajadores/yo"));
+    void elTrabajadorVeSuFichaConSuObraYSinElUuidDeLaCredencial() throws Exception {
+        HttpResponse<String> respuesta = get("/api/trabajadores/yo");
+        JsonNode ficha = leer(respuesta);
 
         assertThat(ficha.get("id").asLong()).isEqualTo(yo.getId());
         assertThat(ficha.get("cuadrillaNombre").asString()).isEqualTo("Tabiqueros");
         assertThat(ficha.get("obraId").asLong()).isEqualTo(obra.getId());
         assertThat(ficha.get("obraEstado").asString()).isEqualTo("ACTIVA");
-        assertThat(ficha.get("credencialQr").asString()).isEqualTo("QR-" + s);
+        // SEG13 (S-27): la credencial que se muestra es un código de vida corta, que se pide aparte
+        // (POST /yo/credencial/codigo); el UUID fijo ya no viaja.
+        assertThat(respuesta.body()).doesNotContain("credencialQr");
     }
 
     @Test
-    void sinCredencialSeLeEmiteAlAbrirSuFicha() throws Exception {
+    void sinCredencialInternaSeLeEmiteAlAbrirSuFichaPeroNoSeDevuelve() throws Exception {
         yo.setCredencialQr(null);
         trabajadorRepository.save(yo);
 
-        String emitida = leer(get("/api/trabajadores/yo")).get("credencialQr").asString();
+        HttpResponse<String> r = get("/api/trabajadores/yo");
 
+        assertThat(r.statusCode()).isEqualTo(200);
+        assertThat(r.body()).doesNotContain("credencialQr");
+        String emitida = trabajadorRepository.findById(yo.getId()).orElseThrow().getCredencialQr();
         assertThat(emitida).isNotBlank();
         // Y es estable: abrir la pantalla otra vez no la cambia.
-        assertThat(leer(get("/api/trabajadores/yo")).get("credencialQr").asString()).isEqualTo(emitida);
+        get("/api/trabajadores/yo");
+        assertThat(trabajadorRepository.findById(yo.getId()).orElseThrow().getCredencialQr()).isEqualTo(emitida);
     }
 
     @Test
     void renuevaLaSuyaPeroNoLaDeUnCompanero() throws Exception {
         HttpResponse<String> propia = put("/api/trabajadores/yo/credencial");
         assertThat(propia.statusCode()).isEqualTo(200);
-        assertThat(leer(propia).get("credencialQr").asString()).isNotEqualTo("QR-" + s);
+        assertThat(propia.body()).doesNotContain("credencialQr");
+        assertThat(trabajadorRepository.findById(yo.getId()).orElseThrow().getCredencialQr())
+                .isNotEqualTo("QR-" + s);
 
-        // Con el id de otro: la respuesta traería el código nuevo del compañero.
+        // Con el id de otro: renovar la de un compañero es de ADMIN.
         assertThat(put("/api/trabajadores/" + companero.getId() + "/credencial").statusCode()).isEqualTo(403);
         assertThat(trabajadorRepository.findById(companero.getId()).orElseThrow().getCredencialQr())
                 .isEqualTo("QR2-" + s);

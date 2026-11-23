@@ -1,12 +1,12 @@
 package cl.duocuc.checkinobra.obra;
 
 /**
- * Lo que un trabajador ve de sí mismo: sus datos, dónde trabaja y su credencial.
+ * Lo que un trabajador ve de sí mismo: sus datos y dónde trabaja.
  *
- * <p>Lleva {@code credencialQr} porque es la propia: el teléfono la necesita
- * para dibujar el QR que escanea el bodeguero. Solo lo devuelven las rutas
- * {@code /api/trabajadores/yo}, que salen del token y no reciben un id, así que
- * nadie obtiene por acá la credencial de otro.
+ * <p>Sin {@code credencialQr} (SEG13, S-27): el QR fijo era un portador, y
+ * quien lo fotografiaba se presentaba en bodega como ese trabajador. Lo que el
+ * teléfono dibuja ahora es un código de vida corta que pide aparte
+ * ({@code POST /api/trabajadores/yo/credencial/codigo}).
  *
  * <p>Cuadrilla y obra son nulas si todavía no lo asignan a ninguna.
  */
@@ -19,8 +19,7 @@ public record PerfilTrabajadorResponse(
         String cuadrillaNombre,
         Long obraId,
         String obraNombre,
-        String obraEstado,
-        String credencialQr) {
+        String obraEstado) {
 
     public static PerfilTrabajadorResponse de(Trabajador t) {
         Cuadrilla c = t.getCuadrilla();
@@ -34,7 +33,6 @@ public record PerfilTrabajadorResponse(
                 c == null ? null : c.getNombre(),
                 o == null ? null : o.getId(),
                 o == null ? null : o.getNombre(),
-                o == null ? null : o.getEstado().name(),
-                t.getCredencialQr());
+                o == null ? null : o.getEstado().name());
     }
 }
