@@ -1,13 +1,12 @@
 /// Refleja `TrabajadorPerfilResponse` (`GET /api/trabajadores/yo`): el
-/// trabajador que entró, con su obra y su credencial.
+/// trabajador que entró, con su obra.
 ///
-/// Es la única respuesta en la que la credencial viaja sin que alguien la
-/// acabe de emitir, y es porque se la pide su dueño para mostrarla. El código
-/// es portador —quien lo tiene se presenta como este trabajador en el mesón
-/// de bodega—, pero tiene que verse sin señal (RF-B9): en obra el mesón suele
-/// estar donde no llega. Por eso la última copia se guarda en el
-/// almacenamiento cifrado, junto al token y con la misma protección, y se
-/// borra al cerrar sesión. Si se pierde el teléfono, renovar la anula.
+/// **No trae la credencial.** Antes traía un UUID fijo que se guardaba en el
+/// teléfono para mostrarlo sin señal; quien lo fotografiaba se hacía pasar por
+/// el trabajador para siempre. Ahora la credencial es un código de vida corta
+/// que se pide aparte ([CodigoCredencial]) y no se guarda: sin conexión no hay
+/// credencial que mostrar. Lo que sí se guarda es esta ficha, para que el
+/// nombre y la obra se vean aun sin señal.
 class PerfilTrabajador {
   const PerfilTrabajador({
     required this.id,
@@ -19,7 +18,6 @@ class PerfilTrabajador {
     required this.obraId,
     required this.obraNombre,
     required this.obraEstado,
-    required this.credencialQr,
     this.guardadoEl,
   });
 
@@ -38,11 +36,8 @@ class PerfilTrabajador {
   /// `EstadoObra`: ACTIVA o CERRADA.
   final String? obraEstado;
 
-  final String? credencialQr;
-
   /// Cuándo se guardó la copia que se está mostrando. Nulo si viene recién
-  /// del servidor; con fecha, el teléfono estaba sin conexión y puede que la
-  /// credencial ya no sea la vigente.
+  /// del servidor; con fecha, el teléfono estaba sin conexión.
   final DateTime? guardadoEl;
 
   bool get sinConexion => guardadoEl != null;
@@ -68,7 +63,6 @@ class PerfilTrabajador {
         obraId: j['obraId'] as int?,
         obraNombre: j['obraNombre'] as String?,
         obraEstado: j['obraEstado'] as String?,
-        credencialQr: j['credencialQr'] as String?,
         guardadoEl: j['guardadoEl'] == null
             ? null
             : DateTime.tryParse(j['guardadoEl'] as String),
@@ -85,6 +79,5 @@ class PerfilTrabajador {
     'obraId': obraId,
     'obraNombre': obraNombre,
     'obraEstado': obraEstado,
-    'credencialQr': credencialQr,
   };
 }

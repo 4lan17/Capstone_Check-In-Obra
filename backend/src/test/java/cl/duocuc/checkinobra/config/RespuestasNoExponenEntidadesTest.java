@@ -11,6 +11,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +42,7 @@ class RespuestasNoExponenEntidadesTest {
     private static final Set<Class<?>> TIPOS_PERMITIDOS = Set.of(
             long.class, int.class, double.class, boolean.class,
             Long.class, Integer.class, Double.class, Boolean.class,
-            String.class, BigDecimal.class, LocalDate.class, LocalDateTime.class);
+            String.class, BigDecimal.class, LocalDate.class, LocalDateTime.class, Instant.class);
 
     private List<Class<?>> buscar(org.springframework.core.type.filter.TypeFilter filtro) {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
@@ -139,14 +140,18 @@ class RespuestasNoExponenEntidadesTest {
     }
 
     @Test
-    void la_credencial_del_trabajador_solo_viaja_al_emitirla() {
-        // El QR es un portador: quien lo tiene se presenta en bodega como ese
-        // trabajador. Solo el record de emisión puede llevarlo.
-        var componentes = cl.duocuc.checkinobra.obra.TrabajadorResponse.class.getRecordComponents();
-        assertThat(componentes).extracting(RecordComponent::getName).doesNotContain("credencialQr");
-
-        var conCredencial = cl.duocuc.checkinobra.obra.TrabajadorCredencialResponse.class.getRecordComponents();
-        assertThat(conCredencial).extracting(RecordComponent::getName).contains("credencialQr");
+    void la_credencial_del_trabajador_no_viaja_en_ninguna_respuesta() {
+        // SEG13 (S-27): el QR fijo era un portador. Ahora la credencial es un código de vida corta
+        // que solo viaja en la respuesta de pedirlo; ni la ficha, ni el alta, ni el escaneo llevan el UUID.
+        for (Class<?> respuesta : new Class<?>[] {
+                cl.duocuc.checkinobra.obra.TrabajadorResponse.class,
+                cl.duocuc.checkinobra.obra.PerfilTrabajadorResponse.class}) {
+            assertThat(respuesta.getRecordComponents()).extracting(RecordComponent::getName)
+                    .as(respuesta.getSimpleName()).doesNotContain("credencialQr");
+        }
+        var codigo = cl.duocuc.checkinobra.obra.CodigoCredencialResponse.class.getRecordComponents();
+        assertThat(codigo).extracting(RecordComponent::getName)
+                .containsExactly("codigo", "expiraEn", "vigenciaSegundos");
     }
 
     @Test

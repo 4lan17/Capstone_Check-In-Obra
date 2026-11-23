@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^2.0.0
   mobile_scanner: ^7.5.0
   dio: ^5.11.1
+  # SHA-256 de la huella del certificado (fijación opcional, API_CERT_SHA256).
+  crypto: ^3.0.7
   flutter_riverpod: ^3.5.0
   drift: ^2.35.4
   flutter_secure_storage: ^11.2.0

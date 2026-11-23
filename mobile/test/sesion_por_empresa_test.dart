@@ -47,7 +47,6 @@ PerfilTrabajador _perfil(int usuarioId, String nombre) => PerfilTrabajador(
   obraId: 3,
   obraNombre: 'Obra',
   obraEstado: 'ACTIVA',
-  credencialQr: 'CRED-1',
 );
 
 /// Una sesión que el test puede cambiar, como al entrar otra cuenta.

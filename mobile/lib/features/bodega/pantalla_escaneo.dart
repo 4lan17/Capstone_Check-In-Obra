@@ -19,6 +19,7 @@ import 'pantalla_herramientas.dart';
 import 'pantalla_movimiento.dart';
 import 'pantalla_prestamo.dart';
 import 'pantalla_solicitudes.dart';
+import 'resolver_credencial.dart';
 
 /// El bodeguero escanea la credencial del trabajador.
 ///
@@ -46,44 +47,35 @@ class PantallaEscaneoCredencial extends ConsumerWidget {
       instruccion:
           'Apunta al QR de la credencial o del pedido que el trabajador '
           'tiene en su teléfono.',
-      // Solo QR: la credencial es un UUID y no cabe en un código de barras
-      // lineal. Aceptar otros formatos acá solo haría que el escáner reaccione
+      // Solo QR: aceptar otros formatos acá solo haría que el escáner reaccione
       // a la etiqueta de una caja que pasó por delante.
       formatos: const [BarcodeFormat.qrCode],
       etiquetaManual: 'Código de la credencial o del pedido',
       ayudaManual:
-          'Está bajo el QR en la pantalla del trabajador. Sirve si el código '
-          'no se deja escanear.',
+          'Está bajo el QR en la pantalla del trabajador (8 caracteres, con o '
+          'sin guion). Sirve si el código no se deja escanear. Cambia cada '
+          'minuto: tiene que ser el que se ve en ese momento.',
       alLeer: (codigo) async {
         if (PedidoHerramienta.codigoDesdeQr(codigo) case final uuid?) {
           return _abrirPedido(context, ref, uuid);
         }
-        try {
-          final trabajador = await ref
-              .read(trabajadoresApiProvider)
-              .porCredencial(codigo);
+        final resultado = await buscarTrabajadorPorCredencial(
+          ref.read(trabajadoresApiProvider),
+          codigo,
+        );
+        final trabajador = resultado.trabajador;
+        if (trabajador == null) return resultado.error;
 
-          if (!context.mounted) return null;
-          // Reemplaza en vez de apilar: al volver desde las solicitudes, el
-          // bodeguero quiere la pantalla anterior, no la cámara otra vez.
-          await Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) =>
-                  PantallaSolicitudesTrabajador(trabajador: trabajador),
-            ),
-          );
-          return null;
-        } on ApiException catch (e) {
-          // El 404 lo produce tanto un código inventado como la credencial de
-          // otra constructora: el backend responde igual en los dos casos a
-          // propósito, así que acá tampoco se distingue.
-          return e.statusCode == 404
-              ? 'Esa credencial no corresponde a ningún trabajador de tu '
-                    'empresa. Puede estar vencida si se le renovó el código.'
-              : e.mensaje;
-        } catch (e) {
-          return mensajeDeError(e);
-        }
+        if (!context.mounted) return null;
+        // Reemplaza en vez de apilar: al volver desde las solicitudes, el
+        // bodeguero quiere la pantalla anterior, no la cámara otra vez.
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) =>
+                PantallaSolicitudesTrabajador(trabajador: trabajador),
+          ),
+        );
+        return null;
       },
     );
   }
@@ -213,8 +205,8 @@ class PantallaEscaneoCodigo extends ConsumerWidget {
       return null;
     } on ApiException catch (e) {
       if (e.statusCode != 404) return e.mensaje;
-      // Una credencial es un UUID, y es lo que más se cuela acá: alguien
-      // apunta a la pantalla del trabajador desde el escáner equivocado.
+      // Una credencial es lo que más se cuela acá: alguien apunta a la
+      // pantalla del trabajador desde el escáner equivocado.
       // Decir cuál es el correcto ahorra el "no funciona".
       return _pareceCredencial(codigo)
           ? 'Eso parece la credencial de un trabajador. Léela desde '
@@ -227,12 +219,15 @@ class PantallaEscaneoCodigo extends ConsumerWidget {
     }
   }
 
-  static final _uuid = RegExp(
-    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-    caseSensitive: false,
+  /// El código de una credencial: 8 caracteres, con o sin guion en el medio.
+  /// Se exige al menos una letra y un dígito, que es como salen: sin eso, un
+  /// SKU de ocho letras que falta en el catálogo se tomaría por credencial.
+  static final _formaDeCredencial = RegExp(
+    r'^(?=.*\d)(?=.*[A-Za-z])[A-Za-z0-9]{4}-?[A-Za-z0-9]{4}$',
   );
 
-  bool _pareceCredencial(String codigo) => _uuid.hasMatch(codigo.trim());
+  bool _pareceCredencial(String codigo) =>
+      _formaDeCredencial.hasMatch(codigo.trim());
 }
 
 /// Lee un código y lo **devuelve**, en vez de resolverlo contra el catálogo.

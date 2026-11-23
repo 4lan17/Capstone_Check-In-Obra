@@ -167,7 +167,7 @@ class TrabajadoresPorEmpresaTest {
                 cuerpo(usuarioAjeno.getId(), cuadrillaAjena.getId()), adminAjeno);
 
         assertThat(r.statusCode()).isEqualTo(201);
-        assertThat(json.readTree(r.body()).get("credencialQr").asString()).isNotBlank();
+        assertThat(r.body()).as("SEG13: el alta ya no devuelve la credencial").doesNotContain("credencialQr");
         assertThat(trabajadorRepository.findByUsuarioId(usuarioAjeno.getId())).isPresent();
     }
 

@@ -35,9 +35,9 @@ Verificado de punta a punta contra el backend real, no asumido:
 - **Infraestructura** — `docker compose up` levanta backend + PostgreSQL con
   puertos que no chocan con otros proyectos (8081/5433). Flyway aplica el
   esquema completo y el usuario semilla.
-- **Backend** — 20 entidades, 21 controladores, 106 endpoints, autorización por
+- **Backend** — 21 entidades, 21 controladores, 110 endpoints, autorización por
   rol con `@PreAuthorize`, JWT con refresh, Swagger (apagado en el perfil `prod`).
-  *(Cifras de `develop` al 2026-11-22.)*
+  *(Cifras de `develop` al 2026-11-23.)*
 - **App móvil** — los cuatro roles entran a su propia app: bodeguero (stock, kardex,
   escáner, solicitudes, herramientas, alertas), administrador (obras, materiales,
   usuarios, importación de planillas), trabajador (credencial QR, pedidos,
@@ -69,7 +69,7 @@ hay una pantalla de la app que lo cubre.
 | `SinPermiso` | ⬜ Pendiente | Acción bloqueada por rol, con quién sí puede. Hoy el rechazo se ve como un mensaje en la pantalla donde ocurrió |
 | `SinConexion` | ⬜ Pendiente | **Cola offline — ver §6.1, es la más compleja.** Los requisitos para que nazca aislada por empresa están en `arquitectura/cola-offline-por-empresa.md` (PR #132) |
 | `JefeInicio` | ⬜ Pendiente | Contadores de la obra y la desviación a la vista. Hoy el jefe entra directo a Partidas. Ver el endpoint de resumen en §4.2 |
-| `JefeDesviacion` | ⬜ Pendiente | `GET /api/presupuestos/{id}/desviacion` · **gráficos, `fl_chart` sin usar**. Es el único requisito funcional de la app que falta del flujo del jefe (RF-D6) |
+| `JefeDesviacion` | ✅ Hecha (PR #195) | `GET /api/presupuestos/{id}/desviacion` con desglose por material, umbral de desviación (10 % por defecto) y merma estimada vs. real (D8, D9). Cierra el flujo del jefe (RF-D6) |
 | `JefeCuadrillas` | ⬜ Pendiente | `GET /api/cuadrillas?obraId=`, y crear cuadrillas (RF-B5). Con ella, dar de alta un trabajador (RF-B6) |
 
 También sin pantalla, aunque tienen endpoint: renovar la credencial de un trabajador
@@ -89,7 +89,7 @@ El backend está **funcionalmente completo**, pero le falta respaldo automatizad
 
 ### 4.1 Pruebas — prioridad alta
 
-*(Actualizado el 2026-11-20.)* El backend tiene **397 pruebas en 56 clases**, casi todas de integración
+*(Actualizado el 2026-11-20.)* El backend tiene **510 pruebas** (23-nov-2026; eran 397 el 20-nov), casi todas de integración
 contra PostgreSQL real (HTTP con el servidor levantado, dos bases reales, los scripts de respaldo). Ya no
 es «un solo test». **No hay medición de cobertura** (no hay JaCoCo en el `pom.xml`), así que no se sabe
 cuántas validaciones de negocio siguen sin prueba: la cifra de «18 sin ninguna prueba» del informe de
@@ -189,8 +189,7 @@ Las etapas de agosto —el flujo de solicitudes, la bodega completa, el trabajad
 administración y el flujo del jefe de terreno hasta el presupuesto— están hechas. Lo que
 queda, en este orden:
 
-1. `JefeDesviacion` (integrar `fl_chart`): cierra el flujo del jefe y el criterio de
-   aceptación «la desviación se muestra en la app».
+1. ~~`JefeDesviacion`~~ (hecha, PR #195).
 2. `JefeCuadrillas` y, con ella, el alta de trabajadores desde la gestión.
 3. `JefeInicio` y el endpoint `GET /api/obras/{id}/resumen`.
 4. `SinPermiso`.
@@ -225,9 +224,13 @@ suspensión y respaldo por base (MT8). Los PR están encadenados y se integran e
 **Pendiente:**
 
 - **Fase 5, la app:** la sesión, la obra activa y la copia de la credencial ya se guardan por empresa y usuario
-  (MT9, PR #126). La base local y la cola de sincronización por empresa (MT10 #113) quedan como requisitos de
-  la épica de la cola sin conexión (documento `arquitectura/cola-offline-por-empresa.md`, PR #132),
-  porque la cola no existe todavía.
+  (MT9, PR #126). **Decisión de alcance (23-nov-2026): la base local y la cola de sincronización por empresa
+  (MT10, #113) quedan fuera de esta entrega.** La cola sin conexión no existe todavía y es la pieza más grande
+  del backlog; el propio issue permitía dejarla como decisión de alcance. La épica MT (#102) se da por
+  completa con MT0 a MT9 y MT11: una base por empresa, login que resuelve la empresa, aislamiento, rol de
+  plataforma, alta y suspensión, y la app con sesión por empresa. Los requisitos para que la cola nazca aislada
+  por empresa siguen escritos en `arquitectura/cola-offline-por-empresa.md` (PR #132) y es el "próximo paso" de
+  la presentación. #113 vuelve a Backlog.
 - **El refresh token ya lo usa la app** (SEG10, PR #142): renueva el token de 30 minutos sola. Hay que integrarlo
   junto con el PR #141 del backend: uno sin el otro pide la clave cada media hora o recibe un token que no existe.
 - **Operadores de plataforma:** no hay forma de crear más del primero (se crea con `PLATAFORMA_OPERADOR_*`) ni de

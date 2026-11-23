@@ -105,6 +105,24 @@ Future<void> _montar(
   await tester.pumpAndSettle();
 }
 
+/// Anota los motivos con que se rechaza.
+class _PedidosQueRechazan implements PedidosEspecialesApi {
+  final motivos = <String>[];
+
+  @override
+  Future<PedidoEspecial> rechazar(
+    int id, {
+    required String motivo,
+    String? clave,
+  }) async {
+    motivos.add(motivo);
+    return PedidoEspecial.desdeJson({..._json(), 'estado': 'RECHAZADO'});
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('es_CL');
@@ -154,6 +172,33 @@ void main() {
     expect(find.text('Entregar ahora'), findsOneWidget);
     expect(find.text('Entregar al trabajador'), findsOneWidget);
     expect(find.textContaining('Está en el mesón'), findsOneWidget);
+  });
+
+  testWidgets('rechazar un pedido especial corta el motivo en 300 caracteres, '
+      'lo que acepta el servidor', (tester) async {
+    final api = _PedidosQueRechazan();
+    await _montar(
+      tester,
+      ListView(
+        children: [
+          FilaPedidoEspecial(pedido: PedidoEspecial.desdeJson(_json())),
+        ],
+      ),
+      overrides: [pedidosEspecialesApiProvider.overrideWithValue(api)],
+    );
+
+    // En la app la sesión ya está cargada cuando se llega acá.
+    await ProviderScope.containerOf(tester.element(find.byType(ListView)))
+        .read(sesionProvider.future);
+
+    await tester.tap(find.text('Rechazar'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), 'x' * 400);
+    await tester.ensureVisible(find.text('Rechazar solicitud'));
+    await tester.tap(find.text('Rechazar solicitud'));
+    await tester.pumpAndSettle();
+
+    expect(api.motivos.single, hasLength(300));
   });
 
   testWidgets('el admin ve los pedidos de la empresa y lo de cada obra', (

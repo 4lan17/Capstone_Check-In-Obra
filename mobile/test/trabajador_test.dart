@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:checkinobra_mobile/core/theme/app_theme.dart';
 import 'package:checkinobra_mobile/data/api/auth_api.dart';
 import 'package:checkinobra_mobile/data/api/dominio_api.dart';
+import 'package:checkinobra_mobile/data/modelos/codigo_credencial.dart';
 import 'package:checkinobra_mobile/data/modelos/herramienta.dart';
 import 'package:checkinobra_mobile/data/modelos/material.dart';
 import 'package:checkinobra_mobile/data/modelos/pedido_especial.dart';
@@ -43,7 +44,6 @@ const _perfil = PerfilTrabajador(
   obraId: 2,
   obraNombre: 'Los Almendros · Torre B',
   obraEstado: 'ACTIVA',
-  credencialQr: 'CRED-7f3a9c2e-1b44',
 );
 
 final _ahora = DateTime.now();
@@ -117,6 +117,19 @@ final _solicitudes = [
   ),
 ];
 
+/// Emite siempre el mismo código de credencial.
+class _CodigosFalsos implements TrabajadoresApi {
+  @override
+  Future<CodigoCredencial> pedirCodigoCredencial() async => CodigoCredencial(
+    codigo: 'K7M29QXP',
+    expiraEn: DateTime.utc(2026, 11, 23, 20, 15),
+    vigenciaSegundos: 120,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 /// Registra lo que se pide, para comprobar que viaja a la obra correcta.
 class _SolicitudesFalsas implements SolicitudesApi {
   final pedidos = <(int, int?, double, String)>[];
@@ -181,6 +194,7 @@ Future<void> _montar(
         solicitudes ??
             misSolicitudesProvider.overrideWith((ref) async => _solicitudes),
         misPedidosHerramientaProvider.overrideWith((ref) async => const []),
+        trabajadoresApiProvider.overrideWithValue(_CodigosFalsos()),
         ...overrides,
       ],
       child: MaterialApp(
@@ -234,6 +248,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(QrImageView), findsOneWidget);
+    expect(find.text('K7M2-9QXP'), findsOneWidget);
     expect(find.text('17.930.556-9'), findsOneWidget);
     expect(find.text('Perdí el teléfono: renovar'), findsOneWidget);
   });
@@ -253,7 +268,6 @@ void main() {
           obraId: null,
           obraNombre: null,
           obraEstado: null,
-          credencialQr: 'X',
         ),
       ),
     );

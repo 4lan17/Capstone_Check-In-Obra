@@ -2,6 +2,7 @@ import 'package:checkinobra_mobile/core/theme/app_theme.dart';
 import 'package:checkinobra_mobile/data/api/auth_api.dart';
 import 'package:checkinobra_mobile/data/api/cliente_rest.dart';
 import 'package:checkinobra_mobile/data/api/dominio_api.dart';
+import 'package:checkinobra_mobile/data/modelos/desviacion.dart';
 import 'package:checkinobra_mobile/data/modelos/material.dart';
 import 'package:checkinobra_mobile/data/modelos/obra.dart';
 import 'package:checkinobra_mobile/data/modelos/partida.dart';
@@ -106,6 +107,10 @@ class _PresupuestosFalsos implements PresupuestosApi {
     desdePartida.add(partidaId);
     return [_item(id: 1), _item(id: 2, nombre: 'Volcanita')];
   }
+
+  @override
+  Future<Desviacion> desviacion(int presupuestoId) =>
+      throw UnimplementedError('esta suite no mira la desviación');
 
   @override
   Future<Presupuesto> aprobar(int presupuestoId, {String? clave}) async {

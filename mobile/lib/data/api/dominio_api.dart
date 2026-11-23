@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/api_client.dart';
 import '../../features/auth/sesion_controller.dart';
 import '../modelos/alerta.dart';
+import '../modelos/codigo_credencial.dart';
+import '../modelos/desviacion.dart';
 import '../modelos/detalle_obra.dart';
 import '../modelos/herramienta.dart';
 import '../modelos/importacion.dart';
@@ -384,8 +386,9 @@ class TrabajadoresApi {
   Future<PerfilTrabajador> yo() =>
       _rest.uno('/api/trabajadores/yo', PerfilTrabajador.desdeJson);
 
-  /// Emite una credencial nueva y anula la anterior. Es lo que se hace si se
-  /// pierde el teléfono o alguien fotografió el código.
+  /// Revoca todos los códigos de credencial vigentes. Es lo que se hace si se
+  /// pierde el teléfono o alguien vio el código: hay que pedir uno nuevo
+  /// después ([pedirCodigoCredencial]).
   Future<PerfilTrabajador> renovarMiCredencial({String? clave}) =>
       _rest.actualizar(
         '/api/trabajadores/yo/credencial',
@@ -394,8 +397,19 @@ class TrabajadoresApi {
         clave: clave,
       );
 
-  Future<Trabajador> porCredencial(String credencialQr) => _rest.uno(
-    '/api/trabajadores/por-credencial/${Uri.encodeComponent(credencialQr)}',
+  /// Un código de credencial nuevo, de vida corta (2 minutos). Cada llamada
+  /// emite uno distinto; el servidor no los reutiliza.
+  Future<CodigoCredencial> pedirCodigoCredencial() => _rest.crear(
+    '/api/trabajadores/yo/credencial/codigo',
+    const {},
+    CodigoCredencial.desdeJson,
+  );
+
+  /// Resuelve el código que muestra el trabajador. Responde 409
+  /// `CREDENCIAL_CADUCADA` si ya venció y 404 si no existe (o es de otra
+  /// empresa: el servidor no distingue a propósito).
+  Future<Trabajador> porCredencial(String codigo) => _rest.uno(
+    '/api/trabajadores/por-credencial/${Uri.encodeComponent(codigo)}',
     Trabajador.desdeJson,
   );
 }
@@ -906,6 +920,13 @@ class PresupuestosApi {
     {'partidaId': partidaId},
     PresupuestoItem.desdeJson,
     clave: clave,
+  );
+
+  /// Lo presupuestado contra lo ejecutado en bodega, en total y por material
+  /// (RF-D6), con merma estimada y real.
+  Future<Desviacion> desviacion(int presupuestoId) => _rest.uno(
+    '/api/presupuestos/$presupuestoId/desviacion',
+    Desviacion.desdeJson,
   );
 
   /// Solo un BORRADOR pasa a APROBADO (RN-11); otro estado responde 409.

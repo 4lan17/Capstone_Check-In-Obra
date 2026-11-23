@@ -22,16 +22,19 @@ public class TrabajadorService {
     private final UsuarioService usuarioService;
     private final CuadrillaService cuadrillaService;
     private final ObraService obraService;
+    private final CodigoCredencialService codigoCredencialService;
 
     public TrabajadorService(
             TrabajadorRepository trabajadorRepository,
             UsuarioService usuarioService,
             CuadrillaService cuadrillaService,
-            ObraService obraService) {
+            ObraService obraService,
+            CodigoCredencialService codigoCredencialService) {
         this.trabajadorRepository = trabajadorRepository;
         this.usuarioService = usuarioService;
         this.cuadrillaService = cuadrillaService;
         this.obraService = obraService;
+        this.codigoCredencialService = codigoCredencialService;
     }
 
     public Trabajador crear(Long usuarioId, Long cuadrillaId) {
@@ -67,14 +70,6 @@ public class TrabajadorService {
     }
 
     @Transactional(readOnly = true)
-    public Trabajador buscarPorCredencialQr(String credencialQr) {
-        // Un QR de otra empresa no se resuelve, aunque el código sea válido.
-        return trabajadorRepository.findByCredencialQr(credencialQr)
-                .filter(AccesoEmpresa::esPropio)
-                .orElseThrow(() -> new NoSuchElementException("Credencial no reconocida"));
-    }
-
-    @Transactional(readOnly = true)
     public List<Trabajador> listarPorCuadrilla(Long cuadrillaId) {
         // Se valida la cuadrilla antes de consultar: una ajena responde como una
         // que no existe en vez de devolver nombre y RUT de otra empresa (S-05).
@@ -88,19 +83,25 @@ public class TrabajadorService {
         return trabajadorRepository.findByCuadrilla_ObraId(obraId);
     }
 
-    /** Renueva el QR de la credencial (pantalla TrabCredencial · "Renovar código"). */
+    /**
+     * Renueva la credencial (pantalla TrabCredencial · "Renovar código"): revoca todos los códigos de
+     * vida corta que el trabajador tenía vigentes, de modo que una captura de pantalla del QR deja de
+     * servir en el acto. El UUID interno se rota también, aunque ya no se use para escanear.
+     */
     public Trabajador renovarCredencial(Long trabajadorId) {
         Trabajador trabajador = obtener(trabajadorId);
         trabajador.setCredencialQr(UUID.randomUUID().toString());
+        codigoCredencialService.revocarTodos(trabajador.getId());
         return trabajadorRepository.save(trabajador);
     }
 
     /**
-     * La ficha de quien llama, con su credencial lista para mostrarse.
+     * La ficha de quien llama.
      *
      * <p>Un trabajador creado antes de que la credencial se emitiera al darlo de
-     * alta puede no tener una. En vez de dejarlo sin QR hasta que un
-     * administrador lo note, se le emite al abrir su pantalla.
+     * alta puede no tener una interna. Se le emite al abrir su pantalla para que
+     * nunca quede en nulo; no viaja en la respuesta: lo que se muestra al bodeguero
+     * es un código de vida corta ({@link CodigoCredencialService}).
      */
     public Trabajador miFicha() {
         Trabajador yo = obtenerPorUsuario(SesionActual.usuarioId());

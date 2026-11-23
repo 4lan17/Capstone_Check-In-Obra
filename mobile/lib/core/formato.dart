@@ -10,6 +10,7 @@ abstract final class Formato {
   static final _enteros = NumberFormat('#,##0', 'es_CL');
 
   static final _cantidad = NumberFormat('#,##0.##', 'es_CL');
+  static final _porcentaje = NumberFormat('#,##0.#', 'es_CL');
   static final _hora = DateFormat('HH:mm', 'es_CL');
   static final _fechaCorta = DateFormat('dd MMM', 'es_CL');
   static final _fechaHora = DateFormat('dd MMM HH:mm', 'es_CL');
@@ -20,6 +21,24 @@ abstract final class Formato {
   /// Cantidades de material: se muestran sin decimales cuando son enteras,
   /// porque "36 pl" se lee más rápido que "36,00 pl".
   static String cantidad(double v) => _cantidad.format(v);
+
+  /// Porcentajes con hasta un decimal: "12,5 %", "19 %".
+  static String porcentaje(double v) => '${_porcentaje.format(v)} %';
+
+  /// Con signo explícito, para una desviación: "+12,5 %", "−6,6 %", "0 %".
+  /// El menos es el verdadero (U+2212), igual que en [cantidadConSigno].
+  static String porcentajeConSigno(double v) {
+    final texto = _porcentaje.format(v.abs());
+    if (texto == '0') return '0 %';
+    return '${v < 0 ? '−' : '+'}$texto %';
+  }
+
+  /// Pesos con signo explícito: "+\$11.518", "−\$2.118", "\$0".
+  static String pesosConSigno(double v) {
+    final texto = pesos(v.abs());
+    if (v.abs() < 0.5) return pesos(0);
+    return '${v < 0 ? '−' : '+'}$texto';
+  }
 
   static String cantidadConSigno(double v) =>
       '${v > 0
