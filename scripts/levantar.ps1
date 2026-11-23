@@ -1,10 +1,18 @@
 <#
-Deja Check-In-Obra andando para desarrollar en Windows: enciende Docker
+Deja Check-In-Obra andando para desarrollar en Windows: instala lo que falte
+(Git, JDK, Docker Desktop, Flutter, SDK de Android, emulador), enciende Docker
 Desktop si esta apagado, construye y levanta las imagenes, y arranca un
 emulador de Android. El emulador parte primero y bootea mientras Docker
 construye, que es lo que mas tarda.
 
+Los requisitos faltantes se instalan solos (con winget y descargas verificadas;
+ver scripts\lib\requisitos.ps1). WSL 2 y el hipervisor piden administrador y
+REINICIAR Windows: el script se detiene ahi y avisa.
+
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1
+  powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -Comprobar     # solo informa que hay y que falta
+  powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -SoloInstalar  # instala los requisitos y termina
+  powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -SinInstalar   # no instala nada: si falta algo, avisa
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -App          # ademas corre la app (flutter run)
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -SinCache     # reconstruye las imagenes desde cero
   powershell -ExecutionPolicy Bypass -File scripts\levantar.ps1 -SinEmulador  # solo Docker
@@ -19,6 +27,9 @@ En Linux y macOS usar scripts/levantar.sh. Compatible con Windows PowerShell 5.1
 [CmdletBinding()]
 param(
     [switch]$App,
+    [switch]$Comprobar,
+    [switch]$SinInstalar,
+    [switch]$SoloInstalar,
     [switch]$SinCache,
     [switch]$SinEmulador,
     [string]$Avd = $env:AVD,
@@ -50,6 +61,8 @@ function Bien($texto) { Write-Host "  $texto" -ForegroundColor Green }
 function Mal($texto)  { Write-Host "  $texto" -ForegroundColor Red }
 function Salir($texto) { Mal $texto; exit 1 }
 
+if ($Comprobar -and $SoloInstalar) { Salir '-Comprobar y -SoloInstalar no se pueden combinar.' }
+if ($SoloInstalar -and $SinInstalar) { Salir '-SoloInstalar y -SinInstalar se contradicen.' }
 if ($Telefono) {
     if ($PSBoundParameters.ContainsKey('Avd')) {
         Salir '-Telefono no usa emulador: no se puede combinar con -Avd.'
@@ -61,7 +74,13 @@ if ($Telefono) {
     Salir '-App necesita el emulador: no se puede combinar con -SinEmulador.'
 }
 
+# --- requisitos -------------------------------------------------------------
+# Lo que falte (Git, JDK, Docker Desktop, Flutter, SDK de Android, emulador...) se instala solo.
+. (Join-Path $PSScriptRoot 'lib\requisitos.ps1')
+Asegurar-Requisitos
+
 # --- herramientas ---------------------------------------------------------
+# Red de seguridad: tras lo anterior deberian estar; este es el aviso de siempre.
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     Salir "Falta 'docker' en el PATH. Instala Docker Desktop."
 }
@@ -147,6 +166,10 @@ if (-not $SinEmulador) {
         Bien "$Dispositivo ya estaba corriendo."
     } else {
         $disponibles = @(& $Emulator -list-avds 2>$null | Where-Object { $_ -and $_ -notmatch '^INFO' })
+        if (($disponibles.Count -eq 0) -and (-not $SinInstalar) -and ((-not $Avd) -or ($Avd -eq $ReqAvdDefecto))) {
+            if (-not (Req-CrearAvd $ReqAvdDefecto)) { exit 1 }
+            $disponibles = @(& $Emulator -list-avds 2>$null | Where-Object { $_ -and $_ -notmatch '^INFO' })
+        }
         if ($disponibles.Count -eq 0) {
             Mal 'No hay ningun emulador creado.'
             Info "Crea uno en Android Studio (Device Manager) o con 'flutter emulators --create'."

@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
-# Deja Check-In-Obra andando para desarrollar: enciende Docker Desktop si esta
-# apagado, construye y levanta las imagenes, y arranca un emulador de Android.
-# El emulador parte primero y bootea mientras Docker construye, que es lo que
-# mas tarda.
+# Deja Check-In-Obra andando para desarrollar: instala lo que falte en el
+# computador (Docker, JDK, Flutter, SDK de Android, emulador), enciende Docker
+# si esta apagado, construye y levanta las imagenes, y arranca un emulador de
+# Android. El emulador parte primero y bootea mientras Docker construye, que es
+# lo que mas tarda.
 #
-#   scripts/levantar.sh                 # Docker Desktop + imagenes + emulador
+# Los requisitos faltantes se instalan solos en Ubuntu y Debian (pide sudo para
+# los paquetes del sistema); ver scripts/lib/requisitos.sh. En Windows lo hace
+# scripts\levantar.ps1; en otros sistemas el script solo avisa que falta.
+#
+#   scripts/levantar.sh                 # requisitos + Docker + imagenes + emulador
+#   scripts/levantar.sh --comprobar     # solo informa que requisitos hay y cuales faltan
+#   scripts/levantar.sh --solo-instalar # instala los requisitos y termina
+#   scripts/levantar.sh --sin-instalar  # no instala nada: si falta algo, avisa y termina
 #   scripts/levantar.sh --app           # ademas corre la app en el emulador (flutter run)
 #   scripts/levantar.sh --sin-cache     # reconstruye las imagenes desde cero
 #   scripts/levantar.sh --sin-emulador  # solo Docker
@@ -31,7 +39,13 @@ PUERTO_EMULADOR=5554
 DISPOSITIVO="emulator-$PUERTO_EMULADOR"
 LOG_EMULADOR="${TMPDIR:-/tmp}/checkinobra-emulador.log"
 
+# Se guardan para poder relanzar el script con otro grupo (ver dar_permiso_docker).
+ARGS_ORIGINALES=("$@")
+
 avd="${AVD:-}"
+instalar=1
+comprobar=0
+solo_instalar=0
 correr_app=0
 sin_cache=0
 sin_emulador=0
@@ -57,6 +71,9 @@ uso() {
 # --- argumentos -----------------------------------------------------------
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --comprobar)    comprobar=1 ;;
+    --sin-instalar) instalar=0 ;;
+    --solo-instalar) solo_instalar=1 ;;
     --app)          correr_app=1 ;;
     --sin-cache)    sin_cache=1 ;;
     --sin-emulador) sin_emulador=1 ;;
@@ -67,6 +84,14 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+if (( comprobar && solo_instalar )); then
+  mal "--comprobar y --solo-instalar no se pueden combinar."
+  exit 1
+fi
+if (( solo_instalar && ! instalar )); then
+  mal "--solo-instalar y --sin-instalar se contradicen."
+  exit 1
+fi
 if (( telefono )); then
   if [[ -n "$avd" ]]; then
     mal "--telefono no usa emulador: no se puede combinar con --avd."
@@ -80,7 +105,16 @@ elif (( correr_app && sin_emulador )); then
   exit 1
 fi
 
+# --- requisitos -------------------------------------------------------------
+# Lo que falte (Docker, JDK, Flutter, SDK de Android, emulador...) se instala solo en
+# Ubuntu y Debian; en otros sistemas esto no hace nada y valen las comprobaciones de abajo.
+# shellcheck source=lib/requisitos.sh
+source "$raiz/scripts/lib/requisitos.sh"
+asegurar_requisitos
+
 # --- herramientas ---------------------------------------------------------
+# Red de seguridad: tras lo anterior deberian estar, pero en un sistema donde no se instala
+# nada (macOS, otras distribuciones) este es el aviso de siempre.
 for cmd in docker curl; do
   command -v "$cmd" >/dev/null || { mal "Falta '$cmd' en el PATH."; exit 1; }
 done
@@ -173,6 +207,11 @@ emulador_corriendo() { adb devices 2>/dev/null | grep -q "^${DISPOSITIVO}[[:spac
 elegir_avd() {
   local disponibles
   disponibles="$(emulator -list-avds 2>/dev/null | tr -d '\r')"
+  if [[ -z "$disponibles" && ( -z "$avd" || "$avd" == "$REQ_AVD_DEFECTO" ) ]] \
+     && (( instalar )) && req_es_debian; then
+    req_crear_avd "$REQ_AVD_DEFECTO" || return 1
+    disponibles="$(emulator -list-avds 2>/dev/null | tr -d '\r')"
+  fi
   if [[ -z "$disponibles" ]]; then
     mal "No hay ningun emulador creado."
     info "Crea uno en Android Studio (Device Manager) o con 'flutter emulators --create'."
@@ -213,8 +252,21 @@ if (( ! sin_emulador )); then
   fi
 fi
 
-# --- 2. Docker Desktop -----------------------------------------------------
+# --- 2. Docker -----------------------------------------------------------
 docker_responde() { docker info >/dev/null 2>&1; }
+docker_sin_permiso() { docker info 2>&1 | grep -qi "permission denied"; }
+
+# Docker responde pero este usuario aun no esta en el grupo 'docker' (o la sesion no lo tomo):
+# se agrega y el script se relanza con el grupo activo, sin pedir cerrar la sesion.
+dar_permiso_docker() {
+  req_es_debian || { mal "Docker no deja usarlo a este usuario (permission denied)."; exit 1; }
+  req_preparar_sudo || exit 1
+  req_agregar_a_grupo docker
+  req_relanzar_con_grupo docker "$raiz/scripts/levantar.sh" ${ARGS_ORIGINALES[@]+"${ARGS_ORIGINALES[@]}"}
+  mal "Docker esta instalado pero tu sesion aun no tiene el grupo 'docker'."
+  info "Cierra la sesion y vuelve a entrar (o reinicia), y corre de nuevo el script."
+  exit 1
+}
 
 encender_docker_desktop() {
   case "$(uname -s)" in
@@ -224,9 +276,12 @@ encender_docker_desktop() {
       elif [[ -x /opt/docker-desktop/bin/docker-desktop ]]; then
         nohup /opt/docker-desktop/bin/docker-desktop >/dev/null 2>&1 < /dev/null &
         disown || true
+      elif systemctl cat docker.service >/dev/null 2>&1; then
+        # Docker Engine (sin Desktop): es un servicio del sistema
+        req_preparar_sudo || return 1
+        $REQ_SUDO systemctl start docker
       else
-        mal "Docker no responde y no se encontro Docker Desktop."
-        info "Si usas Docker Engine sin Desktop: sudo systemctl start docker"
+        mal "Docker no responde y no encontre ni Docker Desktop ni el servicio de Docker Engine."
         return 1
       fi
       ;;
@@ -243,23 +298,29 @@ encender_docker_desktop() {
   esac
 }
 
-paso "Docker Desktop"
+paso "Docker"
+if docker_sin_permiso; then
+  dar_permiso_docker
+fi
 if docker_responde; then
   bien "Ya estaba encendido."
 else
-  info "Encendiendo Docker Desktop..."
+  info "Encendiendo Docker..."
   encender_docker_desktop || exit 1
   limite=$((SECONDS + ESPERA_DOCKER))
   until docker_responde; do
+    if docker_sin_permiso; then
+      dar_permiso_docker
+    fi
     if (( SECONDS > limite )); then
-      mal "Docker Desktop no respondio en ${ESPERA_DOCKER}s."
+      mal "Docker no respondio en ${ESPERA_DOCKER}s."
       info "Contexto activo: $(docker context show 2>/dev/null || echo '?')."
       info "Docker Desktop usa el contexto 'desktop-linux' en Linux y 'desktop-windows' o 'default' en Windows."
       exit 1
     fi
     sleep 3
   done
-  bien "Docker Desktop responde (contexto $(docker context show 2>/dev/null))."
+  bien "Docker responde (contexto $(docker context show 2>/dev/null))."
 fi
 
 # --- 2b. secretos ------------------------------------------------------------
