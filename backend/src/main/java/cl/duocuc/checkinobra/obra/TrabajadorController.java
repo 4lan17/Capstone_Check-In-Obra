@@ -1,5 +1,6 @@
 package cl.duocuc.checkinobra.obra;
 
+import cl.duocuc.checkinobra.config.SesionActual;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,20 +24,21 @@ import java.util.List;
 public class TrabajadorController {
 
     private final TrabajadorService trabajadorService;
+    private final CodigoCredencialService codigoCredencialService;
 
-    public TrabajadorController(TrabajadorService trabajadorService) {
+    public TrabajadorController(
+            TrabajadorService trabajadorService, CodigoCredencialService codigoCredencialService) {
         this.trabajadorService = trabajadorService;
+        this.codigoCredencialService = codigoCredencialService;
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public TrabajadorCredencialResponse crear(@Valid @RequestBody CrearTrabajadorRequest req) {
-        // Al crearlo se emite su credencial, y es la única vez que hay que
-        // entregarla junto con el resto de los datos. El RUT no viene acá: es
-        // del Usuario, y se define al registrarlo.
-        return TrabajadorCredencialResponse.de(
-                trabajadorService.crear(req.usuarioId(), req.cuadrillaId()));
+    public TrabajadorResponse crear(@Valid @RequestBody CrearTrabajadorRequest req) {
+        // El RUT no viene acá: es del Usuario, y se define al registrarlo. La credencial no se
+        // entrega: el trabajador pide su código de vida corta desde su propio teléfono.
+        return TrabajadorResponse.de(trabajadorService.crear(req.usuarioId(), req.cuadrillaId()));
     }
 
     @GetMapping("/{id}")
@@ -46,21 +48,21 @@ public class TrabajadorController {
     }
 
     /**
-     * Resuelve la credencial que el bodeguero acaba de escanear.
+     * Resuelve el código de credencial que el bodeguero acaba de escanear.
      *
-     * <p>Restringido a quien opera bodega. Antes lo podía llamar cualquier
-     * usuario autenticado, y desde que escanear la credencial es el paso previo
-     * a aprobar solicitudes, eso deja a un trabajador resolviendo el código de
-     * un compañero desde su propio teléfono. El código es portador (RN-27 de la
-     * especificación): quien lo tiene se presenta como ese trabajador, así que
-     * importa quién puede canjearlo.
+     * <p>Solo acepta el código de vida corta (8 caracteres, ver {@link CodigoCredencialService}): el
+     * UUID fijo de antes ya no sirve para escanear. Vencido es 409 {@code CREDENCIAL_CADUCADA};
+     * desconocido, revocado o de otra empresa es 404.
+     *
+     * <p>Restringido a quien opera bodega: el código es portador (RN-27 de la especificación) mientras
+     * dura, así que importa quién puede canjearlo. Quien escanea y acumula demasiados códigos
+     * desconocidos queda bloqueado un rato (429).
      */
-    @GetMapping("/por-credencial/{credencialQr}")
+    @GetMapping("/por-credencial/{codigo}")
     @PreAuthorize("hasAnyRole('ADMIN', 'BODEGUERO', 'JEFE_TERRENO')")
-    public TrabajadorResponse buscarPorCredencial(@PathVariable String credencialQr) {
-        // Quien escanea ya tiene el código en la mano: devolverlo otra vez solo
-        // ampliaría por dónde puede filtrarse.
-        return TrabajadorResponse.de(trabajadorService.buscarPorCredencialQr(credencialQr));
+    public TrabajadorResponse buscarPorCredencial(@PathVariable String codigo) {
+        return TrabajadorResponse.de(
+                codigoCredencialService.canjear(codigo, SesionActual.empresaId(), SesionActual.usuarioId()));
     }
 
     /**
@@ -83,16 +85,25 @@ public class TrabajadorController {
         throw new IllegalArgumentException("Se requiere cuadrillaId u obraId");
     }
 
-    /**
-     * La ficha propia, con la credencial para dibujar el QR. Sale del token: no
-     * recibe id, así que no hay forma de pedir la de otro.
-     */
+    /** La ficha propia. Sale del token: no recibe id, así que no hay forma de pedir la de otro. */
     @GetMapping("/yo")
     @PreAuthorize("hasRole('TRABAJADOR')")
     public PerfilTrabajadorResponse yo() {
         return PerfilTrabajadorResponse.de(trabajadorService.miFicha());
     }
 
+    /**
+     * Emite un código de credencial de vida corta para quien llama (S-27). Sale del token y no recibe
+     * id: no hay forma de pedir el de otro. Cada pedido emite uno nuevo; los anteriores valen hasta
+     * que vencen. La respuesta lleva el código, así que IdempotenciaFilter no la guarda (S-30).
+     */
+    @PostMapping("/yo/credencial/codigo")
+    @PreAuthorize("hasRole('TRABAJADOR')")
+    public CodigoCredencialResponse pedirCodigoDeCredencial() {
+        return codigoCredencialService.emitir(trabajadorService.obtenerPorUsuario(SesionActual.usuarioId()));
+    }
+
+    /** Renueva la propia: revoca todos los códigos vigentes del trabajador. */
     @PutMapping("/yo/credencial")
     @PreAuthorize("hasRole('TRABAJADOR')")
     public PerfilTrabajadorResponse renovarMiCredencial() {
@@ -100,17 +111,14 @@ public class TrabajadorController {
     }
 
     /**
-     * Renovar la credencial de cualquier trabajador es de ADMIN. Estaba abierta
-     * a todo usuario autenticado, y como la respuesta trae el código nuevo,
-     * cualquiera podía quedarse con la credencial —portadora, RN-27— de un
-     * compañero. El trabajador renueva la suya por {@code /yo/credencial}.
+     * Renovar la credencial de cualquier trabajador es de ADMIN (si pierde el teléfono): revoca sus
+     * códigos vigentes. No devuelve credenciales; el trabajador pide uno nuevo desde su teléfono.
+     * El trabajador renueva la suya por {@code /yo/credencial}.
      */
     @PutMapping("/{id}/credencial")
     @PreAuthorize("hasRole('ADMIN')")
-    public TrabajadorCredencialResponse renovarCredencial(@PathVariable Long id) {
-        // Renovar sin devolver el código nuevo dejaría al trabajador sin
-        // credencial: acá sí tiene que viajar.
-        return TrabajadorCredencialResponse.de(trabajadorService.renovarCredencial(id));
+    public TrabajadorResponse renovarCredencial(@PathVariable Long id) {
+        return TrabajadorResponse.de(trabajadorService.renovarCredencial(id));
     }
 
     public record CrearTrabajadorRequest(@NotNull(message = "Falta el usuario") Long usuarioId, Long cuadrillaId) {

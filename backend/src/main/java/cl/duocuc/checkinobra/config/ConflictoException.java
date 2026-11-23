@@ -35,6 +35,9 @@ public class ConflictoException extends IllegalStateException {
     /** La solicitud es parte de un pedido con QR: se entrega o se cancela el pedido entero. */
     public static final String EN_PEDIDO = "EN_PEDIDO";
 
+    /** El código de credencial que se escaneó existe, pero ya venció: hay que pedir uno actualizado. */
+    public static final String CREDENCIAL_CADUCADA = "CREDENCIAL_CADUCADA";
+
     private final String codigo;
 
     public ConflictoException(String codigo, String mensaje) {
