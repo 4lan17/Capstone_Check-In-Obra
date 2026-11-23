@@ -21,6 +21,7 @@
     { "file": "BodSolicitudes.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-3" },
     { "file": "BodAprobar.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-3" },
     { "file": "BodRechazo.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-3" },
+    { "file": "BodMetricas.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-3" },
     { "file": "BodRecepcion.dc.html", "x": 0, "y": 964, "w": 390, "h": 844, "page": "page-3" },
     { "file": "BodDespacho.dc.html", "x": 470, "y": 964, "w": 390, "h": 844, "page": "page-3" },
     { "file": "BodStock.dc.html", "x": 940, "y": 964, "w": 390, "h": 844, "page": "page-3" },
@@ -33,13 +34,17 @@
     { "file": "JefePresupuesto.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-4" },
     { "file": "JefeDesviacion.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-4" },
     { "file": "JefeCuadrillas.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-4" },
+    { "file": "JefeMetricas.dc.html", "x": 2820, "y": 0, "w": 390, "h": 844, "page": "page-4" },
 
     { "file": "AdmInicio.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "page": "page-5" },
     { "file": "AdmUsuarios.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "page": "page-5" },
     { "file": "AdmUsuarioNuevo.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "page": "page-5" },
     { "file": "AdmMateriales.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "page": "page-5" },
     { "file": "AdmMerma.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-5" },
-    { "file": "AdmObras.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-5" }
+    { "file": "AdmObras.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmMetricas.dc.html", "x": 2820, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "AdmObraUbicacion.dc.html", "x": 3290, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "Graficos.dc.html", "x": 0, "y": 0, "w": 1240, "h": 1560, "title": "Gráficos de estadística descriptiva", "page": "page-6", "print": "flow" }
   ],
   "annotations": [
     {
@@ -56,7 +61,7 @@
       "y": -340,
       "w": 760,
       "page": "page-2",
-      "text": "TRABAJADOR — el rol nuevo respecto del diagrama anterior\n\nInicio → Credencial QR → Solicitar herramienta → Solicitar material → Mis solicitudes → Mis préstamos.\n\nEs la mitad que faltaba de SolicitudHerramienta y SolicitudMaterial: aquí se crean. La pantalla de solicitudes muestra los cuatro estados del enum EstadoSolicitud — PENDIENTE, APROBADA, RECHAZADA (con el motivo que escribió el bodeguero) y ENTREGADA.\n\nTrabajador.credencialQr es la pantalla de credencial: el trabajador la muestra y el bodeguero la escanea; así el préstamo queda a nombre de alguien y no \"de la cuadrilla\".\n\nEn Solicitar material, la barra compara contra lo cubicado de la partida antes de pedir: es el primer punto donde el trabajador ve que pedir de más es lo que después aparece como desviación."
+      "text": "TRABAJADOR — el rol nuevo respecto del diagrama anterior\n\nInicio → Credencial QR → Solicitar herramienta → Solicitar material → Mis solicitudes → Mis préstamos.\n\nEs la mitad que faltaba de SolicitudHerramienta y SolicitudMaterial: aquí se crean. La pantalla de solicitudes muestra los cuatro estados del enum EstadoSolicitud — PENDIENTE, APROBADA, RECHAZADA (con el motivo que escribió el bodeguero) y ENTREGADA.\n\nTrabajador.credencialQr es la pantalla de credencial: el trabajador la muestra y el bodeguero la escanea; así el préstamo queda a nombre de alguien y no \"de la cuadrilla\".\n\nEn Solicitar material, la barra compara contra lo cubicado de la partida antes de pedir: es el primer punto donde el trabajador ve que pedir de más es lo que después aparece como desviación.\n\nEste rol no tiene métricas: es operativo. Al elegir obra (todos los roles) cada una muestra su mapa de OpenStreetMap, para confirmar que es la correcta."
     },
     {
       "id": "nota-bodeguero",
@@ -64,7 +69,7 @@
       "y": -380,
       "w": 780,
       "page": "page-3",
-      "text": "BODEGUERO — fila 1: decidir · fila 2: mover stock\n\nFILA 1. Inicio con el contador de solicitudes esperando · Escaneo (sirve para material, herramienta o credencial: la app reconoce cuál es) · Cola de solicitudes con aprobación en un toque · Aprobar, que es donde se genera el PrestamoHerramienta y donde se ve que el solicitante ya tiene 3 herramientas, una vencida · Rechazar, que exige motivo porque el trabajador lo va a leer.\n\nFILA 2. Recepción · Despacho · Bodega · Devolución · Cierre de turno.\n\nDespacho está a propósito en su caso feo: se piden 24 planchas y quedan 14. El kardex no admite stock negativo, así que la acción principal queda apagada y la salida real es despachar las 14. Devolución es donde EstadoHerramienta se decide: vuelve DISPONIBLE, se va a MANTENCION o no vuelve. Cierre de turno es lo que genera la alerta CIERRE_TURNO."
+      "text": "BODEGUERO — fila 1: decidir · fila 2: mover stock\n\nFILA 1. Inicio con el contador de solicitudes esperando · Escaneo (sirve para material, herramienta o credencial: la app reconoce cuál es) · Cola de solicitudes con aprobación en un toque · Aprobar, que es donde se genera el PrestamoHerramienta y donde se ve que el solicitante ya tiene 3 herramientas, una vencida · Rechazar, que exige motivo porque el trabajador lo va a leer.\n\nFILA 2. Recepción · Despacho · Bodega · Devolución · Cierre de turno.\n\nDespacho está a propósito en su caso feo: se piden 24 planchas y quedan 14. El kardex no admite stock negativo, así que la acción principal queda apagada y la salida real es despachar las 14. Devolución es donde EstadoHerramienta se decide: vuelve DISPONIBLE, se va a MANTENCION o no vuelve. Cierre de turno es lo que genera la alerta CIERRE_TURNO.\n\nMÉTRICAS. Desde el Inicio, «Métricas de la bodega»: movimientos por día (líneas), materiales más despachados (barras) y herramientas de la empresa por estado (torta; las herramientas no tienen obra)."
     },
     {
       "id": "nota-jefe",
@@ -72,7 +77,7 @@
       "y": -340,
       "w": 760,
       "page": "page-4",
-      "text": "JEFE DE TERRENO — el panel web, ahora en el bolsillo\n\nObra → Partidas → Cubicación → Presupuesto → Desviación → Cuadrillas.\n\nCubicación expone MotorCubicacion.calcular(): medidas de la Partida, cantidad neta, merma por categoría y cantidad a comprar, en las cuatro columnas de la tabla.\n\nPresupuesto muestra el enum completo como línea de tiempo — BORRADOR → APROBADO → CONGELADO — con la fecha de congelado y por qué ya no sigue al catálogo de precios.\n\nDesviación es ReporteDesviacion: desviacionPct arriba y mermaRealVsEstimada en el bloque del medio. Volcanita se corta al 14,8 % real contra el 12 % configurado, y de ahí sale casi la mitad del exceso.\n\nEste rol no escanea: su barra inferior no tiene botón de QR."
+      "text": "JEFE DE TERRENO — el panel web, ahora en el bolsillo\n\nObra → Partidas → Cubicación → Presupuesto → Desviación → Cuadrillas.\n\nCubicación expone MotorCubicacion.calcular(): medidas de la Partida, cantidad neta, merma por categoría y cantidad a comprar, en las cuatro columnas de la tabla.\n\nPresupuesto muestra el enum completo como línea de tiempo — BORRADOR → APROBADO → CONGELADO — con la fecha de congelado y por qué ya no sigue al catálogo de precios.\n\nDesviación es ReporteDesviacion: desviacionPct arriba y mermaRealVsEstimada en el bloque del medio. Volcanita se corta al 14,8 % real contra el 12 % configurado, y de ahí sale casi la mitad del exceso.\n\nEste rol no escanea: su barra inferior no tiene botón de QR.\n\nMÉTRICAS. Desde el Inicio, «Métricas de la obra»: gasto acumulado contra el presupuesto (líneas), presupuestado vs ejecutado por material (barras; en rojo lo que pasa el umbral de la empresa) y ejecutado por material (torta). Son los datos de ReporteDesviacion a lo largo del tiempo; el período se elige arriba."
     },
     {
       "id": "nota-admin",
@@ -80,7 +85,7 @@
       "y": -340,
       "w": 760,
       "page": "page-5",
-      "text": "ADMINISTRADOR — define las reglas, no opera la obra\n\nEmpresa → Usuarios → Nuevo usuario → Materiales → Merma → Obras.\n\nEmpresa reúne los umbrales que disparan cada TipoAlerta: hora de cierre de turno, umbral de desviación, tolerancia de devolución y el porcentaje sobre el mínimo que marca stock crítico.\n\nNuevo usuario es donde se elige RolUsuario. El PIN no lo escribe el administrador: lo define el propio usuario en su primer ingreso, y en la lista solo se ve si está configurado.\n\nEn Obras, el botón de cerrar obra aparece apagado a propósito, con las dos condiciones que faltan: 4 herramientas fuera y 6 alertas sin resolver. Es EstadoObra.cerrar() con sus precondiciones a la vista en lugar de un error después del toque."
+      "text": "ADMINISTRADOR — define las reglas, no opera la obra\n\nEmpresa → Usuarios → Nuevo usuario → Materiales → Merma → Obras.\n\nEmpresa reúne los umbrales que disparan cada TipoAlerta: hora de cierre de turno, umbral de desviación, tolerancia de devolución y el porcentaje sobre el mínimo que marca stock crítico.\n\nNuevo usuario es donde se elige RolUsuario. El PIN no lo escribe el administrador: lo define el propio usuario en su primer ingreso, y en la lista solo se ve si está configurado.\n\nEn Obras, el botón de cerrar obra aparece apagado a propósito, con las dos condiciones que faltan: 4 herramientas fuera y 6 alertas sin resolver. Es EstadoObra.cerrar() con sus precondiciones a la vista en lugar de un error después del toque.\n\nMÉTRICAS Y UBICACIÓN. «Métricas de la empresa»: alertas generadas y resueltas hasta hoy por semana (líneas), desviación por obra contra el umbral (barras) y usuarios por rol (torta). Cada card de obra muestra su mapa de OpenStreetMap; una obra sin coordenadas lo dice y ofrece marcarla. Marcar en el mapa guarda latitud y longitud (pantalla Ubicación de la obra)."
     }
   ],
   "pages": [
@@ -88,7 +93,8 @@
     { "id": "page-2", "name": "Trabajador" },
     { "id": "page-3", "name": "Bodeguero" },
     { "id": "page-4", "name": "Jefe de terreno" },
-    { "id": "page-5", "name": "Admin" }
+    { "id": "page-5", "name": "Admin" },
+    { "id": "page-6", "name": "Gráficos" }
   ],
   "launch": { "view": "canvas", "page": "page-1" }
 }
