@@ -100,7 +100,7 @@ cuentas de cada rol con PIN conocido. La tabla está en el
 |---|---|
 | `ADMIN` | `ShellAdmin`: obras, materiales, usuarios, importación desde Excel y solicitudes |
 | `BODEGUERO` | `ShellBodega`: elige obra y después ve el inicio, el escáner, los movimientos, los préstamos, las alertas y el cierre de turno |
-| `TRABAJADOR` | `ShellTrabajador`: credencial QR a pantalla completa, pedidos, pedidos especiales e historial |
+| `TRABAJADOR` | `ShellTrabajador`: credencial (código QR de vida corta) a pantalla completa, pedidos, pedidos especiales e historial |
 | `JEFE_TERRENO` | `PantallaRolPendiente`: su flujo todavía no está construido |
 
 ---
@@ -190,11 +190,60 @@ cierra nada. Al cerrar sesión, la app revoca el refresh con
 empresa los ids se repiten: la obra 3 o el usuario 4 existen en cada una. Por
 eso el usuario recordado guarda también su `empresaId` (que viaja en
 `login-pin` junto al `usuarioId`), y la obra activa y la copia de la
-credencial se guardan bajo `obra_activa:<empresa>:<usuario>` y
+ficha del trabajador (sin credencial) se guardan bajo `obra_activa:<empresa>:<usuario>` y
 `perfil_trabajador:<empresa>:<usuario>`. Al entrar otra cuenta, la obra
 activa se reconstruye con la identidad nueva: no hereda la de la anterior.
 Lo guardado en el formato viejo (sin empresa) se descarta al entrar, y quien
 tenía un usuario recordado sin empresa vuelve a escribir su correo una vez.
+
+**La credencial del trabajador es un código de vida corta.** El QR ya no lleva
+un identificador fijo: lleva un código de 8 caracteres (`K7M2-9QXP`) que el
+servidor emite con `POST /api/trabajadores/yo/credencial/codigo` y que vale
+**2 minutos**. La pestaña lo pide al abrirse, lo renueva sola cada 60 segundos
+y muestra cuánto falta (`features/trabajador/codigo_credencial_controller.dart`).
+Debajo del QR va el mismo código en dos grupos, para dictarlo o tipearlo.
+
+- **Nunca se guarda.** Ni en disco ni de una apertura a la otra: sin conexión
+  no se muestra un QR sino «Sin conexión: no se puede mostrar la credencial».
+  Lo único que se guarda del trabajador es su ficha (nombre y obra).
+- El tiempo se cuenta con el reloj del teléfono **desde que el código llegó**,
+  no con la hora del servidor, y se revisa al volver del segundo plano.
+- El bodeguero escanea el QR o escribe el código con o sin guion y en
+  minúsculas (`k7m2-9qxp`). Un código vencido responde 409
+  `CREDENCIAL_CADUCADA` y la app dice «La credencial caducó: pídele al
+  trabajador que la muestre de nuevo». Los QR de pedidos de herramientas
+  (`PEDIDO:<uuid>`) no cambian.
+- «Perdí el teléfono: renovar» revoca los códigos vigentes
+  (`PUT /api/trabajadores/yo/credencial`) y pide uno nuevo.
+
+**Fijar el certificado del servidor (opcional).** Por defecto la app confía en
+cualquier certificado que el teléfono acepte. Para que solo hable con tu
+servidor, compílala con la huella SHA-256 de su certificado:
+
+```bash
+# 1. La huella del certificado que el servidor presenta (o de su cert.pem):
+openssl s_client -connect api.checkinobra.cl:443 -servername api.checkinobra.cl </dev/null 2>/dev/null \
+  | openssl x509 -noout -fingerprint -sha256
+# SHA256 Fingerprint=AB:CD:...  (con o sin los ":" sirve)
+
+# 2. Compilar con ella (varias, separadas por coma, para rotar el certificado):
+API_BASE_URL=https://api.checkinobra.cl \
+API_CERT_SHA256=AB:CD:... \
+scripts/release-apk.sh
+```
+
+En el workflow *APK de release*, la huella sale del secreto
+`API_CERT_SHA256`; **si no existe, la fijación no se activa** y el build es el
+de siempre. Sin esa variable la app tampoco cambia en desarrollo ni en el
+emulador. Con ella, la comparación se hace **en el apretón de manos TLS**,
+antes de enviar nada (el PIN no llega a un servidor con otro certificado), y
+además se exige que el certificado esté vigente. Una huella mal escrita no se
+ignora: el build se detiene y, si llegara a la app, esta no arranca y lo dice.
+
+> ⚠ Fijar la huella del certificado hoja obliga a recompilar la app cada vez
+> que el certificado se renueva. Para renovar sin dejar a nadie fuera, publica
+> primero una versión con la huella actual **y la siguiente** (separadas por
+> coma), y deja que se instale antes de cambiar el certificado.
 
 **Los timeouts son de 8 segundos.** En la obra la señal es mala, y conviene
 más que el usuario reintente pronto a que quede esperando 30 segundos.

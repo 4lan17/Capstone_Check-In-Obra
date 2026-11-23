@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api/auth_api.dart';
@@ -20,6 +23,7 @@ class ApiClient {
     void Function()? alEmpresaSuspendida,
     Future<ResultadoRenovacion> Function(String tokenQueFallo)? renovar,
   }) : dio = dio ?? _crearDio() {
+    if (dio == null) traducirFallosDeCertificado(this.dio);
     if (storage != null) {
       this.dio.interceptors.add(
         _InterceptorToken(
@@ -34,18 +38,54 @@ class ApiClient {
     }
   }
 
-  static Dio _crearDio() => Dio(
-    BaseOptions(
-      baseUrl: AppConfig.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 8),
-      receiveTimeout: const Duration(seconds: 8),
-      sendTimeout: const Duration(seconds: 8),
-      contentType: Headers.jsonContentType,
-      // No lanzar excepción por 4xx: los manejamos nosotros para
-      // distinguir "credenciales malas" de "no hay red".
-      validateStatus: (status) => status != null && status < 500,
-    ),
-  );
+  static Dio _crearDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: AppConfig.apiBaseUrl,
+        connectTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 8),
+        sendTimeout: const Duration(seconds: 8),
+        contentType: Headers.jsonContentType,
+        // No lanzar excepción por 4xx: los manejamos nosotros para
+        // distinguir "credenciales malas" de "no hay red".
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+    // Fijación de certificado opcional (S-28): solo si se compiló con
+    // `--dart-define=API_CERT_SHA256=...`. Sin la variable, no se toca nada.
+    final fijacion = AppConfig.fijacion;
+    if (fijacion != null) {
+      dio.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: fijacion.crearHttpClient,
+      );
+    }
+    return dio;
+  }
+
+  /// Un certificado rechazado en el apretón de manos TLS no llega de Dio como
+  /// `badCertificate`: sale como un `HandshakeException` suelto, y la app lo
+  /// mostraba como un "fallo de red" genérico. Acá se traduce, para que
+  /// `mensajeDeError` y el diagnóstico de conexión digan lo que pasó.
+  static void traducirFallosDeCertificado(Dio dio) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (error, handler) {
+          final causa = error.error;
+          if (causa is HandshakeException &&
+              causa.toString().toUpperCase().contains('CERTIFICATE')) {
+            handler.next(
+              DioException.badCertificate(
+                requestOptions: error.requestOptions,
+                error: causa,
+              ),
+            );
+            return;
+          }
+          handler.next(error);
+        },
+      ),
+    );
+  }
 
   final Dio dio;
 

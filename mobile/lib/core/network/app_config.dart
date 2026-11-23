@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'fijacion_certificado.dart';
+
 /// Configuración leída desde `mobile/.env`.
 ///
 /// Ese archivo NO está versionado (lo ignora `.gitignore`), porque la URL
@@ -41,6 +43,21 @@ abstract final class AppConfig {
   );
 
   static const _urlDeDesarrollo = 'http://10.0.2.2:8081';
+
+  /// Huellas SHA-256 del certificado del servidor, fijadas al compilar con
+  /// `--dart-define=API_CERT_SHA256=<hex>` (o varias separadas por coma).
+  static const _huellasDefinidasAlCompilar = String.fromEnvironment(
+    'API_CERT_SHA256',
+  );
+
+  /// La fijación de certificado, o `null` si no se compiló con huellas: en
+  /// desarrollo y en el emulador no se pasa la variable y todo sigue igual.
+  ///
+  /// Una huella mal formada **no** se ignora: lanza [ConfiguracionInvalida],
+  /// porque dejar la app sin fijar creyendo que lo está es peor que no
+  /// arrancar. [errorDeConfiguracion] lo muestra en pantalla.
+  static FijacionCertificado? get fijacion =>
+      FijacionCertificado.desde(_huellasDefinidasAlCompilar);
 
   /// Decide la URL de la API y, en release, la exige `https://` y solo la
   /// toma de `--dart-define`.
@@ -95,6 +112,7 @@ abstract final class AppConfig {
   static String? get errorDeConfiguracion {
     try {
       apiBaseUrl;
+      fijacion;
       return null;
     } on ConfiguracionInvalida catch (e) {
       return e.mensaje;

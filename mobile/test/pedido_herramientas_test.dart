@@ -41,7 +41,6 @@ const _perfil = PerfilTrabajador(
   obraId: 2,
   obraNombre: 'Los Almendros · Torre B',
   obraEstado: 'ACTIVA',
-  credencialQr: 'CRED-7f3a9c2e-1b44',
 );
 
 const _uuid = '3f1c2a9e-7b44-4d0a-9c3e-5a6b7c8d9e0f';

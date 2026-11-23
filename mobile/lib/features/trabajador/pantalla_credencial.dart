@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../core/formato.dart';
 import '../../core/network/errores.dart';
 import '../../core/network/idempotencia.dart';
 import '../../core/pantalla.dart';
@@ -16,6 +16,7 @@ import '../../data/api/dominio_api.dart';
 import '../../data/modelos/perfil_trabajador.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
+import 'codigo_credencial_controller.dart';
 import 'trabajador_providers.dart';
 
 /// La credencial que se muestra en el mesón de bodega.
@@ -23,19 +24,74 @@ import 'trabajador_providers.dart';
 /// Es lo único de esta app que se usa con el teléfono en la mano de otra
 /// persona —el bodeguero lo escanea—, así que el QR ocupa el ancho entero, va
 /// sobre blanco puro con su margen de silencio y nada se le superpone. Debajo
-/// van nombre y RUT en grande, para que el bodeguero confirme de un vistazo
-/// que la cara coincide con la credencial.
-class PantallaCredencial extends ConsumerWidget {
-  const PantallaCredencial({super.key});
+/// van el código para tipearlo y nombre y RUT en grande, para que el bodeguero
+/// confirme de un vistazo que la cara coincide con la credencial.
+///
+/// El QR lleva un **código de vida corta** (2 minutos) que se pide al abrir la
+/// pestaña y se renueva solo: una captura de pantalla no sirve, y sin conexión
+/// no hay credencial que mostrar en vez de una que ya no vale.
+class PantallaCredencial extends ConsumerStatefulWidget {
+  const PantallaCredencial({super.key, this.activa = true});
+
+  /// Si la pestaña se está viendo. Las pestañas viven todas montadas, así que
+  /// sin esto el código se pediría y renovaría también con otra pestaña
+  /// abierta: cada código emitido en vano es uno más que alguien podría haber
+  /// capturado.
+  final bool activa;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PantallaCredencial> createState() => _PantallaCredencialState();
+}
+
+class _PantallaCredencialState extends ConsumerState<PantallaCredencial>
+    with WidgetsBindingObserver {
+  late final CodigoCredencialNotifier _codigo = ref.read(
+    codigoCredencialProvider.notifier,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (widget.activa) _despues(_codigo.activar);
+  }
+
+  @override
+  void didUpdateWidget(PantallaCredencial anterior) {
+    super.didUpdateWidget(anterior);
+    if (widget.activa == anterior.activa) return;
+    _despues(widget.activa ? _codigo.activar : _codigo.desactivar);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState estado) {
+    if (estado == AppLifecycleState.resumed) _codigo.alReanudar();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _codigo.desactivar();
+    super.dispose();
+  }
+
+  /// Cambiar un provider no se puede mientras el árbol se construye.
+  void _despues(VoidCallback accion) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) accion();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final perfil = ref.watch(perfilTrabajadorProvider);
+    final codigo = ref.watch(codigoCredencialProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(perfilTrabajadorProvider);
         await ref.read(perfilTrabajadorProvider.future);
+        await _codigo.reintentar();
       },
       child: ListView(
         padding: AppEspacio.pantalla,
@@ -46,12 +102,13 @@ class PantallaCredencial extends ConsumerWidget {
             constructor: (p) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (p.sinConexion) ...[
-                  _SinConexion(guardadoEl: p.guardadoEl!),
-                  const SizedBox(height: AppEspacio.md),
-                ],
-                _Tarjeta(perfil: p),
-                if (p.credencialQr != null) ...[
+                _Tarjeta(
+                  perfil: p,
+                  codigo: codigo,
+                  cargando: widget.activa,
+                  alReintentar: _codigo.reintentar,
+                ),
+                if (codigo is CodigoVigente) ...[
                   const SizedBox(height: AppEspacio.md),
                   FilledButton.icon(
                     onPressed: () => mostrarCredencialCompleta(context, p),
@@ -65,9 +122,9 @@ class PantallaCredencial extends ConsumerWidget {
                 const SizedBox(height: AppEspacio.md),
                 Text(
                   'Muéstrala en bodega para retirar lo que pediste o para que '
-                  'te presten una herramienta. Se abre a pantalla completa y '
-                  'con el brillo al máximo, para que el lector la tome al '
-                  'primer intento.',
+                  'te presten una herramienta. El código cambia solo cada '
+                  'minuto: una captura de pantalla no sirve. Si el lector no '
+                  'lo toma, dicta el código de abajo.',
                   textAlign: TextAlign.center,
                   style: AppTexto.cuerpoChico,
                 ),
@@ -84,33 +141,42 @@ class PantallaCredencial extends ConsumerWidget {
 }
 
 class _Tarjeta extends StatelessWidget {
-  const _Tarjeta({required this.perfil});
+  const _Tarjeta({
+    required this.perfil,
+    required this.codigo,
+    required this.cargando,
+    required this.alReintentar,
+  });
 
   final PerfilTrabajador perfil;
+  final EstadoCodigo codigo;
+
+  /// Si se está pidiendo el código. En una pestaña que no se ve no se pide
+  /// nada, y un indicador girando ahí no tiene a quién avisarle.
+  final bool cargando;
+  final VoidCallback alReintentar;
 
   @override
   Widget build(BuildContext context) {
     final p = perfil;
-    final codigo = p.credencialQr;
 
     return Panel(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Column(
         children: [
-          if (codigo == null)
-            const _SinCredencial()
-          else
-            GestureDetector(
+          switch (codigo) {
+            final CodigoVigente vigente => GestureDetector(
               onTap: () => mostrarCredencialCompleta(context, p),
-              child: LayoutBuilder(
-                // Topado a 300: más grande no se lee mejor y empuja el nombre
-                // fuera de la pantalla en un teléfono chico.
-                builder: (context, c) => CodigoQr(
-                  codigo: codigo,
-                  lado: c.maxWidth.clamp(180.0, 300.0),
-                ),
-              ),
+              child: _CodigoVigente(codigo: vigente, ladoMaximo: 300),
             ),
+            CodigoCargando() => _CargandoCodigo(girando: cargando),
+            CodigoNoDisponible(:final mensaje, :final sinConexion) =>
+              _SinCodigo(
+                mensaje: mensaje,
+                sinConexion: sinConexion,
+                alReintentar: alReintentar,
+              ),
+          },
           const SizedBox(height: AppEspacio.md),
           Text(
             p.nombre,
@@ -148,32 +214,176 @@ class _Tarjeta extends StatelessWidget {
   }
 }
 
-class _SinCredencial extends StatelessWidget {
-  const _SinCredencial();
+/// El QR del código vigente, el código en texto para tipearlo y cuánto falta
+/// para que venza.
+class _CodigoVigente extends StatelessWidget {
+  const _CodigoVigente({required this.codigo, this.ladoMaximo});
+
+  final CodigoVigente codigo;
+
+  /// Tope del lado del QR; `null` en pantalla completa, donde manda el espacio.
+  final double? ladoMaximo;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: AppColors.sunken,
-        borderRadius: AppForma.borde,
-      ),
-      padding: const EdgeInsets.all(AppEspacio.md),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LayoutBuilder(
+          // Topado a 300 en la tarjeta: más grande no se lee mejor y empuja el
+          // nombre fuera de la pantalla en un teléfono chico.
+          builder: (context, c) => Center(
+            child: CodigoQr(
+              codigo: codigo.codigo.codigo,
+              lado: c.maxWidth.clamp(180.0, ladoMaximo ?? c.maxWidth),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppEspacio.md),
+        TextoDelCodigo(codigo: codigo.codigo.agrupado),
+        const SizedBox(height: AppEspacio.sm),
+        Vigencia(codigo: codigo),
+      ],
+    );
+  }
+}
+
+/// `K7M2-9QXP` en grande y monoespaciado, para dictarlo o tipearlo sin
+/// confundir una letra con otra.
+class TextoDelCodigo extends StatelessWidget {
+  const TextoDelCodigo({super.key, required this.codigo, this.tamano = 30});
+
+  final String codigo;
+  final double tamano;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      // Un lector de pantalla leería "K7M2" como una palabra: se deletrea.
+      label:
+          'Código de tu credencial: ${codigo.replaceAll('-', ', ').split('').join(' ')}',
+      excludeSemantics: true,
       child: Text(
-        'Todavía no tienes credencial. Tira hacia abajo para pedirla, o '
-        'avísale al administrador.',
+        codigo,
         textAlign: TextAlign.center,
-        style: AppTexto.cuerpoChico,
+        style: TextStyle(
+          fontFamily: AppTheme.monoFamily,
+          fontSize: tamano,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 3,
+          color: AppColors.primary,
+        ),
       ),
     );
   }
 }
 
-/// Renovar anula el código anterior. Se ofrece abajo y con confirmación: es
-/// para cuando se perdió el teléfono o alguien fotografió el código, no algo
-/// que se toque por curiosidad.
+/// Cuánto falta para que venza: una barra que se vacía y el tiempo en texto.
+class Vigencia extends StatelessWidget {
+  const Vigencia({super.key, required this.codigo});
+
+  final CodigoVigente codigo;
+
+  @override
+  Widget build(BuildContext context) {
+    final porVencer = codigo.restante <= 20;
+    final color = porVencer ? AppColors.warningDark : AppColors.secondary;
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: codigo.proporcion,
+            minHeight: 6,
+            backgroundColor: AppColors.sunken,
+            color: porVencer ? AppColors.warning : AppColors.accentFill,
+          ),
+        ),
+        const SizedBox(height: 6),
+        // Cambia cada segundo: leerlo en voz alta cada vez sería un estorbo.
+        ExcludeSemantics(
+          child: Text(
+            'Vence en ${codigo.restanteTexto}',
+            style: AppTexto.cuerpoChico.copyWith(
+              color: color,
+              fontFeatures: AppTexto.tabulares,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CargandoCodigo extends StatelessWidget {
+  const _CargandoCodigo({required this.girando});
+
+  final bool girando;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 220,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: AppColors.sunken,
+        borderRadius: AppForma.borde,
+      ),
+      child: girando
+          ? const CircularProgressIndicator(color: AppColors.accentFill)
+          : null,
+    );
+  }
+}
+
+/// En lugar del QR cuando no hay un código vigente: no se muestra nada que
+/// parezca una credencial.
+class _SinCodigo extends StatelessWidget {
+  const _SinCodigo({
+    required this.mensaje,
+    required this.sinConexion,
+    required this.alReintentar,
+  });
+
+  final String mensaje;
+  final bool sinConexion;
+  final VoidCallback alReintentar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(AppEspacio.md),
+        decoration: const BoxDecoration(
+          color: AppColors.sunken,
+          borderRadius: AppForma.borde,
+        ),
+        child: Column(
+          children: [
+            Icon(
+              sinConexion ? Icons.cloud_off : Icons.error_outline,
+              size: 40,
+              color: AppColors.secondary,
+            ),
+            const SizedBox(height: AppEspacio.sm + 4),
+            Text(mensaje, textAlign: TextAlign.center, style: AppTexto.cuerpo),
+            const SizedBox(height: AppEspacio.sm),
+            TextButton.icon(
+              onPressed: alReintentar,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Renovar revoca los códigos vigentes. Se ofrece abajo y con confirmación: es
+/// para cuando se perdió el teléfono o alguien vio el código, no algo que se
+/// toque por curiosidad.
 class _Renovar extends ConsumerStatefulWidget {
   const _Renovar({required this.perfil});
 
@@ -193,9 +403,9 @@ class _RenovarState extends ConsumerState<_Renovar> {
       builder: (context) => AlertDialog(
         title: const Text('¿Renovar tu credencial?'),
         content: const Text(
-          'El código actual deja de servir de inmediato, incluida cualquier '
-          'captura o foto que alguien tenga de él. Hazlo si perdiste el '
-          'teléfono o crees que otra persona lo está usando.',
+          'Los códigos vigentes dejan de servir de inmediato, incluida cualquier '
+          'captura o foto que alguien tenga. Hazlo si perdiste el teléfono o '
+          'crees que otra persona lo está usando.',
         ),
         actions: [
           TextButton(
@@ -216,17 +426,21 @@ class _RenovarState extends ConsumerState<_Renovar> {
       await ref
           .read(trabajadoresApiProvider)
           .renovarMiCredencial(
-            // La huella es el código que se quiere anular: reintentar tras un
-            // timeout repite la misma renovación, no emite dos.
-            clave: _intento.clavePara([widget.perfil.credencialQr]),
+            // Reintentar tras un timeout repite la misma renovación, no hace
+            // dos.
+            clave: _intento.clavePara([widget.perfil.id, 'renovar']),
           );
       _intento.reiniciar();
       ref.invalidate(perfilTrabajadorProvider);
+      // El código de la pantalla acaba de quedar sin efecto: se pide otro.
+      unawaited(ref.read(codigoCredencialProvider.notifier).renovarAhora());
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Credencial renovada. La anterior ya no sirve.'),
+          content: Text(
+            'Credencial renovada. Los códigos anteriores ya no sirven.',
+          ),
         ),
       );
     } catch (e) {
@@ -302,34 +516,6 @@ class CodigoQr extends StatelessWidget {
   }
 }
 
-/// Sin señal se muestra la última copia guardada. Se dice de cuándo es: si
-/// el trabajador la renovó desde otro teléfono, esta ya no sirve.
-class _SinConexion extends StatelessWidget {
-  const _SinConexion({required this.guardadoEl});
-
-  final DateTime guardadoEl;
-
-  @override
-  Widget build(BuildContext context) {
-    return Panel(
-      borderIzquierdo: AppColors.warning,
-      child: Row(
-        children: [
-          const Icon(Icons.cloud_off, size: 20, color: AppColors.secondary),
-          const SizedBox(width: AppEspacio.sm + 4),
-          Expanded(
-            child: Text(
-              'Sin conexión. Es la credencial guardada '
-              '${Formato.relativa(guardadoEl)}; sirve igual en bodega.',
-              style: AppTexto.cuerpoChico,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Abre la credencial a pantalla completa.
 Future<void> mostrarCredencialCompleta(
   BuildContext context,
@@ -344,18 +530,21 @@ Future<void> mostrarCredencialCompleta(
 /// La credencial como la ve el bodeguero: solo el código, el nombre y el RUT,
 /// sobre blanco, sin barras del sistema y con el brillo al máximo. Se cierra
 /// con un toque en cualquier parte: el trabajador tiene guantes.
-class PantallaCredencialCompleta extends StatefulWidget {
+///
+/// Muestra el mismo código en vivo que la pestaña: se renueva solo y, si no se
+/// puede renovar y vence, lo dice en vez de dejar un QR que ya no sirve.
+class PantallaCredencialCompleta extends ConsumerStatefulWidget {
   const PantallaCredencialCompleta({super.key, required this.perfil});
 
   final PerfilTrabajador perfil;
 
   @override
-  State<PantallaCredencialCompleta> createState() =>
+  ConsumerState<PantallaCredencialCompleta> createState() =>
       _PantallaCredencialCompletaState();
 }
 
 class _PantallaCredencialCompletaState
-    extends State<PantallaCredencialCompleta> {
+    extends ConsumerState<PantallaCredencialCompleta> {
   @override
   void initState() {
     super.initState();
@@ -373,6 +562,7 @@ class _PantallaCredencialCompletaState
   @override
   Widget build(BuildContext context) {
     final p = widget.perfil;
+    final codigo = ref.watch(codigoCredencialProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: GestureDetector(
@@ -381,16 +571,48 @@ class _PantallaCredencialCompletaState
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, c) {
-              // Lo más grande que quepa dejando sitio al nombre debajo. Sin
-              // bajar de 180: más chico el lector ya no lo toma.
+              // Lo más grande que quepa dejando sitio al código y al nombre
+              // debajo. Sin bajar de 180: más chico el lector ya no lo toma.
               final lado = math.max(
                 180.0,
-                math.min(c.maxWidth - 32, c.maxHeight - 200),
+                math.min(c.maxWidth - 32, c.maxHeight - 290),
               );
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CodigoQr(codigo: p.credencialQr!, lado: lado),
+                  switch (codigo) {
+                    final CodigoVigente vigente => Column(
+                      children: [
+                        CodigoQr(codigo: vigente.codigo.codigo, lado: lado),
+                        const SizedBox(height: AppEspacio.md),
+                        TextoDelCodigo(
+                          codigo: vigente.codigo.agrupado,
+                          tamano: 34,
+                        ),
+                        const SizedBox(height: AppEspacio.sm),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 48),
+                          child: Vigencia(codigo: vigente),
+                        ),
+                      ],
+                    ),
+                    CodigoCargando() => const SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.accentFill,
+                        ),
+                      ),
+                    ),
+                    CodigoNoDisponible(:final mensaje) => Padding(
+                      padding: const EdgeInsets.all(AppEspacio.lg),
+                      child: Text(
+                        mensaje,
+                        textAlign: TextAlign.center,
+                        style: AppTexto.titulo.copyWith(fontSize: 20),
+                      ),
+                    ),
+                  },
                   const SizedBox(height: AppEspacio.lg),
                   Text(
                     p.nombre,

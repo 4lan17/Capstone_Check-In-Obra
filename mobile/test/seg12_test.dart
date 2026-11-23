@@ -174,7 +174,11 @@ void main() {
 
     test('de trabajadores solo usa lo propio: su ficha y su credencial', () {
       // `porObra` es `GET /api/trabajadores` y `porCredencial` es de bodega.
-      expect(metodosDe('trabajadores'), {'yo', 'renovarMiCredencial'});
+      expect(metodosDe('trabajadores'), {
+        'yo',
+        'pedirCodigoCredencial',
+        'renovarMiCredencial',
+      });
     });
 
     test('de préstamos solo usa los suyos', () {
@@ -192,6 +196,7 @@ void main() {
         containsAll([
           '/api/trabajadores/yo',
           '/api/trabajadores/yo/credencial',
+          '/api/trabajadores/yo/credencial/codigo',
           '/api/solicitudes-material/mias',
           '/api/prestamos-herramienta/mios',
         ]),
