@@ -19,6 +19,7 @@ import '../bodega/bodega_providers.dart';
 import '../bodega/pantalla_bodega.dart';
 import '../bodega/pantalla_escaneo.dart';
 import 'aviso_faltantes.dart';
+import 'buscador_material.dart';
 import 'pantalla_importacion.dart';
 
 /// Categorías de `CategoriaMaterial`. El rubro es tabiquería y cielos, así que
@@ -93,6 +94,12 @@ class PantallaMateriales extends ConsumerWidget {
             return ListView(
               padding: AppEspacio.pantalla,
               children: [
+                BuscadorMaterial(
+                  filaDe: (m) => _FilaMaterial(
+                    material: m,
+                    faltaEnObras: faltaEn[m.id] ?? 0,
+                  ),
+                ),
                 const AvisoFaltantes(),
                 for (final categoria in categorias)
                   if (porCategoria[categoria] case final materiales?) ...[
