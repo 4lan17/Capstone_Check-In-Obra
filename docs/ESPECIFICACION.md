@@ -312,7 +312,11 @@ Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de
 de los despachos y consumos de la obra. `desviacionPct` = (ejecutado −
 presupuestado) / presupuestado × 100. Además se reporta `mermaRealVsEstimada`:
 la merma real promedio por material (consumido vs. neto cubicado) menos la
-merma con que se cubicó.
+merma con que se cubicó. Desde D8/D9 (PR #196) el reporte trae `materiales[]`
+con, por material, cantidad y monto presupuestado y ejecutado, `desviacionPct`,
+`superaUmbral` (umbral configurable, 10 % por defecto) y merma estimada vs. real;
+`unidad` viene siempre `null` (el catálogo no la tiene) y el ejecutado se valora al
+precio congelado del presupuesto.
 
 ### E. Inventario y trazabilidad
 
@@ -382,7 +386,7 @@ HTTP que ve quien llama.
 | RN-24 | No se duplica una alerta mientras la anterior por la misma causa siga sin resolver | `AlertaService` | — |
 | RN-25 | Una alerta resuelta no se vuelve a resolver | `Alerta.resolver` | 409 |
 | RN-26 | Ningún controlador devuelve entidades JPA; `pinHash` nunca se serializa | *records* de respuesta + `@JsonIgnore` | — |
-| RN-27 | La credencial QR es un UUID portador y es renovable: quien la tiene se presenta como ese trabajador | `TrabajadorService` | — |
+| RN-27 | La credencial es un código de 8 caracteres emitido por el servidor y de vida corta (120 s, la app lo renueva cada 60 s): vencido responde 409 `CREDENCIAL_CADUCADA`; renovar la credencial revoca los códigos vigentes. El UUID antiguo ya no sirve ni viaja (SEG13, S-27) | `TrabajadorService` | — |
 | RN-28 | Escanear una credencial no autoriza nada por sí solo: identifica a la persona, y quien aprueba sigue siendo el usuario autenticado, que queda registrado en el despacho o el préstamo | `Solicitud*Service.aprobar` | — |
 | RN-29 | Resolver una credencial ajena es de quien opera bodega (ADMIN, BODEGUERO, JEFE_TERRENO), no de cualquier autenticado | `TrabajadorController` | 403 |
 | RN-30 | El código de barras es único **dentro de la empresa** cuando existe, y el escáner lo resuelve en ese mismo alcance | `MaterialService.buscarPorCodigo` + `uq_materiales_empresa_codigo_barra` | 404 / 409 |
@@ -456,7 +460,7 @@ Un préstamo abierto (`fecha_devol_real` nula) pasada su fecha esperada está
 ## 9. Interfaz de la API
 
 Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
-`/swagger-ui.html`. **106 endpoints** en 21 controladores.
+`/swagger-ui.html`. **110 endpoints** en 21 controladores.
 
 ### 9.1 Autenticación
 
@@ -544,7 +548,7 @@ El aislamiento tiene capas, y cada una cubre el hueco de la anterior:
 3. **`AccesoEmpresa.esPropio` / `exigirEmpresa`** y la columna `empresa_id` se mantienen como red:
    un recurso ajeno responde 404, igual que uno inexistente (RN-23). **43 comprobaciones en 17
    archivos** (medido sobre `backend/src/main`, sin contar `AccesoEmpresa` ni los comentarios) y
-   las **20 entidades** implementan `PerteneceAEmpresa`.
+   las **21 entidades** implementan `PerteneceAEmpresa` (`CodigoCredencial` incluida).
 4. **El token** lleva `empresaId`, `iss`, `aud` y la versión de sesión; vive 30 minutos y se
    renueva con un refresh token rotativo.
 
@@ -700,7 +704,7 @@ cuadrillas y una pantalla de inicio con contadores.
 
 ### 10.5 Cobertura de la API
 
-La capa de datos de la app consume **84 de los 106 endpoints** del backend.
+La capa de datos de la app consume **84 de los 110 endpoints** (cifra del 22-nov; el endpoint nuevo `POST /api/trabajadores/yo/credencial/codigo` sí lo usa la app, ver SEG13) del backend.
 Sin consumir quedan 22: **5** son de la plataforma (`/api/plataforma/*`), que no
 pasa por la app móvil, y **17** son del producto:
 
@@ -771,7 +775,7 @@ app no se respalda en la nube ni se copia a otro teléfono.
 |---|---|---|---|
 | R1 | **Los coeficientes de cubicación son de referencia.** `RecetaCubicacion` los define porque el diagrama no modela recetas; no salen de tablas de rendimiento reales | Un presupuesto calculado con ellos no es defendible ante la constructora | Reemplazarlos por las tablas reales antes de que un presupuesto salga de estas cifras, y documentarlo en el informe |
 | R2 | **Sin cola sin conexión.** `drift` es dependencia pero no hay nada implementado | En obra sin señal no se puede registrar nada | Épica aparte: guardar con hora real, reintentar, resolver conflictos y decidir qué **no** se permite offline (aprobar y congelar exigen confirmar estado en el servidor) |
-| R3 | **La credencial QR es un código portador.** Quien la tenga —una foto de la pantalla ajena sirve— se presenta como ese trabajador (RN-27) | Un tercero podría hacer que le aprueben material a nombre de otro | Renovar la credencial es inmediato (`PUT /api/trabajadores/{id}/credencial`); a futuro, un código que rote por tiempo. Mitiga que aprobar exige un bodeguero autenticado y que el despacho queda a nombre del trabajador, no de quien escaneó |
+| R3 | **La credencial era un código portador.** Una foto de la pantalla ajena servía para presentarse como ese trabajador (RN-27) | Un tercero podría hacer que le aprueben material a nombre de otro | **Mitigado (SEG13, #198 y #199):** el código es de vida corta (120 s) y lo emite el servidor; una foto vieja caduca. Quien escanea tiene límite de intentos (429 tras 20 códigos desconocidos). Sigue valiendo que aprobar exige un bodeguero autenticado y que el despacho queda a nombre del trabajador. Riesgo residual: una foto tomada dentro de los 120 s |
 | R4 | **Secretos por defecto.** PIN semilla `0000`, `JWT_SECRET` de ejemplo, PostgreSQL `postgres/postgres` | Cualquier despliegue fuera de local queda comprometido | **Mitigado (SEG1, SEG3, SEG6):** sin valor por defecto en el repo. `JWT_SECRET` y las contraseñas de la base vienen del `.env`; la migración V11 anula el PIN semilla y la clave del primer admin viene de `PRIMER_ADMIN_CLAVE`, con cambio obligatorio en el primer ingreso |
 | R5 | **Cobertura de pruebas del backend.** Las pruebas cuidan la forma de las respuestas, el aislamiento y las reglas de importación y escaneo (RN-30…32), no las del kardex, el préstamo ni el presupuesto | Las reglas RN-01…RN-21 de la §7 pueden romperse en silencio | Pruebas con Testcontainers sobre PostgreSQL real |
 | R6 | **Sin paginación ni endpoints de resumen.** Los contadores de inicio exigen varias llamadas | Degrada con obras largas | `GET /api/obras/{id}/resumen` y paginación en los listados |
@@ -813,7 +817,7 @@ controladores. *Requisitos disponibles*: un requisito cuenta si la app consume s
 endpoint (o el principal, cuando el detalle por id es solo una lectura que la lista
 ya cubre). *Diseños*: cada lienzo de `design-movil` cuenta si hay una pantalla de
 la app que lo cubre; faltan `SinPermiso`, `SinConexion` (la cola sin conexión, R2),
-`JefeInicio`, `JefeDesviacion` y `JefeCuadrillas`.
+`JefeInicio` y `JefeCuadrillas` (`JefeDesviacion` ya está, PR #195).
 
 ---
 
