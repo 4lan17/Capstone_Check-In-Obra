@@ -43,7 +43,8 @@
     { "file": "AdmMerma.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "page": "page-5" },
     { "file": "AdmObras.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "page": "page-5" },
     { "file": "AdmMetricas.dc.html", "x": 2820, "y": 0, "w": 390, "h": 844, "page": "page-5" },
-    { "file": "AdmObraUbicacion.dc.html", "x": 3290, "y": 0, "w": 390, "h": 844, "page": "page-5" }
+    { "file": "AdmObraUbicacion.dc.html", "x": 3290, "y": 0, "w": 390, "h": 844, "page": "page-5" },
+    { "file": "Graficos.dc.html", "x": 0, "y": 0, "w": 1240, "h": 1560, "title": "Gráficos de estadística descriptiva", "page": "page-6", "print": "flow" }
   ],
   "annotations": [
     {
@@ -92,7 +93,8 @@
     { "id": "page-2", "name": "Trabajador" },
     { "id": "page-3", "name": "Bodeguero" },
     { "id": "page-4", "name": "Jefe de terreno" },
-    { "id": "page-5", "name": "Admin" }
+    { "id": "page-5", "name": "Admin" },
+    { "id": "page-6", "name": "Gráficos" }
   ],
   "launch": { "view": "canvas", "page": "page-1" }
 }
