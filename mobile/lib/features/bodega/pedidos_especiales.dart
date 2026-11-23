@@ -15,7 +15,8 @@ import '../../shared_widgets/globo_texto.dart';
 import '../../shared_widgets/panel.dart';
 import '../../shared_widgets/presion.dart';
 import 'bodega_providers.dart';
-import 'solicitudes_acciones.dart' show rechazarSolicitud;
+import 'solicitudes_acciones.dart'
+    show largoMaximoMotivoPedidoEspecial, rechazarSolicitud;
 
 /// Chip del estado de un pedido especial, visto desde bodega.
 Widget chipDePedido(String estado) => switch (estado) {
@@ -233,6 +234,7 @@ class _FilaPedidoEspecialState extends ConsumerState<FilaPedidoEspecial> {
                       : () => rechazarSolicitud(
                           context,
                           titulo: 'Rechazar ${p.nombre}',
+                          largoMaximo: largoMaximoMotivoPedidoEspecial,
                           alConfirmar: (motivo, clave) => ref
                               .read(pedidosEspecialesApiProvider)
                               .rechazar(p.id, motivo: motivo, clave: clave),
