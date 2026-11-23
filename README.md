@@ -176,6 +176,55 @@ y `dart` son idénticos en los dos sistemas.
 - **PostgreSQL** — corre dentro de Docker. Instalarlo en el sistema solo genera
   conflictos de puerto.
 
+### Instalación automática (recomendada)
+
+**No hace falta instalar nada a mano.** Al correr `scripts/levantar.sh` (Ubuntu/Debian) o
+`scripts\levantar.ps1` (Windows), el script detecta lo que falta en tu computador y lo instala
+solo. Si ya lo tienes, no descarga ni instala nada.
+
+| Se instala si falta | Cómo |
+|---|---|
+| Git, curl, unzip, Python 3 | `apt` (Linux) · `winget` (Windows) |
+| Docker (Engine + Compose en Linux; Docker Desktop en Windows) | repositorio oficial de Docker · `winget` |
+| JDK 21 (o 17) | `apt` · `winget` |
+| Flutter **3.47.1** (la versión del CI) | descarga oficial con sha256 verificado, en `~/development/flutter` · `C:\src\flutter` |
+| SDK de Android: herramientas de línea de comandos, plataforma, build-tools, platform-tools, licencias | descarga oficial con sha256 verificado, en `~/Android/Sdk` · `%LOCALAPPDATA%\Android\Sdk` |
+| Emulador, imagen del sistema (Android 13) y el emulador `Check-In-Obra_Pixel5` | `sdkmanager` + `avdmanager` |
+
+Solo se instala lo que el modo necesita: con `--sin-emulador` basta Docker; con `--telefono`
+se suma Flutter, el JDK y el SDK; el modo normal instala además el emulador. La primera vez
+descarga del orden de **4 GB**.
+
+| Opción (`levantar.sh` · `levantar.ps1`) | Qué hace |
+|---|---|
+| `--comprobar` · `-Comprobar` | Solo informa qué hay y qué falta; no cambia nada. Sale con error si falta algo |
+| `--solo-instalar` · `-SoloInstalar` | Instala los requisitos y termina, sin levantar Docker ni el emulador |
+| `--sin-instalar` · `-SinInstalar` | No instala nada: si falta algo, avisa y termina |
+
+Lo que conviene saber:
+
+- **Linux:** los paquetes del sistema se instalan con `sudo` (te pide la contraseña una vez). Si
+  Docker se instala en ese momento, tu usuario se agrega al grupo `docker` y el script sigue sin
+  que tengas que cerrar sesión. Si el equipo no expone `/dev/kvm` (virtualización apagada en la BIOS),
+  el emulador no puede acelerarse: el script avisa y puedes usar `--telefono` o `--sin-emulador`.
+- **Windows:** Docker Desktop necesita **WSL 2** y el emulador la **Plataforma del hipervisor de Windows**.
+  Activarlos pide permisos de administrador y **reiniciar**: el script se detiene ahí y te lo dice; al
+  reiniciar, vuelve a correrlo y sigue desde donde quedó. Docker Desktop puede pedirte aceptar su licencia
+  la primera vez que abre.
+- **macOS y otras distribuciones de Linux:** el script no instala nada solo; revisa lo que falta y
+  te lo dice. Usa la instalación manual de abajo.
+- Las descargas grandes se verifican con sha256 y nada se ejecuta con `curl | sh`. Las versiones fijadas
+  están en `scripts/lib/requisitos.sh` y `scripts/lib/requisitos.ps1`, y deben mantenerse iguales a las del CI
+  (`.github/workflows/ci.yml`).
+
+Los instaladores tienen pruebas: `scripts/tests/requisitos_test.sh` y `requisitos_test.ps1` (sin red, simulan
+equipos con distintas faltas) y `scripts/tests/probar-instalador-en-docker.sh [imagen]`, que instala de verdad en un
+contenedor limpio de Ubuntu o Debian (descarga unos 4 GB).
+
+### Instalación manual
+
+Solo hace falta si usas macOS u otra distribución, o si prefieres instalar tú cada herramienta.
+
 ### Instalación — Ubuntu
 
 ```bash
