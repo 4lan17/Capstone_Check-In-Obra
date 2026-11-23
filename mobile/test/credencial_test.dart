@@ -3,6 +3,7 @@ import 'package:checkinobra_mobile/core/storage/sesion_storage.dart';
 import 'package:checkinobra_mobile/core/theme/app_theme.dart';
 import 'package:checkinobra_mobile/data/api/auth_api.dart';
 import 'package:checkinobra_mobile/data/api/dominio_api.dart';
+import 'package:checkinobra_mobile/data/modelos/codigo_credencial.dart';
 import 'package:checkinobra_mobile/data/modelos/perfil_trabajador.dart';
 import 'package:checkinobra_mobile/features/auth/sesion_controller.dart';
 import 'package:checkinobra_mobile/features/trabajador/pantalla_credencial.dart';
@@ -39,7 +40,6 @@ const _perfil = PerfilTrabajador(
   obraId: 2,
   obraNombre: 'Los Almendros · Torre B',
   obraEstado: 'ACTIVA',
-  credencialQr: 'CRED-7f3a9c2e-1b44',
 );
 
 /// Responde con [respuesta] o lanza [error], según cuál se le dé.
@@ -53,6 +53,17 @@ class _TrabajadoresFalsos implements TrabajadoresApi {
   Future<PerfilTrabajador> yo() async {
     if (error != null) throw error!;
     return respuesta!;
+  }
+
+  @override
+  Future<CodigoCredencial> pedirCodigoCredencial() async {
+    // Lo emite el servidor: sin red no hay código.
+    if (error != null) throw error!;
+    return CodigoCredencial(
+      codigo: 'K7M29QXP',
+      expiraEn: DateTime.utc(2026, 11, 23, 20, 15),
+      vigenciaSegundos: 120,
+    );
   }
 
   @override
@@ -85,18 +96,18 @@ void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
   group('Sin conexión', () {
-    test('muestra la última credencial guardada', () async {
+    test('muestra la última ficha guardada, sin credencial', () async {
       // Con señal: se guarda la copia.
       final conRed = _contenedor(_TrabajadoresFalsos(respuesta: _perfil));
       await conRed.read(sesionProvider.future);
       final fresco = await conRed.read(perfilTrabajadorProvider.future);
       expect(fresco.sinConexion, isFalse);
 
-      // Sin señal: se muestra esa copia, marcada como guardada.
+      // Sin señal: se muestra esa copia (nombre y obra), marcada como guardada.
       final sinRed = _contenedor(_TrabajadoresFalsos(error: _sinRed));
       await sinRed.read(sesionProvider.future);
       final guardado = await sinRed.read(perfilTrabajadorProvider.future);
-      expect(guardado.credencialQr, 'CRED-7f3a9c2e-1b44');
+      expect(guardado.nombre, 'Marcelo Sepúlveda');
       expect(guardado.sinConexion, isTrue);
     });
 
@@ -126,7 +137,22 @@ void main() {
       },
     );
 
-    test('nadie ve la credencial guardada de otro usuario', () async {
+    test(
+      'lo que se guarda en el teléfono no incluye ninguna credencial',
+      () async {
+        final storage = SesionStorage();
+        await storage.guardarPerfilTrabajador(_perfil, empresaId: 1);
+
+        final todo = await const FlutterSecureStorage().readAll();
+
+        expect(todo, isNotEmpty);
+        for (final valor in todo.values) {
+          expect(valor.toLowerCase(), isNot(contains('credencial')));
+        }
+      },
+    );
+
+    test('nadie ve la ficha guardada de otro usuario', () async {
       final storage = SesionStorage();
       await storage.guardarPerfilTrabajador(_perfil, empresaId: 1);
       expect(
@@ -139,7 +165,7 @@ void main() {
       );
     });
 
-    test('cerrar sesión borra la credencial guardada', () async {
+    test('cerrar sesión borra la ficha guardada', () async {
       final storage = SesionStorage();
       await storage.guardarPerfilTrabajador(_perfil, empresaId: 1);
       await storage.cerrarSesion();
@@ -173,7 +199,11 @@ void main() {
           ),
     );
 
-    Future<void> montar(WidgetTester tester, PerfilTrabajador perfil) async {
+    Future<void> montar(
+      WidgetTester tester,
+      PerfilTrabajador perfil, {
+      Object? errorDeCodigo,
+    }) async {
       tester.view.physicalSize = const Size(360, 780);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -182,6 +212,9 @@ void main() {
           overrides: [
             sesionProvider.overrideWith(_SesionTrabajador.new),
             perfilTrabajadorProvider.overrideWith((ref) async => perfil),
+            trabajadoresApiProvider.overrideWithValue(
+              _TrabajadoresFalsos(respuesta: perfil, error: errorDeCodigo),
+            ),
           ],
           child: MaterialApp(
             theme: AppTheme.light,
@@ -212,18 +245,28 @@ void main() {
       expect(llamadas, ['brilloMaximo', 'brilloNormal']);
     });
 
-    testWidgets('sin conexión avisa y no ofrece renovar', (tester) async {
-      await montar(
-        tester,
-        PerfilTrabajador.desdeJson({
-          ..._perfil.aJson(),
-          'guardadoEl': DateTime.now().toIso8601String(),
-        }),
-      );
-      expect(find.textContaining('Sin conexión'), findsOneWidget);
-      expect(find.byType(QrImageView), findsOneWidget);
-      expect(find.text('Perdí el teléfono: renovar'), findsNothing);
-      expect(find.text('Mostrar en bodega'), findsOneWidget);
-    });
+    testWidgets(
+      'sin conexión avisa, no muestra ningún QR y no ofrece renovar',
+      (tester) async {
+        await montar(
+          tester,
+          PerfilTrabajador.desdeJson({
+            ..._perfil.aJson(),
+            'guardadoEl': DateTime.now().toIso8601String(),
+          }),
+          errorDeCodigo: _sinRed,
+        );
+
+        expect(
+          find.text('Sin conexión: no se puede mostrar la credencial'),
+          findsOneWidget,
+        );
+        expect(find.byType(QrImageView), findsNothing);
+        expect(find.text('Perdí el teléfono: renovar'), findsNothing);
+        expect(find.text('Mostrar en bodega'), findsNothing);
+        // La ficha guardada sí se ve: nombre y obra.
+        expect(find.text('Marcelo Sepúlveda'), findsOneWidget);
+      },
+    );
   });
 }

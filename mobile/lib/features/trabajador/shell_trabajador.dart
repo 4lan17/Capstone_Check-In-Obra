@@ -70,7 +70,7 @@ class _ShellTrabajadorState extends ConsumerState<ShellTrabajador> {
             index: _tab,
             children: [
               PantallaInicioTrabajador(perfil: p),
-              const PantallaCredencial(),
+              PantallaCredencial(activa: _tab == 1),
               const PantallaHistorialTrabajador(),
             ],
           ),

@@ -19,6 +19,9 @@ jobs:
     #   secrets.ANDROID_KEY_ALIAS
     #   secrets.ANDROID_KEY_PASSWORD
     #   vars.API_BASE_URL                  la URL https:// de producción
+    #   secrets.API_CERT_SHA256            (opcional) huella(s) SHA-256 del
+    #                                      certificado del servidor; sin él, la
+    #                                      app no fija el certificado
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -50,6 +53,8 @@ jobs:
       - name: Compilar
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
+          # Opcional: si el secreto no existe llega vacío y el script lo ignora.
+          API_CERT_SHA256: ${{ secrets.API_CERT_SHA256 }}
           CHECKINOBRA_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           CHECKINOBRA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           CHECKINOBRA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
