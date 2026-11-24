@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F8FAFC; color: #334155; font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C2410C; text-decoration: none; }
+    a:hover { color: #9A3412; }
+    svg { display: block; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F8FAFC; display: flex; flex-direction: column; overflow: hidden">
+  <div style="height: 44px; background: #334155; flex-shrink: 0"></div>
+  <div style="background: #334155; padding: 4px 8px 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+      <span style="font-size: 17px; font-weight: 600; color: #FFFFFF">Métricas</span>
+      <span style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: #94A3B8">Los Almendros · Torre B</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; border: 1px solid #E2E8F0; flex-shrink: 0"><span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 38px; font-size: 12.5px; font-weight: 500; color: #475569; background: #FFFFFF; cursor: pointer">7 días</span><span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 38px; font-size: 12.5px; font-weight: 600; color: #FFFFFF; background: #334155; cursor: pointer">30 días</span><span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 38px; font-size: 12.5px; font-weight: 500; color: #475569; background: #FFFFFF; cursor: pointer">Toda la obra</span></div>
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; gap: 10px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569; flex-grow: 1">Gasto acumulado por semana</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 20px; line-height: 22px; font-weight: 600; color: #B91C1C">$52,3 M</span>
+        <span style="font-size: 12px; color: #64748B; flex-grow: 1; text-wrap: pretty">ejecutado · presupuesto $48,2 M</span>
+      </div>
+      <svg width="330" height="112" viewBox="0 0 330 112" style="overflow: visible"><path d="M34 92.0H322" stroke="#CBD5E1" stroke-width="1"/><text x="28" y="95.5" text-anchor="end" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">0</text><path d="M34 64.0H322" stroke="#E2E8F0" stroke-width="1"/><text x="28" y="67.5" text-anchor="end" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">20</text><path d="M34 36.0H322" stroke="#E2E8F0" stroke-width="1"/><text x="28" y="39.5" text-anchor="end" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">40</text><path d="M34 8.0H322" stroke="#E2E8F0" stroke-width="1"/><text x="28" y="11.5" text-anchor="end" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">60</text><text x="34.0" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S1</text><text x="75.1" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S2</text><text x="116.3" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S3</text><text x="157.4" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S4</text><text x="198.6" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S5</text><text x="239.7" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S6</text><text x="280.9" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S7</text><text x="322.0" y="107" text-anchor="middle" font-size="10" fill="#64748B" style="font-family: 'Fira Code', monospace">S8</text><path d="M34 24.5H322" stroke="#475569" stroke-width="1.6" stroke-dasharray="5 4"/><polygon points="34.0,92.0 34.0,87.7 75.1,80.8 116.3,71.6 157.4,61.3 198.6,49.7 239.7,38.1 280.9,26.5 322.0,18.8 322.0,92.0" fill="#EA580C" fill-opacity="0.10"/><polyline points="34.0,87.7 75.1,80.8 116.3,71.6 157.4,61.3 198.6,49.7 239.7,38.1 280.9,26.5 322.0,18.8" fill="none" stroke="#EA580C" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/><circle cx="322.0" cy="18.8" r="3.6" fill="#FFFFFF" stroke="#EA580C" stroke-width="2.2"/><circle cx="322.0" cy="18.8" r="4.5" fill="#DC2626" stroke="#FFFFFF" stroke-width="1.5"/><text x="316.0" y="8.8" text-anchor="end" font-size="10.5" font-weight="600" fill="#B91C1C">Supera el presupuesto</text></svg>
+      <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #475569"><svg width="20" height="8" viewBox="0 0 20 8"><path d="M0 4h20" stroke="#EA580C" stroke-width="2.6" stroke-linecap="round"/></svg>Ejecutado acumulado</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #475569"><svg width="20" height="8" viewBox="0 0 20 8"><path d="M0 4h20" stroke="#475569" stroke-width="2" stroke-dasharray="4 3"/></svg>Presupuesto</span></div>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; gap: 10px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569; flex-grow: 1">Presupuestado vs ejecutado</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 20px; line-height: 22px; font-weight: 600; color: #B91C1C">+14,4 %</span>
+        <span style="font-size: 12px; color: #64748B; flex-grow: 1; text-wrap: pretty">volcanita, el material que más se pasó</span>
+      </div>
+      <svg width="330" height="128" viewBox="0 0 330 128" style="overflow: visible"><text x="0" y="14.5" font-size="11.5" font-weight="600" fill="#334155">Volcanita ST</text><rect x="92" y="0" width="148.3" height="9" fill="#CBD5E1"/><text x="246.3" y="8.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$11,8 M</text><rect x="92" y="12" width="169.7" height="9" fill="#DC2626"/><text x="267.7" y="20.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$13,5 M</text><text x="0" y="46.5" font-size="11.5" font-weight="600" fill="#334155">Metalcom</text><rect x="92" y="32" width="120.7" height="9" fill="#CBD5E1"/><text x="218.7" y="40.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$9,6 M</text><rect x="92" y="44" width="129.5" height="9" fill="#DC2626"/><text x="227.5" y="52.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$10,3 M</text><text x="0" y="78.5" font-size="11.5" font-weight="600" fill="#334155">Pino bruto</text><rect x="92" y="64" width="90.5" height="9" fill="#CBD5E1"/><text x="188.5" y="72.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$7,2 M</text><rect x="92" y="76" width="93.0" height="9" fill="#EA580C"/><text x="191.0" y="84.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$7,4 M</text><text x="0" y="110.5" font-size="11.5" font-weight="600" fill="#334155">Aislante</text><rect x="92" y="96" width="64.1" height="9" fill="#CBD5E1"/><text x="162.1" y="104.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$5,1 M</text><rect x="92" y="108" width="61.6" height="9" fill="#EA580C"/><text x="159.6" y="116.5" font-size="10.5" style="font-family: 'Fira Code', monospace" fill="#475569">$4,9 M</text></svg>
+      <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #475569"><span style="width: 10px; height: 10px; background: #CBD5E1; flex-shrink: 0"></span>Presupuestado</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #475569"><span style="width: 10px; height: 10px; background: #EA580C; flex-shrink: 0"></span>Ejecutado</span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #475569"><span style="width: 10px; height: 10px; background: #DC2626; flex-shrink: 0"></span>Sobre umbral</span></div>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; gap: 10px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #475569; flex-grow: 1">Ejecutado por material</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <span style="font-family: 'Fira Code', monospace; font-size: 20px; line-height: 22px; font-weight: 600; color: #334155">26 %</span>
+        <span style="font-size: 12px; color: #64748B; flex-grow: 1; text-wrap: pretty">del gasto es volcanita</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px"><svg width="112" height="112" viewBox="0 0 112 112" style="flex-shrink: 0"><circle cx="56.0" cy="56.0" r="45.0" fill="none" stroke="#EA580C" stroke-width="22" stroke-dasharray="70.78 211.96" stroke-dashoffset="-0.00" transform="rotate(-90 56.0 56.0)"/><circle cx="56.0" cy="56.0" r="45.0" fill="none" stroke="#334155" stroke-width="22" stroke-dasharray="53.48 229.26" stroke-dashoffset="-72.98" transform="rotate(-90 56.0 56.0)"/><circle cx="56.0" cy="56.0" r="45.0" fill="none" stroke="#64748B" stroke-width="22" stroke-dasharray="37.81 244.94" stroke-dashoffset="-128.67" transform="rotate(-90 56.0 56.0)"/><circle cx="56.0" cy="56.0" r="45.0" fill="none" stroke="#94A3B8" stroke-width="22" stroke-dasharray="24.29 258.45" stroke-dashoffset="-168.67" transform="rotate(-90 56.0 56.0)"/><circle cx="56.0" cy="56.0" r="45.0" fill="none" stroke="#E2E8F0" stroke-width="22" stroke-dasharray="85.38 197.36" stroke-dashoffset="-195.16" transform="rotate(-90 56.0 56.0)"/><text x="56.0" y="55.0" text-anchor="middle" font-size="18" font-weight="600" fill="#334155" style="font-family: 'Fira Code', monospace">52,3</text><text x="56.0" y="70.0" text-anchor="middle" font-size="10" fill="#64748B">M$ ejecutado</text></svg><div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0"><div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 10px; height: 10px; background: #EA580C; flex-shrink: 0"></span><span style="font-size: 12px; color: #334155; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Volcanita ST</span><span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #475569; flex-shrink: 0">26 %</span></div><div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 10px; height: 10px; background: #334155; flex-shrink: 0"></span><span style="font-size: 12px; color: #334155; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Metalcom</span><span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #475569; flex-shrink: 0">20 %</span></div><div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 10px; height: 10px; background: #64748B; flex-shrink: 0"></span><span style="font-size: 12px; color: #334155; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Pino bruto</span><span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #475569; flex-shrink: 0">14 %</span></div><div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 10px; height: 10px; background: #94A3B8; flex-shrink: 0"></span><span style="font-size: 12px; color: #334155; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Aislante</span><span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #475569; flex-shrink: 0">9 %</span></div><div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 10px; height: 10px; background: #E2E8F0; flex-shrink: 0"></span><span style="font-size: 12px; color: #334155; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Otros materiales</span><span style="font-family: 'Fira Code', monospace; font-size: 11.5px; font-weight: 600; color: #475569; flex-shrink: 0">31 %</span></div></div></div>
+      
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
