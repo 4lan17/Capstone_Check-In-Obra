@@ -89,6 +89,12 @@ class RespuestasNoExponenEntidadesTest {
             if (tipo instanceof ParameterizedType lista && lista.getRawType() == List.class
                     && lista.getActualTypeArguments()[0] instanceof Class<?> elemento) {
                 revisarTipo(record, componente, elemento);
+            } else if (tipo instanceof ParameterizedType mapa && mapa.getRawType() == java.util.Map.class
+                    && mapa.getActualTypeArguments()[0] instanceof Class<?> clave
+                    && mapa.getActualTypeArguments()[1] instanceof Class<?> valor) {
+                // Un mapa de escalares (conteos por rol, por estado): las dos puntas se revisan.
+                revisarTipo(record, componente, clave);
+                revisarTipo(record, componente, valor);
             } else if (tipo instanceof Class<?> clase) {
                 revisarTipo(record, componente, clase);
             } else {
