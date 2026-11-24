@@ -35,9 +35,9 @@ Verificado de punta a punta contra el backend real, no asumido:
 - **Infraestructura** — `docker compose up` levanta backend + PostgreSQL con
   puertos que no chocan con otros proyectos (8081/5433). Flyway aplica el
   esquema completo y el usuario semilla.
-- **Backend** — 21 entidades, 21 controladores, 110 endpoints, autorización por
+- **Backend** — 21 entidades, 21 controladores, 114 endpoints, autorización por
   rol con `@PreAuthorize`, JWT con refresh, Swagger (apagado en el perfil `prod`).
-  *(Cifras de `develop` al 2026-11-23.)*
+  *(Cifras de `develop` al 2026-11-24.)*
 - **App móvil** — los cuatro roles entran a su propia app: bodeguero (stock, kardex,
   escáner, solicitudes, herramientas, alertas), administrador (obras, materiales,
   usuarios, importación de planillas), trabajador (credencial QR, pedidos,
@@ -89,7 +89,7 @@ El backend está **funcionalmente completo**, pero le falta respaldo automatizad
 
 ### 4.1 Pruebas — prioridad alta
 
-*(Actualizado el 2026-11-20.)* El backend tiene **510 pruebas** (23-nov-2026; eran 397 el 20-nov), casi todas de integración
+*(Actualizado el 2026-11-20.)* El backend tiene **583 pruebas** (24-nov-2026; eran 397 el 20-nov), casi todas de integración
 contra PostgreSQL real (HTTP con el servidor levantado, dos bases reales, los scripts de respaldo). Ya no
 es «un solo test». **No hay medición de cobertura** (no hay JaCoCo en el `pom.xml`), así que no se sabe
 cuántas validaciones de negocio siguen sin prueba: la cifra de «18 sin ninguna prueba» del informe de
@@ -176,9 +176,9 @@ constructora antes de que un presupuesto salga de estas cifras.
 
 ### 6.4 Dependencias declaradas pero sin usar
 
-`drift` y `fl_chart` están en `pubspec.yaml` pero no se importan en ningún archivo:
-marcan funcionalidad que aún no existe —la base local de la cola sin conexión y los
-gráficos de la desviación—. `mobile_scanner`, `intl`, `qr_flutter` y `file_picker` ya
+`drift` está en `pubspec.yaml` pero no se importa en ningún archivo: marca funcionalidad
+que aún no existe, la base local de la cola sin conexión. `fl_chart` ya se usa (pantallas de
+métricas, #206). `mobile_scanner`, `intl`, `qr_flutter` y `file_picker` ya
 se usan (escáner, formato es-CL, credencial QR e importación de planillas).
 
 ---

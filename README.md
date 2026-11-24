@@ -54,7 +54,8 @@ mientras la obra todavía está abierta.
 | `drift` | ^2.34.3 | Base local para la cola de movimientos sin conexión (declarada, **aún sin usar**: la cola no existe) |
 | `flutter_secure_storage` | ^11.0.0 | Guardar la sesión (token y refresh token) de forma segura. El PIN no se guarda nunca |
 | `file_picker` | ^12.2.0 | Elegir y guardar la planilla `.xlsx` de la importación masiva |
-| `fl_chart` | ^1.2.0 | Gráficos de desviación y consumo |
+| `fl_chart` | ^1.3.1 | Gráficos de las pantallas de métricas (líneas, barras y dona) |
+| `flutter_map` + `latlong2` | ^8.3.2 / ^0.10.1 | Mapa de OpenStreetMap en las cards de obra y en «Ubicación de la obra». Teselas de `tile.openstreetmap.org` (apto para desarrollo y demo; con tráfico real hay que pasar a un proveedor de teselas propio o contratado) y búsqueda de direcciones con Nominatim, solo al enviar la búsqueda y a un ritmo de una por segundo |
 | `intl` | ^0.20.3 | Formato de fechas y montos en es-CL |
 
 ---
