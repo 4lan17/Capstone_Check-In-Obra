@@ -10,7 +10,9 @@ public record ObraResponse(
         Long empresaId,
         Long jefeTerrenoId,
         String jefeTerrenoNombre,
-        String jefeTerrenoRut) {
+        String jefeTerrenoRut,
+        Double latitud,
+        Double longitud) {
 
     public static ObraResponse de(Obra o) {
         // Nulos mientras la obra no tenga jefe asignado. Se mandan los tres
@@ -26,6 +28,9 @@ public record ObraResponse(
                 o.getEmpresa().getId(),
                 tieneJefe ? o.getJefeTerreno().getId() : null,
                 tieneJefe ? o.getJefeTerreno().getNombre() : null,
-                tieneJefe ? o.getJefeTerreno().getRut() : null);
+                tieneJefe ? o.getJefeTerreno().getRut() : null,
+                // Nulos: obra sin ubicación en el mapa (el texto `ubicacion` va aparte).
+                o.getLatitud() == null ? null : o.getLatitud().doubleValue(),
+                o.getLongitud() == null ? null : o.getLongitud().doubleValue());
     }
 }

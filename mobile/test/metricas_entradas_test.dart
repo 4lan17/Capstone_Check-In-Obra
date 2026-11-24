@@ -165,16 +165,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Las pestañas del admin tienen tres botones flotantes con el mismo
-    // `heroTag` y toda navegación desde el shell dispara el assert de Hero en
-    // debug. Es anterior a las métricas y no afecta a la navegación; se
-    // consume acá para no tapar lo que sí se prueba.
-    final conocido = tester.takeException();
-    expect(
-      conocido == null || conocido.toString().contains('multiple heroes'),
-      isTrue,
-      reason: 'solo se tolera el assert de Hero conocido: $conocido',
-    );
+    // Las pestañas del admin viven todas montadas, cada una con su botón
+    // flotante: si comparten el `heroTag` por defecto, cualquier navegación
+    // desde el shell dispara el assert «multiple heroes» (en debug).
+    expect(tester.takeException(), isNull);
 
     expect(find.byType(PantallaMetricasAdmin), findsOneWidget);
     expect(find.text('Alertas por semana'), findsOneWidget);
