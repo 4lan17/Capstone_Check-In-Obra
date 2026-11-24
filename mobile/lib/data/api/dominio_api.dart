@@ -46,6 +46,8 @@ class ObrasApi {
     required String cliente,
     required String ubicacion,
     int? jefeTerrenoId,
+    double? latitud,
+    double? longitud,
     String? clave,
   }) => _rest.crear(
     '/api/obras',
@@ -54,7 +56,24 @@ class ObrasApi {
       'cliente': cliente,
       'ubicacion': ubicacion,
       'jefeTerrenoId': jefeTerrenoId,
+      // Opcionales: una obra puede nacer sin estar marcada en el mapa.
+      'latitud': ?latitud,
+      'longitud': ?longitud,
     },
+    Obra.desdeJson,
+    clave: clave,
+  );
+
+  /// Marca dónde está la obra (solo ADMIN). Responde 409 si la obra está
+  /// CERRADA: una obra cerrada ya no cambia.
+  Future<Obra> actualizarUbicacion(
+    int obraId, {
+    required double latitud,
+    required double longitud,
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/obras/$obraId/ubicacion',
+    {'latitud': latitud, 'longitud': longitud},
     Obra.desdeJson,
     clave: clave,
   );
