@@ -10,6 +10,7 @@ import '../modelos/desviacion.dart';
 import '../modelos/detalle_obra.dart';
 import '../modelos/herramienta.dart';
 import '../modelos/importacion.dart';
+import '../modelos/metricas.dart';
 import '../modelos/kardex.dart';
 import '../modelos/material.dart';
 import '../modelos/obra.dart';
@@ -45,6 +46,8 @@ class ObrasApi {
     required String cliente,
     required String ubicacion,
     int? jefeTerrenoId,
+    double? latitud,
+    double? longitud,
     String? clave,
   }) => _rest.crear(
     '/api/obras',
@@ -53,7 +56,24 @@ class ObrasApi {
       'cliente': cliente,
       'ubicacion': ubicacion,
       'jefeTerrenoId': jefeTerrenoId,
+      // Opcionales: una obra puede nacer sin estar marcada en el mapa.
+      'latitud': ?latitud,
+      'longitud': ?longitud,
     },
+    Obra.desdeJson,
+    clave: clave,
+  );
+
+  /// Marca dónde está la obra (solo ADMIN). Responde 409 si la obra está
+  /// CERRADA: una obra cerrada ya no cambia.
+  Future<Obra> actualizarUbicacion(
+    int obraId, {
+    required double latitud,
+    required double longitud,
+    String? clave,
+  }) => _rest.actualizar(
+    '/api/obras/$obraId/ubicacion',
+    {'latitud': latitud, 'longitud': longitud},
     Obra.desdeJson,
     clave: clave,
   );
@@ -74,6 +94,32 @@ class ObrasApi {
     const {},
     Obra.desdeJson,
     clave: clave,
+  );
+}
+
+/// Las métricas de cada rol. Todas reciben el periodo (`?periodo=7d|30d|obra`).
+class MetricasApi {
+  const MetricasApi(this._rest);
+
+  final ClienteRest _rest;
+
+  Future<MetricasJefe> jefe(int obraId, PeriodoMetricas periodo) => _rest.uno(
+    '/api/obras/$obraId/metricas/jefe',
+    MetricasJefe.desdeJson,
+    params: {'periodo': periodo.codigo},
+  );
+
+  Future<MetricasBodega> bodega(int obraId, PeriodoMetricas periodo) =>
+      _rest.uno(
+        '/api/obras/$obraId/metricas/bodega',
+        MetricasBodega.desdeJson,
+        params: {'periodo': periodo.codigo},
+      );
+
+  Future<MetricasEmpresa> empresa(PeriodoMetricas periodo) => _rest.uno(
+    '/api/metricas/empresa',
+    MetricasEmpresa.desdeJson,
+    params: {'periodo': periodo.codigo},
   );
 }
 
@@ -972,6 +1018,9 @@ final clienteRestProvider = Provider<ClienteRest>((ref) {
 
 final obrasApiProvider = Provider(
   (ref) => ObrasApi(ref.watch(clienteRestProvider)),
+);
+final metricasApiProvider = Provider(
+  (ref) => MetricasApi(ref.watch(clienteRestProvider)),
 );
 final materialesApiProvider = Provider(
   (ref) => MaterialesApi(ref.watch(clienteRestProvider)),

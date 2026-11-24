@@ -8,6 +8,8 @@ class Obra {
     required this.estado,
     required this.jefeTerrenoNombre,
     required this.jefeTerrenoRut,
+    this.latitud,
+    this.longitud,
   });
 
   final int id;
@@ -22,6 +24,14 @@ class Obra {
   /// estado real, no un dato que falte.
   final String? jefeTerrenoNombre;
   final String? jefeTerrenoRut;
+
+  /// Dónde está la obra. Nulos mientras nadie la marque en el mapa: es un
+  /// estado normal —las obras anteriores al mapa no la tienen—, no un error.
+  final double? latitud;
+  final double? longitud;
+
+  /// Solo con las dos coordenadas hay un lugar que dibujar.
+  bool get tieneUbicacion => latitud != null && longitud != null;
 
   bool get tieneJefe => jefeTerrenoNombre != null;
 
@@ -41,5 +51,7 @@ class Obra {
     estado: j['estado'] as String,
     jefeTerrenoNombre: j['jefeTerrenoNombre'] as String?,
     jefeTerrenoRut: j['jefeTerrenoRut'] as String?,
+    latitud: (j['latitud'] as num?)?.toDouble(),
+    longitud: (j['longitud'] as num?)?.toDouble(),
   );
 }
