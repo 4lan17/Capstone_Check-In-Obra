@@ -10,6 +10,7 @@ import '../modelos/desviacion.dart';
 import '../modelos/detalle_obra.dart';
 import '../modelos/herramienta.dart';
 import '../modelos/importacion.dart';
+import '../modelos/metricas.dart';
 import '../modelos/kardex.dart';
 import '../modelos/material.dart';
 import '../modelos/obra.dart';
@@ -93,6 +94,32 @@ class ObrasApi {
     const {},
     Obra.desdeJson,
     clave: clave,
+  );
+}
+
+/// Las métricas de cada rol. Todas reciben el periodo (`?periodo=7d|30d|obra`).
+class MetricasApi {
+  const MetricasApi(this._rest);
+
+  final ClienteRest _rest;
+
+  Future<MetricasJefe> jefe(int obraId, PeriodoMetricas periodo) => _rest.uno(
+    '/api/obras/$obraId/metricas/jefe',
+    MetricasJefe.desdeJson,
+    params: {'periodo': periodo.codigo},
+  );
+
+  Future<MetricasBodega> bodega(int obraId, PeriodoMetricas periodo) =>
+      _rest.uno(
+        '/api/obras/$obraId/metricas/bodega',
+        MetricasBodega.desdeJson,
+        params: {'periodo': periodo.codigo},
+      );
+
+  Future<MetricasEmpresa> empresa(PeriodoMetricas periodo) => _rest.uno(
+    '/api/metricas/empresa',
+    MetricasEmpresa.desdeJson,
+    params: {'periodo': periodo.codigo},
   );
 }
 
@@ -991,6 +1018,9 @@ final clienteRestProvider = Provider<ClienteRest>((ref) {
 
 final obrasApiProvider = Provider(
   (ref) => ObrasApi(ref.watch(clienteRestProvider)),
+);
+final metricasApiProvider = Provider(
+  (ref) => MetricasApi(ref.watch(clienteRestProvider)),
 );
 final materialesApiProvider = Provider(
   (ref) => MaterialesApi(ref.watch(clienteRestProvider)),
