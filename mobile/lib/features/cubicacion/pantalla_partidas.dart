@@ -5,6 +5,8 @@ import '../../core/formato.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/modelos/partida.dart';
+import '../metricas/pantalla_metricas_jefe.dart';
+import '../../shared_widgets/fila_accion.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
 import '../bodega/bodega_providers.dart';
@@ -28,6 +30,17 @@ class PantallaPartidas extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Cómo va la obra en plata: está arriba porque es lo primero que el
+          // jefe de terreno quiere saber al abrir la app.
+          FilaAccion(
+            icono: Icons.bar_chart_rounded,
+            titulo: 'Métricas de la obra',
+            detalle: 'Gasto, presupuesto y materiales',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PantallaMetricasJefe()),
+            ),
+          ),
+          const SizedBox(height: 14),
           const Text(
             'Cada partida es un paño de obra con sus medidas. Al cubicarla, '
             'la app calcula qué materiales lleva y cuántos, con merma.',

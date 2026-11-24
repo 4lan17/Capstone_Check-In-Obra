@@ -245,6 +245,22 @@ ignora: el build se detiene y, si llegara a la app, esta no arranca y lo dice.
 > primero una versión con la huella actual **y la siguiente** (separadas por
 > coma), y deja que se instale antes de cambiar el certificado.
 
+**Métricas por rol.** Cada rol tiene una pantalla de métricas con selector de
+periodo (7 días · 30 días · Toda la obra) y tres tarjetas: jefe de terreno
+(`GET /api/obras/{id}/metricas/jefe`), bodega (`…/metricas/bodega`) y
+administrador (`GET /api/metricas/empresa`), todas con `?periodo=7d|30d|obra`.
+Los modelos (`data/modelos/metricas.dart`) toleran campos ausentes, listas
+vacías y porcentajes nulos. Los gráficos son widgets compartidos en
+`shared_widgets/graficos/` (línea con serie de referencia punteada, barras
+agrupadas, barras divergentes con umbral y dona con leyenda), con los colores
+del tema —naranja = ejecutado/real, gris claro = presupuestado, rojo = sobre el
+umbral—, **nunca solo color** (cada gráfico lo dice también en texto), una
+etiqueta `Semantics` y un estado vacío claro. Las herramientas son de la
+empresa (no tienen obra); lo de esta obra es `prestadasEnEstaObra`. En
+`alertasPorSemana`, `resueltas` son de las generadas esa semana, contadas hoy.
+La entrada está en *Partidas* (jefe), el inicio de bodega y la pestaña
+*Empresa* (admin).
+
 **Los timeouts son de 8 segundos.** En la obra la señal es mala, y conviene
 más que el usuario reintente pronto a que quede esperando 30 segundos.
 

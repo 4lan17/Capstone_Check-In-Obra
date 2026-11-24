@@ -8,6 +8,8 @@ import '../../core/theme/app_theme.dart';
 import '../../data/modelos/alerta.dart';
 import '../../data/modelos/kardex.dart';
 import '../../shared_widgets/estados.dart';
+import '../../shared_widgets/fila_accion.dart';
+import '../metricas/pantalla_metricas_bodega.dart';
 import '../../shared_widgets/panel.dart';
 import 'bodega_providers.dart';
 import 'pantalla_cierre_turno.dart';
@@ -180,6 +182,15 @@ class PantallaInicioBodega extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: AppEspacio.md),
+          FilaAccion(
+            icono: Icons.bar_chart_rounded,
+            titulo: 'Métricas de la bodega',
+            detalle: 'Movimientos, despachos y herramientas',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PantallaMetricasBodega()),
             ),
           ),
           const SizedBox(height: AppEspacio.lg),
