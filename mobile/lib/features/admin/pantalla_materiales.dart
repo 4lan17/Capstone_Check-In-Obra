@@ -123,6 +123,9 @@ class PantallaMateriales extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // Sin etiqueta de Hero: las pestañas del admin viven todas montadas y
+        // dos botones con la de por defecto chocan al navegar desde el shell.
+        heroTag: null,
         onPressed: () => _nuevo(context),
         backgroundColor: AppColors.accentFill,
         foregroundColor: Colors.white,
