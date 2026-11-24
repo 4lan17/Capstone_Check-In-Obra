@@ -38,7 +38,8 @@ public class ObraController {
         // pudiera nombrarla, pedir los datos de otra constructora era cuestión
         // de cambiar un número en la URL.
         return ObraResponse.de(obraService.crear(
-                SesionActual.empresaId(), req.nombre(), req.cliente(), req.ubicacion(), req.jefeTerrenoId()));
+                SesionActual.empresaId(), req.nombre(), req.cliente(), req.ubicacion(), req.jefeTerrenoId(),
+                req.latitud(), req.longitud()));
     }
 
     @GetMapping
@@ -58,6 +59,13 @@ public class ObraController {
         return ObraResponse.de(obraService.asignarJefeDeTerreno(id, req.jefeTerrenoId()));
     }
 
+    /** Fija la ubicación de la obra en el mapa. Solo ADMIN; una obra cerrada responde 409. */
+    @PutMapping("/{id}/ubicacion")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ObraResponse fijarUbicacion(@PathVariable Long id, @Valid @RequestBody UbicacionRequest req) {
+        return ObraResponse.de(obraService.fijarUbicacion(id, req.latitud(), req.longitud()));
+    }
+
     @PutMapping("/{id}/cerrar")
     @PreAuthorize("hasRole('ADMIN')")
     public ObraResponse cerrar(@PathVariable Long id) {
@@ -68,7 +76,14 @@ public class ObraController {
             @NotBlank(message = "El nombre es obligatorio") @Size(max = 200, message = "El nombre admite hasta 200 caracteres") String nombre,
             @NotBlank(message = "El cliente es obligatorio") @Size(max = 200, message = "El cliente admite hasta 200 caracteres") String cliente,
             @NotBlank(message = "La ubicación es obligatoria") @Size(max = 300, message = "La ubicación admite hasta 300 caracteres") String ubicacion,
-            Long jefeTerrenoId) {
+            Long jefeTerrenoId,
+            /** Opcionales, pero juntas: las dos o ninguna. El rango lo valida el servicio. */
+            Double latitud,
+            Double longitud) {
+    }
+
+    /** Las dos son obligatorias; el rango y el mensaje los resuelve {@code Coordenadas}. */
+    public record UbicacionRequest(Double latitud, Double longitud) {
     }
 
     public record AsignarJefeRequest(Long jefeTerrenoId) {
