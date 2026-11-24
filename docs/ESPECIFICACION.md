@@ -281,6 +281,10 @@ Estado: ✅ backend y app · 🟡 backend listo, app pendiente · ⬜ ninguno de
 | RF-B7 | Listar los trabajadores de una obra o cuadrilla | Autenticado | `GET /api/trabajadores` | ✅ |
 | RF-B8 | Identificar a un trabajador escaneando su credencial QR | ADMIN, BODEGUERO, JEFE_TERRENO | `GET /api/trabajadores/por-credencial/{qr}` | ✅ |
 | RF-B9 | Renovar la credencial QR de un trabajador | Autenticado | `PUT /api/trabajadores/{id}/credencial` | 🟡 |
+| RF-B10 | Marcar la ubicación de una obra en el mapa (latitud y longitud) | ADMIN | `PUT /api/obras/{id}/ubicacion`; el alta de obra las acepta opcionales | ✅ (#204: backend #210, app #205 y #211) |
+| RF-B11 | Ver las métricas de la obra (jefe de terreno) con gráficos de líneas, barras y torta | ADMIN, JEFE_TERRENO de la obra | `GET /api/obras/{id}/metricas/jefe?periodo=7d\|30d\|obra` | ✅ (#203: backend #212, app #206) |
+| RF-B12 | Ver las métricas de la bodega de la obra | BODEGUERO, JEFE_TERRENO, ADMIN | `GET /api/obras/{id}/metricas/bodega?periodo=` | ✅ (#203) |
+| RF-B13 | Ver las métricas de la empresa (alertas, desviación por obra, usuarios) | ADMIN | `GET /api/metricas/empresa?periodo=` | ✅ (#203) |
 
 ### C. Cubicación
 
@@ -460,7 +464,7 @@ Un préstamo abierto (`fecha_devol_real` nula) pasada su fecha esperada está
 ## 9. Interfaz de la API
 
 Base local: `http://localhost:8081` · OpenAPI: `/v3/api-docs` · Swagger:
-`/swagger-ui.html`. **110 endpoints** en 21 controladores.
+`/swagger-ui.html`. **114 endpoints** en 21 controladores.
 
 ### 9.1 Autenticación
 
@@ -704,7 +708,7 @@ cuadrillas y una pantalla de inicio con contadores.
 
 ### 10.5 Cobertura de la API
 
-La capa de datos de la app consume **84 de los 110 endpoints** (cifra del 22-nov; el endpoint nuevo `POST /api/trabajadores/yo/credencial/codigo` sí lo usa la app, ver SEG13) del backend.
+La capa de datos de la app consume **84 de los 114 endpoints** (cifra del 22-nov, sin recontar tras métricas y ubicación; el endpoint nuevo `POST /api/trabajadores/yo/credencial/codigo` sí lo usa la app, ver SEG13) del backend.
 Sin consumir quedan 22: **5** son de la plataforma (`/api/plataforma/*`), que no
 pasa por la app móvil, y **17** son del producto:
 
