@@ -204,7 +204,7 @@ class _PantallaUbicacionObraState extends ConsumerState<PantallaUbicacionObra> {
                 fontFamily: AppTheme.monoFamily,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textOnDarkMuted,
+                color: AppColors.secondary,
               ),
             ),
           ],
