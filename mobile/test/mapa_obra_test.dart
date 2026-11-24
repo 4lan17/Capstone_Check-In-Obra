@@ -98,6 +98,14 @@ Future<void> _montar(
   await tester.pump(const Duration(milliseconds: 300));
 }
 
+/// Los tiles que no llegan se reintentan dos veces (a los 2 y 4 s) antes de
+/// mostrar el placeholder: hay que dejar pasar ese tiempo.
+Future<void> _esperarLosReintentos(WidgetTester tester) async {
+  for (var i = 0; i < 100; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 void main() {
   setUpAll(() async {
     await cargarInter();
@@ -258,7 +266,7 @@ void main() {
         MapaObra(obra: _obra()),
         teselas: _TeselasQueFallan(),
       );
-      await tester.pump(const Duration(seconds: 1));
+      await _esperarLosReintentos(tester);
 
       expect(find.byType(FlutterMap), findsNothing);
       expect(find.byKey(const ValueKey('pin-de-mapa')), findsOneWidget);
@@ -275,7 +283,7 @@ void main() {
         MapaObra(obra: _obra()),
         teselas: _TeselasQueFallan(),
       );
-      await tester.pump(const Duration(seconds: 1));
+      await _esperarLosReintentos(tester);
 
       expect(find.text('© OpenStreetMap'), findsNothing);
     });
