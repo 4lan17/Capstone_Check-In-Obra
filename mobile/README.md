@@ -245,6 +245,19 @@ ignora: el build se detiene y, si llegara a la app, esta no arranca y lo dice.
 > primero una versión con la huella actual **y la siguiente** (separadas por
 > coma), y deja que se instale antes de cambiar el certificado.
 
+**Mapas de OpenStreetMap.** Las obras muestran su ubicación con `flutter_map`
+(tiles de `tile.openstreetmap.org`) y se marcan en *Ubicación de la obra* (solo
+ADMIN), que busca direcciones en Nominatim. Se respeta su política de uso:
+tiles solo los que se ven (sin precarga), atribución «© OpenStreetMap» siempre
+visible, mapas de las cards no interactivos, y la búsqueda **solo al enviar**
+(sin autocompletar), a lo más **una por segundo**
+(`core/limitador_de_frecuencia.dart`) y con un User-Agent propio
+(`userAgentDeLaApp` en `data/api/geocodificador.dart`: dice qué app es, sin
+datos de nadie; si OSM pide un contacto, agrégalo ahí). Las coordenadas son
+`Obra.latitud`/`longitud` (nulas = sin ubicación) y se guardan con
+`PUT /api/obras/{id}/ubicacion`. Sin red, la card muestra el pin y la dirección
+en texto en vez de un mapa roto.
+
 **Los timeouts son de 8 segundos.** En la obra la señal es mala, y conviene
 más que el usuario reintente pronto a que quede esperando 30 segundos.
 
