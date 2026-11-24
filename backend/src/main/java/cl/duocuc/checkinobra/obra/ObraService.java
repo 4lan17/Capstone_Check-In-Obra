@@ -44,17 +44,37 @@ public class ObraService {
     }
 
     public Obra crear(
-            Long empresaId, String nombre, String cliente, String ubicacion, Long jefeTerrenoId) {
+            Long empresaId, String nombre, String cliente, String ubicacion, Long jefeTerrenoId,
+            Double latitud, Double longitud) {
         AccesoEmpresa.exigirEmpresa(empresaId);
+        Coordenadas coordenadas = Coordenadas.opcionales(latitud, longitud);
         Empresa empresa = empresaService.obtener(empresaId);
         Obra obra = Obra.builder()
                 .nombre(nombre)
                 .cliente(cliente)
                 .ubicacion(ubicacion)
+                .latitud(coordenadas == null ? null : coordenadas.latitud())
+                .longitud(coordenadas == null ? null : coordenadas.longitud())
                 .estado(EstadoObra.ACTIVA)
                 .empresa(empresa)
                 .jefeTerreno(jefeTerrenoId == null ? null : jefeDeTerrenoValido(jefeTerrenoId))
                 .build();
+        return obraRepository.save(obra);
+    }
+
+    /**
+     * Fija o cambia la ubicación en el mapa. Una obra cerrada no admite cambios (409
+     * {@code OBRA_CERRADA}), igual que el resto de las acciones sobre ella.
+     */
+    public Obra fijarUbicacion(Long obraId, Double latitud, Double longitud) {
+        Coordenadas coordenadas = Coordenadas.obligatorias(latitud, longitud);
+        Obra obra = obtenerBloqueada(obraId);
+        if (obra.getEstado() == EstadoObra.CERRADA) {
+            throw new ConflictoException(ConflictoException.OBRA_CERRADA,
+                    "La obra " + obra.getNombre() + " está cerrada: ya no se puede cambiar su ubicación");
+        }
+        obra.setLatitud(coordenadas.latitud());
+        obra.setLongitud(coordenadas.longitud());
         return obraRepository.save(obra);
     }
 
