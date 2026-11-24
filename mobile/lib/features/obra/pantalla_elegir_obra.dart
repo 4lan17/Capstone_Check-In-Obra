@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../data/modelos/obra.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
+import 'mapa/mapa_obra.dart';
 import 'obra_activa.dart';
 
 /// Primera pregunta al entrar: en qué obra se está.
@@ -87,7 +88,12 @@ class _FilaObra extends ConsumerWidget {
         }
       },
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Miniatura de 64 px: se reconoce la obra por dónde queda. Sin
+          // `alMarcar`: quien elige obra para trabajar no la edita.
+          MapaObra(obra: obra, miniatura: true),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

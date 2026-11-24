@@ -10,6 +10,7 @@ abstract final class Formato {
   static final _enteros = NumberFormat('#,##0', 'es_CL');
 
   static final _cantidad = NumberFormat('#,##0.##', 'es_CL');
+  static final _coordenada = NumberFormat('0.00000', 'es_CL');
   static final _porcentaje = NumberFormat('#,##0.#', 'es_CL');
   static final _hora = DateFormat('HH:mm', 'es_CL');
   static final _fechaCorta = DateFormat('dd MMM', 'es_CL');
@@ -21,6 +22,10 @@ abstract final class Formato {
   /// Cantidades de material: se muestran sin decimales cuando son enteras,
   /// porque "36 pl" se lee más rápido que "36,00 pl".
   static String cantidad(double v) => _cantidad.format(v);
+
+  /// Una coordenada con cinco decimales (≈1 m), con coma: `-33,36300`.
+  /// El signo es el guion normal: así se tipea y se pega en otros mapas.
+  static String coordenada(double v) => _coordenada.format(v);
 
   /// Porcentajes con hasta un decimal: "12,5 %", "19 %".
   static String porcentaje(double v) => '${_porcentaje.format(v)} %';

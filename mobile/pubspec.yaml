@@ -48,6 +48,8 @@ dependencies:
   # de archivos de Android.
   file_picker: ^12.2.0
   qr_flutter: ^4.1.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
 
 dev_dependencies:
   flutter_test:
