@@ -245,6 +245,35 @@ ignora: el build se detiene y, si llegara a la app, esta no arranca y lo dice.
 > primero una versión con la huella actual **y la siguiente** (separadas por
 > coma), y deja que se instale antes de cambiar el certificado.
 
+**Mapas de OpenStreetMap.** Las obras muestran su ubicación con `flutter_map`
+(tiles de `tile.openstreetmap.org`) y se marcan en *Ubicación de la obra* (solo
+ADMIN), que busca direcciones en Nominatim. Se respeta su política de uso:
+tiles solo los que se ven (sin precarga), atribución «© OpenStreetMap» siempre
+visible, mapas de las cards no interactivos, y la búsqueda **solo al enviar**
+(sin autocompletar), a lo más **una por segundo**
+(`core/limitador_de_frecuencia.dart`) y con un User-Agent propio
+(`userAgentDeLaApp` en `data/api/geocodificador.dart`: dice qué app es, sin
+datos de nadie; si OSM pide un contacto, agrégalo ahí). Las coordenadas son
+`Obra.latitud`/`longitud` (nulas = sin ubicación) y se guardan con
+`PUT /api/obras/{id}/ubicacion`. Sin red, la card muestra el pin y la dirección
+en texto en vez de un mapa roto.
+
+**Métricas por rol.** Cada rol tiene una pantalla de métricas con selector de
+periodo (7 días · 30 días · Toda la obra) y tres tarjetas: jefe de terreno
+(`GET /api/obras/{id}/metricas/jefe`), bodega (`…/metricas/bodega`) y
+administrador (`GET /api/metricas/empresa`), todas con `?periodo=7d|30d|obra`.
+Los modelos (`data/modelos/metricas.dart`) toleran campos ausentes, listas
+vacías y porcentajes nulos. Los gráficos son widgets compartidos en
+`shared_widgets/graficos/` (línea con serie de referencia punteada, barras
+agrupadas, barras divergentes con umbral y dona con leyenda), con los colores
+del tema —naranja = ejecutado/real, gris claro = presupuestado, rojo = sobre el
+umbral—, **nunca solo color** (cada gráfico lo dice también en texto), una
+etiqueta `Semantics` y un estado vacío claro. Las herramientas son de la
+empresa (no tienen obra); lo de esta obra es `prestadasEnEstaObra`. En
+`alertasPorSemana`, `resueltas` son de las generadas esa semana, contadas hoy.
+La entrada está en *Partidas* (jefe), el inicio de bodega y la pestaña
+*Empresa* (admin).
+
 **Los timeouts son de 8 segundos.** En la obra la señal es mala, y conviene
 más que el usuario reintente pronto a que quede esperando 30 segundos.
 

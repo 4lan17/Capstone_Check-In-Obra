@@ -10,7 +10,9 @@ abstract final class Formato {
   static final _enteros = NumberFormat('#,##0', 'es_CL');
 
   static final _cantidad = NumberFormat('#,##0.##', 'es_CL');
+  static final _coordenada = NumberFormat('0.00000', 'es_CL');
   static final _porcentaje = NumberFormat('#,##0.#', 'es_CL');
+  static final _millones = NumberFormat('#,##0.#', 'es_CL');
   static final _hora = DateFormat('HH:mm', 'es_CL');
   static final _fechaCorta = DateFormat('dd MMM', 'es_CL');
   static final _fechaHora = DateFormat('dd MMM HH:mm', 'es_CL');
@@ -22,6 +24,10 @@ abstract final class Formato {
   /// porque "36 pl" se lee más rápido que "36,00 pl".
   static String cantidad(double v) => _cantidad.format(v);
 
+  /// Una coordenada con cinco decimales (≈1 m), con coma: `-33,36300`.
+  /// El signo es el guion normal: así se tipea y se pega en otros mapas.
+  static String coordenada(double v) => _coordenada.format(v);
+
   /// Porcentajes con hasta un decimal: "12,5 %", "19 %".
   static String porcentaje(double v) => '${_porcentaje.format(v)} %';
 
@@ -32,6 +38,14 @@ abstract final class Formato {
     if (texto == '0') return '0 %';
     return '${v < 0 ? '−' : '+'}$texto %';
   }
+
+  /// Pesos en millones, como se lee en un gráfico: `\$52,3 M`. Bajo el millón
+  /// van los pesos enteros: `\$850.000`.
+  static String millones(double v) =>
+      v.abs() >= 1e6 ? '\$${soloMillones(v)} M' : pesos(v);
+
+  /// Los millones sin signo de pesos ni «M», para el centro de una dona: `52,3`.
+  static String soloMillones(double v) => _millones.format(v / 1e6);
 
   /// Pesos con signo explícito: "+\$11.518", "−\$2.118", "\$0".
   static String pesosConSigno(double v) {

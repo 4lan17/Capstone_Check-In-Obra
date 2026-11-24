@@ -5,6 +5,7 @@ import '../../core/formato.dart';
 import '../../core/network/errores.dart';
 import '../../core/network/idempotencia.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_forma.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/api/dominio_api.dart';
 import '../../data/modelos/detalle_obra.dart';
@@ -14,6 +15,8 @@ import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/panel.dart';
 import '../../shared_widgets/presion.dart';
 import '../bodega/pantalla_bodega.dart';
+import '../obra/mapa/mapa_obra.dart';
+import '../obra/mapa/pantalla_ubicacion_obra.dart';
 import '../obra/obra_activa.dart';
 import 'pantalla_detalle_obra.dart';
 
@@ -26,6 +29,11 @@ class PantallaObras extends ConsumerWidget {
     final obras = ref.watch(todasLasObrasProvider);
 
     return Scaffold(
+      // «Nueva obra» queda fija sobre la navegación: la lista se desplaza por
+      // detrás y el botón no se va con ella.
+      bottomNavigationBar: _BarraNuevaObra(
+        alPresionar: () => _abrirFormulario(context),
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(detalleObraProvider);
@@ -73,18 +81,10 @@ class PantallaObras extends ConsumerWidget {
                     const SizedBox(height: 8),
                   ],
                 ],
-                const SizedBox(height: 80),
               ],
             );
           },
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _abrirFormulario(context),
-        backgroundColor: AppColors.accentFill,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva obra'),
       ),
     );
   }
@@ -92,6 +92,35 @@ class PantallaObras extends ConsumerWidget {
   static void _abrirFormulario(BuildContext context) =>
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (_) => const PantallaNuevaObra()));
+}
+
+/// La barra de abajo, siempre a la vista: crear una obra es lo que más se hace
+/// en esta pantalla y no tiene que perderse al desplazar la lista.
+class _BarraNuevaObra extends StatelessWidget {
+  const _BarraNuevaObra({required this.alPresionar});
+
+  final VoidCallback alPresionar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.card,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      child: FilledButton.icon(
+        onPressed: alPresionar,
+        icon: const Icon(Icons.add),
+        label: const Text('Nueva obra'),
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          backgroundColor: AppColors.accentFill,
+          foregroundColor: Colors.white,
+        ),
+      ),
+    );
+  }
 }
 
 /// Una obra en la lista: quién la dirige y, debajo, lo que tiene — gente,
@@ -127,78 +156,107 @@ class _FilaObra extends ConsumerWidget {
       borderIzquierdo: d != null && d.resumen.materialesCriticos > 0
           ? AppColors.destructive
           : null,
+      // El mapa llega hasta los bordes de la card: el relleno va por dentro.
+      padding: EdgeInsets.zero,
       onTap: () => Navigator.of(
         context,
       ).push(MaterialPageRoute(builder: (_) => PantallaDetalleObra(obra: o))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  o.nombre,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              o.activa
-                  ? ChipEstado.exito('Activa')
-                  : ChipEstado.neutro('Cerrada'),
-              const SizedBox(width: 4),
-              const Icon(Icons.chevron_right, color: AppColors.secondary),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${o.cliente} · ${o.ubicacion}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(
-                Icons.engineering_outlined,
-                size: 17,
-                color: o.tieneJefe
-                    ? AppColors.secondary
-                    : AppColors.warningDark,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  o.jefeIdentificacion,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: o.tieneJefe ? FontWeight.w500 : FontWeight.w400,
-                    color: o.tieneJefe
-                        ? AppColors.primary
-                        : AppColors.warningDark,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.border),
-          const SizedBox(height: 12),
-          switch (detalle) {
-            AsyncData(:final value) => _VistaPrevia(detalle: value),
-            AsyncError() when d == null => Text(
-              'No se pudo cargar el resumen. Toca para reintentar en la ficha.',
-              style: AppTexto.cuerpoChico,
+          MapaObra(
+            obra: o,
+            alMarcar: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => PantallaUbicacionObra(obra: o)),
             ),
-            _ when d != null => _VistaPrevia(detalle: d),
-            _ => const _VistaPreviaCargando(),
-          },
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppEspacio.md),
+            child: _ContenidoDeLaFila(obra: o, detalle: detalle),
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// Lo de la card que va bajo el mapa.
+class _ContenidoDeLaFila extends StatelessWidget {
+  const _ContenidoDeLaFila({required this.obra, required this.detalle});
+
+  final Obra obra;
+  final AsyncValue<DetalleObra> detalle;
+
+  @override
+  Widget build(BuildContext context) {
+    final o = obra;
+    final d = detalle.value;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                o.nombre,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            o.activa
+                ? ChipEstado.exito('Activa')
+                : ChipEstado.neutro('Cerrada'),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, color: AppColors.secondary),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${o.cliente} · ${o.ubicacion}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Icon(
+              Icons.engineering_outlined,
+              size: 17,
+              color: o.tieneJefe ? AppColors.secondary : AppColors.warningDark,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                o.jefeIdentificacion,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: o.tieneJefe ? FontWeight.w500 : FontWeight.w400,
+                  color: o.tieneJefe
+                      ? AppColors.primary
+                      : AppColors.warningDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        const Divider(height: 1, color: AppColors.border),
+        const SizedBox(height: 12),
+        switch (detalle) {
+          AsyncData(:final value) => _VistaPrevia(detalle: value),
+          AsyncError() when d == null => Text(
+            'No se pudo cargar el resumen. Toca para reintentar en la ficha.',
+            style: AppTexto.cuerpoChico,
+          ),
+          _ when d != null => _VistaPrevia(detalle: d),
+          _ => const _VistaPreviaCargando(),
+        },
+      ],
     );
   }
 }

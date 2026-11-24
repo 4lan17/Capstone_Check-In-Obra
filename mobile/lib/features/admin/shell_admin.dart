@@ -10,6 +10,7 @@ import '../../shared_widgets/barra_pestanas.dart';
 import '../../shared_widgets/estados.dart';
 import '../../shared_widgets/fila_accion.dart';
 import '../../shared_widgets/panel.dart';
+import '../metricas/pantalla_metricas_admin.dart';
 import '../auth/sesion_controller.dart';
 import '../bodega/bodega_providers.dart';
 import '../bodega/shell_bodega.dart';
@@ -185,6 +186,15 @@ class _PantallaEmpresa extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: AppEspacio.md),
+          FilaAccion(
+            icono: Icons.bar_chart_rounded,
+            titulo: 'Métricas de la empresa',
+            detalle: 'Alertas, desviación y usuarios',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PantallaMetricasAdmin()),
             ),
           ),
           const SizedBox(height: AppEspacio.lg),
