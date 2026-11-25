@@ -104,7 +104,7 @@ public class ObraService {
     @Transactional(readOnly = true)
     public List<Obra> listarPorEmpresa(Long empresaId) {
         AccesoEmpresa.exigirEmpresa(empresaId);
-        return obraRepository.findByEmpresaId(empresaId);
+        return obraRepository.findByEmpresaIdOrderByNombreAscIdAsc(empresaId);
     }
 
     @Transactional(readOnly = true)
