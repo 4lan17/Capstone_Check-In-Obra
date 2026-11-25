@@ -61,6 +61,10 @@ class GraficoLinea extends StatelessWidget {
 
   static const _etiquetasPorEje = 6;
 
+  /// Alto que se reserva arriba para el rótulo de la marca final: así no
+  /// comparte franja con la línea de referencia, que corre por lo más alto.
+  static const _bandaDelRotulo = 18.0;
+
   /// Un paso del eje «redondo»: 1, 2 o 5 por una potencia de diez.
   static double _paso(double maximo) {
     if (maximo <= 0) return 1;
@@ -77,7 +81,11 @@ class GraficoLinea extends StatelessWidget {
   Widget build(BuildContext context) {
     final todos = [for (final s in series) ...s.valores];
     final maximo = todos.isEmpty ? 0.0 : todos.reduce(math.max);
-    final paso = _paso(maximo);
+    // Sin formato propio el eje se escribe en enteros: un paso de 0,5 saldría
+    // como «1, 1, 0».
+    final paso = formatoY == null
+        ? math.max(1.0, _paso(maximo))
+        : _paso(maximo);
     final techo = math.max(paso, (maximo / paso).ceil() * paso);
     final n = series.isEmpty
         ? 0
@@ -156,11 +164,14 @@ class GraficoLinea extends StatelessWidget {
       label: 'Gráfico de líneas. $descripcion',
       excludeSemantics: true,
       child: SizedBox(
-        height: alto,
+        height: alto + (marcaFinal == null ? 0 : _bandaDelRotulo),
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 8, top: 4),
+              padding: EdgeInsets.only(
+                right: 8,
+                top: 4 + (marcaFinal == null ? 0 : _bandaDelRotulo),
+              ),
               child: grafico,
             ),
             if (marcaFinal != null)

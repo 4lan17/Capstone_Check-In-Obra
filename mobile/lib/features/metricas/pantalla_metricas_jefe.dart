@@ -240,8 +240,8 @@ class _EjecutadoPorMaterial extends StatelessWidget {
       detalle: mayor == null ? null : 'del gasto es ${mayor.etiqueta}',
       child: GraficoDona(
         segmentos: segmentos,
-        centroValor: Formato.soloMillones(m.totalPartes),
-        centroEtiqueta: 'M\$ ejecutado',
+        centroValor: Formato.millones(m.totalPartes),
+        centroEtiqueta: 'ejecutado',
         descripcion: [for (final s in segmentos) '${s.etiqueta} ${s.texto}']
             .join(', '),
       ),
