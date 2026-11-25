@@ -196,13 +196,13 @@ public class MaterialService {
     @Transactional(readOnly = true)
     public List<Material> listarPorEmpresa(Long empresaId) {
         AccesoEmpresa.exigirEmpresa(empresaId);
-        return materialRepository.findByEmpresaId(empresaId);
+        return materialRepository.findByEmpresaIdOrderByNombreAscIdAsc(empresaId);
     }
 
     @Transactional(readOnly = true)
     public List<Material> listarPorEmpresaYCategoria(Long empresaId, CategoriaMaterial categoria) {
         AccesoEmpresa.exigirEmpresa(empresaId);
-        return materialRepository.findByEmpresaIdAndCategoria(empresaId, categoria);
+        return materialRepository.findByEmpresaIdAndCategoriaOrderByNombreAscIdAsc(empresaId, categoria);
     }
 
     @Transactional(readOnly = true)
