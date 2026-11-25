@@ -6,8 +6,11 @@ import '../../core/limitador_de_frecuencia.dart';
 /// Cómo se identifica la app ante OpenStreetMap. Sus políticas de uso exigen un
 /// User-Agent propio —el de Dio por defecto está bloqueado— y no llevan datos
 /// personales: dice qué aplicación es, no quién la usa.
+///
+/// Solo ASCII: `dart:io` rechaza con `FormatException` una cabecera con tildes
+/// y la petición ni siquiera sale.
 const userAgentDeLaApp =
-    'CheckInObra/1.0 (aplicación móvil de gestión de obras)';
+    'CheckInObra/1.0 (aplicacion movil de gestion de obras)';
 
 /// Un resultado de la búsqueda de direcciones.
 class Direccion {
