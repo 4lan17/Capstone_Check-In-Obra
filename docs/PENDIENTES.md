@@ -120,6 +120,12 @@ La columna «¿Tiene prueba?» sale de un `grep`, no de una cobertura medida.
   varios meses devuelto entero es un problema.
 - `GET /api/obras/{id}/resumen` — los contadores que muestra `BodInicio` (y los que
   mostraría `JefeInicio`) se arman hoy con varias llamadas separadas.
+- **Orden estable en los listados.** Sin `ORDER BY`, Postgres devuelve las filas en el
+  orden que le sale, y un `UPDATE` puede mandar una fila al final de la lista (se vio con
+  la ubicación de una obra). Ya salen ordenados las obras (#216), los materiales y las
+  herramientas (#217). Siguen sin orden `usuarios`, `trabajadores`, `cuadrillas`, `partidas`,
+  los ítems de un presupuesto, y las solicitudes, préstamos, kardex y alertas (estos
+  últimos conviene por fecha descendente, como ya hacen los «mis»/«míos»).
 
 ---
 
@@ -171,7 +177,7 @@ constructora antes de que un presupuesto salga de estas cifras.
 | Admin semilla con PIN `0000` | 🟢 La `V11` anula ese PIN; la clave inicial viene de `PRIMER_ADMIN_CLAVE` y la cuenta debe cambiarla en el primer ingreso (SEG3). `V2` salió de `db/migration` (MT1). La app muestra el cambio de clave obligatorio (SEG3) |
 | `JWT_SECRET` con valor por defecto | 🟢 Sin valor por defecto: la API no arranca sin uno propio de 32 bytes o más (SEG1). Rotarlo en las instancias que ya corrieron con el antiguo |
 | Contraseñas de PostgreSQL `postgres/postgres` | 🟢 Sin valor por defecto: vienen del `.env`; la API usa `checkinobra_app` (solo DML) y Flyway `checkinobra_migrador`; el puerto va solo en `127.0.0.1` (SEG6, MT0) |
-| API por HTTP sin TLS | 🟠 La app en release exige `https://` y Android bloquea el tráfico en claro (SEG9); falta el proxy TLS del despliegue |
+| API por HTTP sin TLS | 🟢 La app en release exige `https://` y Android bloquea el tráfico en claro; el despliegue de ejemplo con proxy TLS (Caddy, HSTS, la API sin publicar) está en `docker-compose.tls.yml` (SEG9, PR #193) |
 | Sesión sin renovación | 🟢 Token de 30 min con refresh rotado (SEG10); la app lo renueva sola |
 
 ### 6.4 Dependencias declaradas pero sin usar
@@ -182,6 +188,20 @@ métricas, #206). `mobile_scanner`, `intl`, `qr_flutter` y `file_picker` ya
 se usan (escáner, formato es-CL, credencial QR e importación de planillas).
 
 ---
+
+### 6.5 El mapa usa los servidores públicos de OpenStreetMap
+
+La app muestra las obras sobre teselas de `tile.openstreetmap.org` y busca direcciones en
+Nominatim (`nominatim.openstreetmap.org`). Sirve para desarrollo y demo, pero la política de
+uso de OSM no admite tráfico alto ni descargas masivas. Antes de un uso real hay que decidir:
+
+- **Teselas:** un proveedor propio o contratado (por ejemplo un servicio de teselas con clave),
+  en vez del servidor público.
+- **Nominatim:** el `User-Agent` de la app dice qué app es (`userAgentDeLaApp` en
+  `data/api/geocodificador.dart`) pero no lleva un contacto del proyecto, que OSM recomienda y
+  podría exigir. Es un dato que decide el equipo.
+- **Quitar una ubicación:** el `PUT /api/obras/{id}/ubicacion` exige las dos coordenadas; hoy
+  no hay forma de dejar una obra sin ubicación por la API.
 
 ## 7. Orden de trabajo propuesto
 
