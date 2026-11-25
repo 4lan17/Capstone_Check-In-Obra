@@ -225,6 +225,25 @@ void main() {
       expect(agente, isNot(contains('Dart')));
     });
 
+    test('todas las cabeceras son ASCII: dart:io rechaza el resto antes de '
+        'enviar', () async {
+      // El adaptador de mentira no valida cabeceras, pero el de verdad sí: un
+      // User-Agent con tildes lanza FormatException y la búsqueda nunca sale.
+      final servidor = _Servidor();
+
+      await _geocodificador(servidor).buscar('Quilicura');
+
+      final imprimibleAscii = RegExp(r'^[\x20-\x7E]*$');
+      for (final cabecera in servidor.peticiones.single.headers.entries) {
+        expect(
+          imprimibleAscii.hasMatch('${cabecera.value}'),
+          isTrue,
+          reason: '${cabecera.key}: ${cabecera.value}',
+        );
+      }
+      expect(imprimibleAscii.hasMatch(userAgentDeLaApp), isTrue);
+    });
+
     test('lee nombre y coordenadas, que Nominatim manda como texto', () async {
       final r = await _geocodificador(_Servidor()).buscar('Los Almendros');
 
