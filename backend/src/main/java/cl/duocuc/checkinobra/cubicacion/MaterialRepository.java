@@ -9,8 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MaterialRepository extends JpaRepository<Material, Long> {
-    List<Material> findByEmpresaId(Long empresaId);
-    List<Material> findByEmpresaIdAndCategoria(Long empresaId, CategoriaMaterial categoria);
+    /**
+     * Por nombre y, si dos se llaman igual, por id. Sin ORDER BY Postgres devuelve las filas en el orden
+     * que le salga (el de disco, o el de un índice, según el plan), y un UPDATE —cambiar el precio— deja
+     * la versión nueva de la fila al final.
+     */
+    List<Material> findByEmpresaIdOrderByNombreAscIdAsc(Long empresaId);
+    List<Material> findByEmpresaIdAndCategoriaOrderByNombreAscIdAsc(Long empresaId, CategoriaMaterial categoria);
     Optional<Material> findFirstByEmpresaIdAndCategoriaOrderByIdAsc(Long empresaId, CategoriaMaterial categoria);
     /**
      * Las dos búsquedas del escáner. Van por empresa y no por el código suelto

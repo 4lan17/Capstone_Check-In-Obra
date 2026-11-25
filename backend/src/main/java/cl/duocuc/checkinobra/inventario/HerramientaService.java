@@ -64,7 +64,7 @@ public class HerramientaService {
     @Transactional(readOnly = true)
     public List<Herramienta> listarPorEmpresa(Long empresaId) {
         AccesoEmpresa.exigirEmpresa(empresaId);
-        return herramientaRepository.findByEmpresaId(empresaId);
+        return herramientaRepository.findByEmpresaIdOrderByNombreAscIdAsc(empresaId);
     }
 
     @Transactional(readOnly = true)

@@ -40,6 +40,11 @@ class GraficoDona extends StatelessWidget {
   static const _lado = 112.0;
   static const _grosor = 22.0;
 
+  /// El cuadrado más grande que cabe dentro del círculo interior (lado =
+  /// diámetro / √2, con un margen): todo lo que quede en él, esquinas
+  /// incluidas, queda dentro del anillo sin rozarlo.
+  static const _ladoDelCentro = 46.0;
+
   @override
   Widget build(BuildContext context) {
     final conValor = segmentos.where((s) => s.valor > 0).toList();
@@ -88,7 +93,8 @@ class GraficoDona extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: _lado - _grosor * 2 - 8,
+                  width: _ladoDelCentro,
+                  height: _ladoDelCentro,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Column(

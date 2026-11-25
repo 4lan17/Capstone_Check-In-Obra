@@ -12,6 +12,7 @@ import 'package:checkinobra_mobile/features/bodega/bodega_providers.dart';
 import 'package:checkinobra_mobile/features/metricas/pantalla_metricas_admin.dart';
 import 'package:checkinobra_mobile/features/metricas/pantalla_metricas_bodega.dart';
 import 'package:checkinobra_mobile/features/metricas/pantalla_metricas_jefe.dart';
+import 'package:checkinobra_mobile/shared_widgets/graficos/grafico_dona.dart';
 import 'package:checkinobra_mobile/shared_widgets/graficos/grafico_vacio.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -214,7 +215,8 @@ void main() {
       (tester) async {
         await _montar(tester, const PantallaMetricasJefe(), _MetricasFalsas());
 
-        expect(find.text('\$52,3 M'), findsOneWidget);
+        // La cifra de la tarjeta y el centro de la dona de más abajo.
+        expect(find.text('\$52,3 M'), findsNWidgets(2));
         expect(find.text('ejecutado · presupuesto \$48,2 M'), findsOneWidget);
         final lineas = tester
             .widget<LineChart>(find.byType(LineChart))
@@ -287,7 +289,17 @@ void main() {
       // 13,5 de 52,3 M.
       expect(find.text('26 %'), findsWidgets);
       expect(find.text('del gasto es Volcanita ST'), findsOneWidget);
-      expect(find.text('52,3'), findsOneWidget);
+      // El centro de la dona: el total en millones y «ejecutado», corto para
+      // que no roce el anillo.
+      final dona = find.byType(GraficoDona);
+      expect(
+        find.descendant(of: dona, matching: find.text('\$52,3 M')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: dona, matching: find.text('ejecutado')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('una obra sin presupuesto: no inventa una referencia ni un '

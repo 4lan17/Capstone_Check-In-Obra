@@ -21,7 +21,7 @@ import java.util.function.Function;
  * más o de menos, no cuánto se movió el catálogo después. Un material que se consumió sin estar en
  * el presupuesto no tiene precio congelado: se valora al vigente del catálogo.
  */
-final class DesgloseDeDesviacion {
+public final class DesgloseDeDesviacion {
 
     private static final int DECIMALES = 2;
 
@@ -90,11 +90,11 @@ final class DesgloseDeDesviacion {
     }
 
     /** (ejecutado − presupuestado) / presupuestado × 100, o nulo si no había presupuesto. */
-    static Double porcentajeDeDesvio(double presupuestado, double ejecutado) {
+    public static Double porcentajeDeDesvio(double presupuestado, double ejecutado) {
         return presupuestado == 0 ? null : redondear((ejecutado - presupuestado) / presupuestado * 100.0);
     }
 
-    static double redondear(double valor) {
+    public static double redondear(double valor) {
         return BigDecimal.valueOf(valor).setScale(DECIMALES, RoundingMode.HALF_UP).doubleValue();
     }
 }

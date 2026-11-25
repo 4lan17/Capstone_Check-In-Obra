@@ -20,6 +20,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "obras")
 @Getter
@@ -41,6 +43,16 @@ public class Obra implements PerteneceAEmpresa {
 
     @Column(nullable = false)
     private String ubicacion;
+
+    /**
+     * Ubicación en el mapa (V16). Nulas las dos o presentes las dos; el texto {@link #ubicacion} es
+     * aparte y no cambia.
+     */
+    @Column(precision = 9, scale = 6)
+    private BigDecimal latitud;
+
+    @Column(precision = 9, scale = 6)
+    private BigDecimal longitud;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
