@@ -942,4 +942,135 @@ void main() {
       );
     });
   });
+
+  group('Detalles de legibilidad', () {
+    testWidgets('con un máximo pequeño el eje vertical usa solo enteros', (
+      tester,
+    ) async {
+      // Alertas por semana con máximo 1: el eje decía «1, 1, 0» porque el
+      // paso de 0,5 se escribía sin decimales.
+      await _montar(
+        tester,
+        GraficoLinea(
+          etiquetasX: const ['S1', 'S2', 'S3'],
+          series: [
+            SerieLinea(
+              nombre: 'Generadas',
+              valores: const [0, 0, 1],
+              color: ColoresGrafico.ejecutado,
+            ),
+          ],
+          descripcion: 'Alertas',
+        ),
+      );
+
+      final datos = tester.widget<LineChart>(find.byType(LineChart)).data;
+      expect(datos.gridData.horizontalInterval, greaterThanOrEqualTo(1));
+      expect(datos.maxY, 1);
+      // Las marcas del eje: ninguna repetida.
+      final rotulos = [
+        for (final t in tester.widgetList<Text>(find.byType(Text)))
+          if (t.data == '0' || t.data == '1') t.data,
+      ];
+      expect(rotulos.toSet().length, rotulos.length, reason: '$rotulos');
+    });
+
+    testWidgets('un eje con formato propio conserva sus fracciones', (
+      tester,
+    ) async {
+      // Los millones del gasto sí usan 0,5: el cambio es solo para enteros.
+      await _montar(
+        tester,
+        GraficoLinea(
+          etiquetasX: const ['S1', 'S2'],
+          series: [
+            SerieLinea(
+              nombre: 'Gasto',
+              valores: const [0, 1.5],
+              color: ColoresGrafico.ejecutado,
+            ),
+          ],
+          descripcion: 'Gasto',
+          formatoY: (v) => v.toStringAsFixed(1),
+        ),
+      );
+
+      final datos = tester.widget<LineChart>(find.byType(LineChart)).data;
+      expect(datos.gridData.horizontalInterval, lessThan(1));
+    });
+
+    testWidgets('el rótulo «Supera el presupuesto» queda fuera del trazo', (
+      tester,
+    ) async {
+      await _montar(
+        tester,
+        GraficoLinea(
+          etiquetasX: const ['S1', 'S2', 'S3'],
+          series: [
+            SerieLinea(
+              nombre: 'Ejecutado',
+              valores: const [0, 1, 1.5],
+              color: ColoresGrafico.ejecutado,
+              conArea: true,
+            ),
+            SerieLinea(
+              nombre: 'Presupuesto',
+              valores: const [1.4, 1.4, 1.4],
+              color: ColoresGrafico.referencia,
+              punteada: true,
+            ),
+          ],
+          descripcion: 'Gasto',
+          marcaFinal: 'Supera el presupuesto',
+        ),
+      );
+
+      final rotulo = tester.getRect(find.text('Supera el presupuesto'));
+      final trazo = tester.getRect(find.byType(LineChart));
+      // La línea de presupuesto corre por la parte alta del trazo: el rótulo
+      // va por encima, no encima de ella.
+      expect(rotulo.bottom, lessThanOrEqualTo(trazo.top));
+    });
+
+    testWidgets('el centro de la dona cabe en su círculo interior', (
+      tester,
+    ) async {
+      await _montar(
+        tester,
+        const GraficoDona(
+          segmentos: [
+            SegmentoDona(
+              etiqueta: 'Volcanita',
+              valor: 52,
+              color: ColoresGrafico.ejecutado,
+              texto: '52 %',
+            ),
+          ],
+          centroValor: '\$1,5 M',
+          centroEtiqueta: 'ejecutado',
+          descripcion: 'x',
+        ),
+        escala: 1,
+      );
+
+      final anillo = tester.getRect(find.byType(PieChart));
+      final centro = anillo.center;
+      const radioInterior = 112 / 2 - 22; // lado / 2 − grosor
+      for (final texto in ['\$1,5 M', 'ejecutado']) {
+        final r = tester.getRect(find.text(texto));
+        for (final esquina in [
+          r.topLeft,
+          r.topRight,
+          r.bottomLeft,
+          r.bottomRight,
+        ]) {
+          expect(
+            (esquina - centro).distance,
+            lessThanOrEqualTo(radioInterior),
+            reason: '«$texto» roza el borde interior en $esquina',
+          );
+        }
+      }
+    });
+  });
 }
