@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HerramientaRepository extends JpaRepository<Herramienta, Long> {
-    List<Herramienta> findByEmpresaId(Long empresaId);
+    /**
+     * Por nombre y, si dos se llaman igual, por id. Una herramienta cambia de estado en cada préstamo y
+     * devolución, y sin ORDER BY cada UPDATE la mandaba al final de la lista.
+     */
+    List<Herramienta> findByEmpresaIdOrderByNombreAscIdAsc(Long empresaId);
 
     /** El código es único dentro de la empresa (V13), no en toda la base. */
     Optional<Herramienta> findByEmpresaIdAndCodigoQr(Long empresaId, String codigoQr);
