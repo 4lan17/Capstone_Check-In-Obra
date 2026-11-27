@@ -46,7 +46,7 @@ dependencies:
   flutter_dotenv: ^6.0.2
   # Elegir la planilla .xlsx de la importación masiva desde el explorador
   # de archivos de Android.
-  file_picker: ^12.2.0
+  file_picker: ^13.4.1
   qr_flutter: ^4.1.0
   flutter_map: ^8.3.2
   # El cliente HTTP compartido de los tiles (se cierra al cerrar la app, no
